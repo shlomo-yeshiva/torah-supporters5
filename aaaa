@@ -1,0 +1,12743 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>ת״ת אוהל תורה</title>
+    <link rel="icon" type="image/png" href="http://i.postimg.cc/ZRMCLxgW/wgw-t-t-dhws.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gold: #D4AF37;
+            --primary-gold-dark: #B8941F;
+            --primary-gold-light: #F4D03F;
+            --accent-gold: #FFD700;
+            --cream: #F5E6D3;
+            --cream-light: #FFF8DC;
+            --cream-dark: #E8D5B7;
+            --brown-dark: #3d2f1f;
+            --brown-medium: #8B6F47;
+            --brown-light: #A0826D;
+            --text: #2a1f15;
+            --muted: #8B6F47;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --border: rgba(212, 175, 55, 0.3);
+            --base-font-size: clamp(18px, 1.2vw, 24px);
+            --large-font-size: clamp(24px, 1.8vw, 32px);
+            --button-font-size: clamp(16px, 1.1vw, 20px);
+            --nav-font-size: clamp(20px, 1.4vw, 26px);
+        }
+
+        body {
+            font-family: 'Segoe UI', 'David', 'Arial Hebrew', sans-serif;
+            background: linear-gradient(135deg, var(--cream) 0%, var(--cream-light) 50%, var(--cream-dark) 100%);
+            color: var(--text);
+            direction: rtl;
+            font-size: var(--base-font-size);
+            overflow-x: hidden;
+            overflow-y: hidden;
+            height: 100vh;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        /* אפשר בחירת טקסט במקומות נחוצים */
+        input, textarea, select, .donor-name, .donor-details {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+        }
+
+        /* תפריט ניווט בצד */
+        .sidebar-nav {
+            max-width: clamp(260px, 18vw, 320px);
+            min-width: 260px;
+            background: linear-gradient(180deg, var(--cream) 0%, var(--cream-dark) 100%);
+            box-shadow: 4px 0 30px rgba(212, 175, 55, 0.3);
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            position: relative;
+            height: 100%;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .logo-container {
+            padding: clamp(24px, 2vw, 36px) clamp(20px, 1.5vw, 28px);
+            text-align: center;
+            border-bottom: 2px solid var(--border);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .logo-img {
+            max-width: 100%;
+            height: auto;
+            max-height: clamp(100px, 8vw, 140px);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(212, 175, 55, 0.4);
+            border: 2px solid var(--primary-gold);
+            padding: clamp(6px, 0.5vw, 10px);
+            background: white;
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: block;
+            width: 100%;
+            padding: 24px 36px;
+            background: transparent;
+            border: none;
+            border-right: 4px solid transparent;
+            color: var(--brown-dark);
+            font-size: var(--nav-font-size);
+            font-weight: 500;
+            text-align: right;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .nav-item:hover,
+        .nav-item:focus {
+            background: rgba(212, 175, 55, 0.15);
+            border-right-color: var(--primary-gold);
+            outline: none;
+        }
+
+        .nav-item:focus-visible {
+            outline: 3px solid var(--primary-gold);
+            outline-offset: -3px;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(245, 230, 211, 0.94) 0%, rgba(255, 248, 220, 0.94) 100%);
+            border-right-color: var(--primary-gold);
+            font-weight: 600;
+            color: var(--brown-dark);
+            box-shadow: inset 0 0 20px rgba(212, 175, 55, 0.1);
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right: 8px solid var(--primary-gold);
+        }
+
+        /* אזור תוכן */
+        .content-area {
+            flex: 1;
+            display: flex; 
+            flex-direction: column;
+            overflow-x: hidden;
+            overflow-y: auto;
+            position: relative;
+            height: 100%;
+        }
+
+        .content-section {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+            padding: clamp(30px, 3vw, 50px);
+            position: relative;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .content-section.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* דף הבית */
+        .home-section {
+            position: relative;
+            background: linear-gradient(135deg, rgba(245, 230, 211, 0.94) 0%, rgba(255, 248, 220, 0.94) 100%);
+            min-height: 100%;
+        }
+
+        .home-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('http://i.postimg.cc/ZRMCLxgW/wgw-t-t-dhws.png');
+            background-repeat: no-repeat;
+            background-size: clamp(780px, 74vw, 1500px) auto;
+            background-position: center center;
+            opacity: 0.98;
+            z-index: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .home-section::before {
+                background-size: clamp(440px, 88vw, 820px) auto;
+                background-position: center center;
+            }
+        }
+
+        .home-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            width: 100%;
+            max-width: none;
+            margin: 0;
+            padding: 520px 40px 60px;
+        }
+
+        .home-title {
+            font-size: clamp(36px, 4vw, 64px);
+            color: var(--brown-dark);
+            margin-bottom: clamp(20px, 2vw, 40px);
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        
+        @media (max-width: 768px) {
+            .home-section::before {
+                background-size: clamp(440px, 88vw, 820px) auto;
+                background-position: center center;
+            }
+            .home-content {
+                padding: 420px 20px 40px;
+            }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(240px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+            justify-items: stretch;
+        }
+
+        .stats-grid .stat-card:nth-child(4) {
+            grid-column: 2 / span 1;
+        }
+
+        @media (max-width: 920px) {
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            }
+            .stats-grid .stat-card:nth-child(4) {
+                grid-column: auto;
+            }
+        }
+
+        .home-donor-breakdown {
+            margin-top: 60px;
+            background: rgba(255, 255, 255, 0.88);
+            border: 2px solid var(--primary-gold);
+            border-radius: 20px;
+            padding: 26px;
+            box-shadow: 0 8px 32px rgba(212, 175, 55, 0.25);
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            align-self: stretch;
+        }
+
+        .home-donor-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .home-donor-header h2 {
+            margin: 0;
+            font-size: 26px;
+            color: var(--brown-dark);
+        }
+
+        .external-action-card {
+            margin-top: 24px;
+            border: 2px solid var(--primary-gold);
+            border-radius: 20px;
+            padding: 24px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 20px;
+            background: linear-gradient(120deg, rgba(255, 255, 255, 0.95), rgba(244, 220, 160, 0.25));
+            box-shadow: 0 18px 40px rgba(212, 175, 55, 0.25);
+        }
+
+        .external-action-content {
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .external-action-label {
+            display: block;
+            font-size: 14px;
+            color: var(--muted);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .external-action-title {
+            font-size: 28px;
+            color: var(--brown-dark);
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .external-action-note {
+            margin: 0;
+            color: var(--brown-medium);
+            font-size: 15px;
+        }
+
+        .external-action-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 28px;
+            border-radius: 999px;
+            background: linear-gradient(120deg, var(--primary-gold), var(--primary-gold-dark));
+            color: #fff;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 14px 32px rgba(212, 175, 55, 0.45);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            min-width: 220px;
+        }
+
+        .external-action-button:hover,
+        .external-action-button:focus-visible {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 40px rgba(212, 175, 55, 0.55);
+        }
+
+        @media (max-width: 640px) {
+            .external-action-card {
+                padding: 18px;
+            }
+            .external-action-title {
+                font-size: 24px;
+            }
+            .external-action-button {
+                width: 100%;
+            }
+        }
+
+        .home-donor-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .home-donor-export {
+            display: flex;
+            align-items: center;
+        }
+
+        .home-donor-filter-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            width: 100%;
+        }
+
+        .home-donor-filter-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 18px 20px;
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.15);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            cursor: pointer;
+        }
+
+        .home-donor-filter-card.active {
+            border-color: var(--primary-gold);
+            box-shadow: 0 10px 24px rgba(212, 175, 55, 0.35);
+            transform: translateY(-2px);
+        }
+
+        .home-donor-filter-card.status-none.active {
+            background: rgba(254, 226, 226, 0.9);
+        }
+        .home-donor-filter-card.status-progress.active {
+            background: rgba(254, 243, 199, 0.9);
+        }
+
+        .home-donor-filter-card.status-met.active {
+            background: rgba(209, 250, 229, 0.9);
+        }
+
+        .home-donor-filter-card.status-exceeded.active {
+            background: rgba(219, 234, 254, 0.9);
+        }
+
+        .home-donor-filter-card-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            color: var(--brown-dark);
+        }
+
+        .home-donor-filter-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .home-donor-filter-count {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        @media (max-width: 900px) {
+            .home-donor-filter-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .home-donor-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .home-donor-item {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px 20px;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+        }
+
+        .home-donor-item.highlighted {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(212, 175, 55, 0.35);
+        }
+
+        .home-donor-item strong {
+            font-size: 16px;
+            color: var(--brown-dark);
+        }
+
+        .home-donor-meta {
+            font-size: 14px;
+            color: var(--brown-medium);
+            display: flex;
+            gap: 10px;
+        }
+        .home-donor-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.08);
+            color: var(--brown-dark);
+        }
+
+        .home-donor-status-none {
+            background: rgba(239, 68, 68, 0.18);
+            color: #b91c1c;
+        }
+
+        .home-donor-status-met {
+            background: rgba(16, 185, 129, 0.18);
+            color: #0f766e;
+        }
+
+        .home-donor-status-exceeded {
+            background: rgba(59, 130, 246, 0.18);
+            color: #1d4ed8;
+        }
+
+        .home-donor-status-progress {
+            background: rgba(245, 158, 11, 0.2);
+            color: #b45309;
+        }
+
+        .home-donor-item.highlighted.status-none {
+            background: rgba(254, 226, 226, 0.95);
+            border-color: rgba(239, 68, 68, 0.35);
+        }
+
+        .home-donor-item.highlighted.status-met {
+            background: rgba(209, 250, 229, 0.95);
+            border-color: rgba(16, 185, 129, 0.35);
+        }
+
+        .home-donor-item.highlighted.status-exceeded {
+            background: rgba(219, 234, 254, 0.95);
+            border-color: rgba(59, 130, 246, 0.35);
+        }
+        .home-donor-item.highlighted.status-progress {
+            background: rgba(254, 243, 199, 0.95);
+            border-color: rgba(245, 158, 11, 0.35);
+        }
+
+        .home-donor-toggle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: var(--brown-dark);
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 28px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .switch-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background-color: #cbd5e1;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 28px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .switch-slider::before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25),
+                        0 1px 2px rgba(0, 0, 0, 0.15);
+        }
+
+        .switch input:checked + .switch-slider {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1),
+                        0 0 0 1px rgba(59, 130, 246, 0.2);
+        }
+
+        .switch input:checked + .switch-slider::before {
+            transform: translateX(24px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25),
+                        0 1px 2px rgba(0, 0, 0, 0.15);
+        }
+        
+        .switch:hover .switch-slider {
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+        
+        .switch input:checked:hover + .switch-slider {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15),
+                        0 0 0 1px rgba(59, 130, 246, 0.3);
+        }
+        
+        .switch input:focus + .switch-slider {
+            outline: 2px solid rgba(59, 130, 246, 0.5);
+            outline-offset: 2px;
+        }
+
+        .home-donor-toggle.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .planning-section {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .instructions-section {
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .instructions-panel {
+            max-width: 960px;
+            width: 100%;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--primary-gold);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(212, 175, 55, 0.25);
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .instructions-panel h2 {
+            font-size: 28px;
+            color: var(--brown-dark);
+        }
+
+        .instructions-panel p {
+            line-height: 1.8;
+            color: var(--brown-medium);
+        }
+
+        .instructions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+        }
+
+        .instructions-card {
+            background: rgba(245, 230, 211, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            color: var(--brown-dark);
+        }
+
+        .instructions-card h3 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--brown-dark);
+        }
+
+        .instructions-card ol,
+        .instructions-card ul {
+            margin: 0;
+            padding-right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .instructions-card li {
+            line-height: 1.6;
+        }
+
+        .instructions-note {
+            background: rgba(16, 185, 129, 0.12);
+            border-right: 4px solid var(--success);
+            padding: 16px;
+            border-radius: 12px;
+            color: var(--brown-dark);
+            line-height: 1.7;
+        }
+
+        /* מענק לחתנים */
+        .groom-grant-section {
+            background: rgba(255, 255, 255, 0.55);
+            padding: 40px 20px 60px;
+            justify-content: center;
+        }
+
+        .groom-grant-section.active {
+            display: flex;
+        }
+
+        .groom-grant-panel {
+            width: 100%;
+            max-width: 1200px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 233, 202, 0.9) 48%, rgba(255, 255, 255, 0.94) 100%);
+            border: 2px solid rgba(212, 175, 55, 0.35);
+            border-radius: 28px;
+            padding: 36px;
+            box-shadow: 0 24px 46px rgba(212, 175, 55, 0.28);
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .groom-grant-header {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            text-align: right;
+        }
+
+        .groom-grant-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .groom-grant-header h2 {
+            margin: 0;
+            font-size: 32px;
+            color: var(--brown-dark);
+        }
+
+        .groom-grant-header p {
+            margin: 0;
+            font-size: 16px;
+            color: var(--brown-medium);
+            line-height: 1.7;
+        }
+
+        .groom-grant-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid rgba(212, 175, 55, 0.35);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24);
+        }
+
+        .groom-grant-form-fields {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            align-items: center;
+        }
+
+        .groom-grant-form-fields input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            border-radius: 14px;
+            font-size: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .groom-grant-form-fields input:focus {
+            outline: none;
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.25);
+        }
+
+        .groom-grant-hint {
+            margin: 0;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .groom-grant-list {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .groom-grant-card {
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 24px;
+            border: 1px solid rgba(212, 175, 55, 0.35);
+            box-shadow: 0 14px 36px rgba(212, 175, 55, 0.22);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+        }
+
+        .groom-card-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .groom-card-title {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .groom-card-title label {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .groom-card-title input {
+            padding: 12px 14px;
+            border: 1px solid rgba(212, 175, 55, 0.35);
+            border-radius: 14px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.96);
+        }
+
+        .groom-card-title input:focus {
+            outline: none;
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.18);
+        }
+
+        .groom-card-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .groom-card-summary {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .groom-summary-manual {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-width: 320px;
+        }
+
+        .groom-summary-manual label {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .groom-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
+        }
+
+        .groom-summary-card {
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(212, 175, 55, 0.28);
+            border-radius: 16px;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .groom-summary-label {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .groom-summary-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--brown-dark);
+        }
+
+        .groom-total-input {
+            width: 100%;
+            max-width: 260px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(212, 175, 55, 0.35);
+            font-size: 15px;
+        }
+
+        .groom-total-input:focus {
+            outline: none;
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.18);
+        }
+
+        .groom-bonus-status {
+            font-size: 14px;
+            font-weight: 600;
+            padding: 10px 14px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .groom-bonus-eligible {
+            background: rgba(16, 185, 129, 0.14);
+            color: #047857;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .groom-bonus-missing {
+            background: rgba(245, 158, 11, 0.16);
+            color: #b45309;
+            border: 1px solid rgba(245, 158, 11, 0.35);
+        }
+
+        .groom-year-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.86);
+            border: 1px dashed rgba(212, 175, 55, 0.35);
+            border-radius: 16px;
+            padding: 16px;
+        }
+
+        .groom-year-form input {
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            font-size: 14px;
+        }
+
+        .groom-year-form input:focus {
+            outline: none;
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.16);
+        }
+
+        .groom-year-table-wrapper {
+            overflow-x: auto;
+        }
+
+        .groom-year-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 420px;
+        }
+
+        .groom-year-table th,
+        .groom-year-table td {
+            padding: 10px 12px;
+            text-align: center;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.24);
+        }
+
+        .groom-year-table th {
+            background: rgba(212, 175, 55, 0.12);
+            color: var(--brown-dark);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .groom-year-table td {
+            font-size: 14px;
+            color: var(--brown-dark);
+        }
+
+        .groom-year-table input {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(212, 175, 55, 0.28);
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .groom-year-table input:focus {
+            outline: none;
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.18);
+        }
+
+        .groom-year-empty {
+            text-align: center;
+            color: var(--muted);
+            font-size: 14px;
+            padding: 18px 0;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 14px;
+            border: 1px dashed rgba(212, 175, 55, 0.3);
+        }
+
+        @media (max-width: 720px) {
+            .groom-grant-panel {
+                padding: 24px 20px;
+            }
+            .groom-grant-header h2 {
+                font-size: 26px;
+            }
+            .groom-grant-header p {
+                font-size: 15px;
+            }
+            .groom-summary-grid {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            }
+            .groom-total-input {
+                max-width: none;
+            }
+            .groom-year-form {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            }
+        }
+
+
+        .breakdown-section {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .toolkit-tips-manager {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .toolkit-tips-manager h3 {
+            margin: 0;
+            font-size: 22px;
+            color: var(--brown-dark);
+        }
+
+        .toolkit-tip-hint {
+            margin: 0;
+            color: var(--brown-medium);
+            line-height: 1.6;
+        }
+
+        .toolkit-tip-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .toolkit-tip-form label {
+            font-weight: 600;
+            color: var(--brown-dark);
+        }
+
+        .toolkit-tip-form textarea {
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+            min-height: 110px;
+            resize: vertical;
+            font-size: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .toolkit-tip-form textarea:focus {
+            outline: none;
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+        }
+
+        .toolkit-tips-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .toolkit-tips-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .instructions-note.toolkit-tip {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .toolkit-tip-number {
+            font-weight: 700;
+            color: var(--primary-gold-dark);
+            min-width: 28px;
+        }
+
+        .instructions-note.toolkit-tip span {
+            flex: 1;
+        }
+
+        .toolkit-tip-empty {
+            text-align: center;
+            font-style: italic;
+            color: var(--muted);
+            background: rgba(245, 230, 211, 0.4);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .campaign-planning-panel {
+            margin-top: 40px;
+            background: rgba(255, 255, 255, 0.94);
+            border: 2px solid var(--primary-gold);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(212, 175, 55, 0.3);
+        }
+
+        .campaign-planning-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .campaign-planning-header h2 {
+            margin: 0;
+            font-size: 26px;
+            color: var(--brown-dark);
+        }
+
+        .campaign-planning-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .campaign-planning-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        .campaign-planning-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .campaign-planning-field label {
+            font-weight: 600;
+            color: var(--brown-dark);
+            font-size: 14px;
+        }
+
+        .campaign-planning-field input,
+        .campaign-planning-field textarea,
+        .campaign-planning-field select {
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 14px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .campaign-planning-field input:focus,
+        .campaign-planning-field textarea:focus,
+        .campaign-planning-field select:focus {
+            outline: none;
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+        }
+
+        .campaign-planning-field textarea {
+            resize: vertical;
+            min-height: 90px;
+        }
+        .campaign-planning-summary {
+            background: rgba(245, 230, 211, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18px;
+            line-height: 1.6;
+            color: var(--brown-dark);
+        }
+
+        .campaign-planning-summary strong {
+            color: var(--primary-gold-dark);
+        }
+
+        .management-actions-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .management-calculator-panel {
+            display: none;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 18px rgba(212, 175, 55, 0.25);
+        }
+
+        .management-calculator-panel.active {
+            display: block;
+        }
+
+        .management-calculator-display {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.05);
+            font-size: 24px;
+            font-weight: 600;
+            text-align: left;
+            margin-bottom: 12px;
+            direction: ltr;
+        }
+
+        .management-calculator-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .management-calculator-grid button {
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid var(--border);
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--brown-dark);
+            cursor: pointer;
+            transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+        }
+
+        .management-calculator-grid button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+        }
+
+        .management-calculator-grid button.operator {
+            background: rgba(212, 175, 55, 0.15);
+            border-color: rgba(212, 175, 55, 0.4);
+            color: var(--primary-gold-dark);
+        }
+
+        .management-calculator-grid button.span-two {
+            grid-column: span 2;
+            background: linear-gradient(120deg, var(--primary-gold), var(--primary-gold-dark));
+            color: white;
+            border-color: transparent;
+        }
+        .donor-name-input {
+            width: 100%;
+            border: none;
+            border-bottom: 2px solid transparent;
+            border-radius: 0;
+            padding: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--brown-dark);
+            background: transparent;
+        }
+
+        .donor-name-input:focus {
+            outline: none;
+            border-bottom-color: var(--primary-gold);
+            box-shadow: none;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--primary-gold);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(212, 175, 55, 0.3);
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 16px;
+            color: var(--muted);
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--primary-gold-dark);
+            margin-bottom: 10px;
+        }
+        .stat-subvalue {
+            font-size: 18px;
+            color: var(--brown-medium);
+        }
+        /* מדור ניהול */
+        .management-section {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* מדור כתובות */
+        .addresses-section {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        .addresses-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .addresses-form {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .addresses-form h3 {
+            margin-bottom: 20px;
+            color: var(--brown-dark);
+            font-size: 24px;
+        }
+        
+        .address-form-row {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .address-form-row label {
+            font-weight: 600;
+            color: var(--brown-dark);
+            font-size: 14px;
+        }
+        
+        .address-form-row input {
+            padding: 10px 14px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+        }
+        
+        .address-form-row input:focus {
+            outline: none;
+            border-color: var(--primary-gold);
+        }
+        
+        .address-form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .addresses-list-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .addresses-list-container h3 {
+            margin-bottom: 20px;
+            color: var(--brown-dark);
+            font-size: 24px;
+        }
+        
+        .addresses-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .address-item {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .address-item:hover {
+            border-color: var(--primary-gold);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+        }
+        
+        .address-item-info {
+            flex: 1;
+        }
+        
+        .address-item-info div {
+            margin-bottom: 6px;
+            color: var(--brown-dark);
+        }
+        
+        .address-item-info strong {
+            color: var(--primary-gold);
+        }
+        
+        .address-item-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .address-item-actions button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .address-item-actions .btn-export {
+            background: var(--primary-gold);
+            color: white;
+        }
+        
+        .address-item-actions .btn-delete {
+            background: #ff4444;
+            color: white;
+        }
+        .section-header {
+            font-size: 32px;
+            color: var(--brown-dark);
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid var(--primary-gold);
+            font-weight: 600;
+        }
+
+        .management-tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        /* וילון ניווט למדור המנהל */
+        .admin-curtain {
+            margin-bottom: 20px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: linear-gradient(180deg, rgba(255,255,255,0.78), rgba(255,255,255,0.6));
+            box-shadow: 0 12px 36px rgba(0,0,0,0.10);
+            overflow: visible; /* הורה לא חותך */
+            backdrop-filter: blur(10px);
+            position: sticky; /* תמיד בהישג יד */
+            top: 8px;
+            z-index: 11000; /* מעל התוכן */
+            isolation: isolate; /* שכבת ציור נפרדת */
+        }
+        .admin-curtain::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            pointer-events: none;
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.6),
+                0 6px 20px rgba(212,175,55,0.12);
+        }
+        .admin-curtain-toggle {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 18px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: var(--text);
+            font-weight: 700;
+            font-size: 16px;
+            outline: none;
+        }
+        .admin-curtain-toggle .label {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .admin-curtain-toggle .label .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary-gold);
+            box-shadow: 0 0 0 4px rgba(212,175,55,0.15);
+        }
+        .admin-curtain-toggle .chevron {
+            transition: transform 0.25s ease;
+            transform-origin: 50% 45%;
+        }
+        .admin-curtain.open .admin-curtain-toggle .chevron {
+            transform: rotate(180deg);
+        }
+        .admin-curtain-toggle:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(212,175,55,0.35);
+            border-radius: 12px;
+        }
+        .admin-curtain-panel {
+            display: block; /* נשתמש באנימציה עם max-height */
+            overflow: hidden; /* הכרחי לאנימציית גובה */
+            border-top: 1px dashed var(--border);
+            position: relative;
+            z-index: 11001;
+            max-height: 0; /* מצב סגור */
+            transition: max-height 0.35s ease;
+        }
+        .admin-curtain.open .admin-curtain-panel {
+            max-height: 1000px; /* ערך התחלתי, יוחלף דינמית ב-JS */
+        }
+        /* מציגים את הטאבים המקוריים בתוך הוילון כגריד מעוצב */
+        .admin-curtain-panel .management-tabs {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            padding: 14px;
+            margin: 0;
+            position: relative;
+            z-index: 11002;
+        }
+        .admin-curtain-panel .management-tab {
+            width: 100%;
+            text-align: center;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.9);
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        .admin-curtain-panel .management-tab:hover {
+            border-color: var(--primary-gold);
+            box-shadow: 0 4px 16px rgba(212,175,55,0.15);
+            transform: translateY(-1px);
+        }
+        .admin-curtain-panel .management-tab:focus-visible {
+            box-shadow: 0 0 0 3px rgba(212,175,55,0.35);
+        }
+        @media (max-width: 820px) {
+            .admin-curtain-panel .management-tabs {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        @media (max-width: 560px) {
+            .admin-curtain-panel .management-tabs {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .management-tab {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid var(--border);
+            border-radius: 12px; 
+            color: var(--brown-dark);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .management-tab:hover {
+            border-color: var(--primary-gold);
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .management-tab.active {
+            background: var(--primary-gold);
+            color: white;
+            border-color: var(--primary-gold-dark);
+        }
+
+        .management-content {
+            display: none;
+        }
+
+        .management-content.active {
+            display: block;
+        }
+
+        .password-settings-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(212, 175, 55, 0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .password-toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .password-lock-note {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .switch-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            color: var(--brown-dark);
+        }
+
+        .password-sections h4,
+        .password-update-form h4 {
+            margin-bottom: 10px;
+            color: var(--brown-dark);
+        }
+
+        .password-sections-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 12px;
+        }
+
+        .password-section-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+        }
+
+        .password-section-option input {
+            transform: scale(1.1);
+        }
+
+        .password-update-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .password-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        .password-inputs input {
+            padding: 10px 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .password-inputs input:focus {
+            outline: none;
+            border-color: var(--primary-gold);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .password-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .password-hint {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        /* ניהול קבוצות */
+        .groups-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .group-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 3px solid var(--border);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(212, 175, 55, 0.2);
+            transition: all 0.3s ease;
+            cursor: grab;
+        }
+
+        .group-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(212, 175, 55, 0.3);
+            border-color: var(--primary-gold);
+        }
+
+        .group-card.dragging {
+            opacity: 0.65;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+            cursor: grabbing;
+            transform: scale(0.995);
+        }
+
+        .group-card.drag-over {
+            border-color: var(--primary-gold);
+            box-shadow: 0 12px 40px rgba(212, 175, 55, 0.45);
+        }
+
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .group-name-input {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--brown-dark);
+            border: none;
+            background: transparent;
+            padding: 5px 10px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        .group-name-input:focus {
+            outline: 2px solid var(--primary-gold);
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .group-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .group-stat {
+            text-align: center;
+        }
+
+        .group-stat-label {
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .group-stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--brown-dark);
+        }
+
+        .group-progress {
+            width: 100%;
+            height: 12px;
+            background: rgba(212, 175, 55, 0.2);
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .group-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-gold) 0%, var(--accent-gold) 100%);
+            transition: width 0.5s ease;
+        }
+
+        .group-goal-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        .group-goal-input:focus {
+            outline: none;
+            border-color: var(--primary-gold);
+        }
+
+        .group-donors-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+        }
+        .group-donor-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            margin-bottom: 5px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        .group-donor-details {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .group-donor-name {
+            font-weight: 500;
+            color: var(--brown-dark);
+        }
+
+        .group-donor-amount {
+            font-weight: 600;
+            color: var(--primary-gold-dark);
+        }
+
+        .group-donor-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .group-donor-payment,
+        .group-donor-delete {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .group-donor-payment {
+            background: rgba(59, 130, 246, 0.9);
+        }
+
+        .group-donor-payment:hover {
+            background: rgba(37, 99, 235, 1);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+        }
+
+        .group-donor-delete {
+            background: rgba(239, 68, 68, 0.9);
+        }
+
+        .group-donor-delete:hover {
+            background: rgba(220, 38, 38, 1);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.35);
+        }
+
+        .group-excel-upload {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+        }
+
+        .group-excel-button {
+            padding: 8px 14px;
+            background: var(--primary-gold);
+            color: var(--brown-dark);
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .group-excel-button:hover {
+            background: var(--primary-gold-dark);
+            color: #fff;
+        }
+
+        .add-donor-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid var(--border);
+        }
+
+        .add-donor-form input {
+            padding: 10px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .add-donor-form input:focus {
+            outline: none;
+            border-color: var(--primary-gold);
+        }
+
+        .btn {
+            padding: 16px 32px;
+            background: var(--primary-gold);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: var(--button-font-size);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 52px;
+            min-width: 120px;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .btn:hover,
+        .btn:focus {
+            background: var(--primary-gold-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+            outline: none;
+        }
+
+        .btn:focus-visible {
+            outline: 3px solid var(--primary-gold-light);
+            outline-offset: 2px;
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--brown-dark);
+            border: 2px solid var(--border);
+            min-height: 52px;
+            min-width: 120px;
+        }
+
+        .btn-secondary:hover,
+        .btn-secondary:focus {
+            background: white;
+            border-color: var(--primary-gold);
+            outline: none;
+        }
+
+        .btn-secondary:focus-visible {
+            outline: 3px solid var(--primary-gold-light);
+            outline-offset: 2px;
+        }
+
+        .btn-danger {
+            background: var(--error);
+            min-height: 52px;
+            min-width: 120px;
+        }
+
+        .btn-danger:hover,
+        .btn-danger:focus {
+            background: #dc2626;
+            outline: none;
+        }
+
+        .btn-danger:focus-visible {
+            outline: 3px solid rgba(255, 255, 255, 0.5);
+            outline-offset: 2px;
+        }
+
+        /* ניהול מתרימים */
+        .default-goal-panel {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 2px solid var(--border);
+        }
+
+        .default-goal-panel label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--brown-dark);
+        }
+
+        .default-goal-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .default-goal-controls input {
+            width: 160px;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .default-goal-controls input:focus {
+            outline: none;
+            border-color: var(--primary-gold);
+        }
+
+        .default-goal-note {
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .donors-management {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .donors-search-bar {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .donors-search-input-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 320px;
+        }
+        .donors-search-input {
+            width: 100%;
+            padding: 12px 44px 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 14px;
+            color: var(--brown-dark);
+            background: #fff;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            direction: rtl;
+        }
+
+        .donors-search-input:focus {
+            outline: none;
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+        }
+
+        .donor-search-clear {
+            position: absolute;
+            top: 50%;
+            left: 14px;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        .donor-search-clear:hover {
+            color: var(--primary-gold);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .donors-search-hint {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .donors-search-meta {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--brown-dark);
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: clamp(14px, 1.2vw, 18px);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: clamp(16px, 1.1vw, 20px);
+            min-height: 48px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-gold);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(clamp(220px, 15vw, 280px), 1fr));
+            gap: clamp(15px, 1.5vw, 24px);
+        }
+
+        .donors-list {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            padding: 25px;
+        }
+
+        .donor-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: clamp(18px, 1.5vw, 24px);
+            margin-bottom: clamp(12px, 1vw, 16px);
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            min-height: 70px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .donor-item:hover {
+            border-color: var(--primary-gold);
+            transform: translateX(-5px);
+        }
+
+        .donor-info {
+            flex: 1;
+        }
+
+        .donor-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--brown-dark);
+            margin-bottom: 5px;
+        }
+
+        .donor-details {
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .donor-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .donor-actions .btn-small {
+            padding: 10px 18px;
+            font-size: clamp(14px, 0.9vw, 16px);
+            min-height: 40px;
+            min-width: 90px;
+        }
+        .donor-item.editing {
+            border-color: var(--primary-gold);
+            box-shadow: 0 12px 32px rgba(212, 175, 55, 0.28);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .donor-edit-panel {
+            margin-top: 14px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 2px solid rgba(212, 175, 55, 0.35);
+            border-radius: 12px;
+            padding: 18px;
+            display: none;
+            box-shadow: 0 10px 26px rgba(212, 175, 55, 0.16);
+        }
+
+        .donor-edit-panel.active {
+            display: block;
+        }
+
+        .donor-edit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .donor-edit-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .donor-edit-field label {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .donor-edit-field input,
+        .donor-edit-field select {
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .donor-edit-field input:focus,
+        .donor-edit-field select:focus {
+            outline: none;
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.18);
+        }
+
+        .donor-edit-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* תצוגה בלייב - Fullscreen */
+        .app-container.live-mode {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 10000;
+        }
+
+        .app-container.live-mode .sidebar-nav {
+            display: none;
+        }
+
+        .live-view-section {
+            background: linear-gradient(135deg, rgba(245, 230, 211, 0.9) 0%, rgba(255, 248, 220, 0.9) 100%);
+            position: relative;
+            padding: 0;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        .live-view-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: none;
+            z-index: 0;
+        }
+
+
+        .live-content {
+            position: relative;
+            z-index: 1;
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        /* כפתור חזרה */
+        .back-home-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10006;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border: 2px solid var(--primary-gold);
+            border-radius: 50%;
+            color: var(--brown-dark);
+            font-size: 22px;
+            cursor: pointer;
+            box-shadow: 0 6px 24px rgba(212, 175, 55, 0.35);
+            transition: all 0.3s ease;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px) scale(0.95);
+        }
+
+        .back-home-btn.visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
+
+        .back-home-btn:hover {
+            background: var(--primary-gold);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 9px 28px rgba(212, 175, 55, 0.45);
+        }
+
+        /* אזור מתרימים במרכז */
+        .live-donors-area {
+            flex: 1 1 75%;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: stretch;
+            padding: 0;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+            background: transparent;
+        }
+
+        .live-title {
+            display: none; /* הסרת הכותרת "מתרימים" */
+        }
+
+        .live-donors-container {
+            width: 100%;
+            max-width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            background: none;
+            background-image: url('http://i.postimg.cc/ZRMCLxgW/wgw-t-t-dhws.png');
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: cover;
+            background-attachment: scroll;
+            background-blend-mode: normal;
+        }
+
+        .live-donors-scroll {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding: 10px;
+            padding-bottom: 0;
+            animation: none;
+            will-change: transform;
+            transform: translate3d(0, 0, 0);
+            backface-visibility: hidden;
+            perspective: 1000px;
+        }
+        @keyframes scrollUp {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-50%);
+            }
+        }
+
+        .live-donor-group-header {
+            grid-column: 1 / -1;
+            background: rgba(255, 255, 255, 0.92);
+            border: 3px solid var(--primary-gold);
+            border-radius: 18px;
+            padding: 18px 22px;
+            box-shadow: 0 12px 30px rgba(212, 175, 55, 0.35);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .group-header-title {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--brown-dark);
+            letter-spacing: 1px;
+        }
+
+        .group-header-progress-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .group-header-progress-bar {
+            width: 100%;
+            height: 24px;
+            background: rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .group-header-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50 0%, #45a049 100%);
+            border-radius: 12px;
+            transition: width 0.6s ease;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
+        }
+
+        .group-header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--brown-dark);
+        }
+
+        .group-header-percentage {
+            color: #4CAF50;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .group-header-amounts {
+            color: var(--brown-dark);
+        }
+        .live-donor-card {
+            background: rgba(255, 255, 255, 0.92);
+            border: 3px solid var(--primary-gold);
+            border-radius: 18px;
+            padding: 14px 18px;
+            box-shadow: 0 12px 30px rgba(212, 175, 55, 0.35);
+            min-height: 110px;
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 18px;
+            min-width: 0;
+            box-sizing: border-box;
+            transform: translate3d(0, 0, 0);
+            will-change: contents;
+        }
+
+        .live-donor-progress-circle-wrapper {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            flex-shrink: 0;
+            margin-left: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* סיירות שטח */
+        .scouts-section-panel {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+            padding: 36px;
+            border-radius: 26px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.97) 0%, rgba(255, 247, 229, 0.93) 48%, rgba(241, 226, 192, 0.94) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.32);
+            box-shadow: 0 26px 46px rgba(212, 175, 55, 0.22);
+            overflow: visible;
+        }
+
+        .scouts-section-panel::before {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: inherit;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(212, 175, 55, 0.18) 45%, transparent 75%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .scouts-section-panel > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .scouts-hero {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            align-items: stretch;
+        }
+
+        .scouts-hero-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 22px;
+            padding: 28px 30px;
+            box-shadow: 0 18px 40px rgba(212, 175, 55, 0.18);
+            border: 1px solid rgba(212, 175, 55, 0.22);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .scouts-hero-card.accent {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(249, 235, 214, 0.92) 100%);
+        }
+
+        .scouts-header-text {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .scouts-header-text h2 {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--brown-dark);
+        }
+
+        .scouts-header-text p {
+            font-size: 15px;
+            color: var(--brown-medium);
+            line-height: 1.65;
+        }
+        .scouts-guideline {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--brown-medium);
+            background: rgba(16, 185, 129, 0.14);
+            border-radius: 999px;
+            padding: 6px 16px;
+            width: fit-content;
+        }
+
+        .scouts-stats-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .scouts-stats-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--brown-medium);
+            letter-spacing: 0.4px;
+        }
+
+        .scouts-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 14px;
+        }
+
+        .scouts-stat-card {
+            background: rgba(255, 255, 255, 0.94);
+            border-radius: 18px;
+            padding: 18px 20px;
+            border: 1px solid rgba(212, 175, 55, 0.22);
+            box-shadow: 0 14px 26px rgba(212, 175, 55, 0.16);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .scouts-stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 24px 40px rgba(212, 175, 55, 0.28);
+        }
+        .scouts-stat-label {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .scouts-stat-value {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--brown-dark);
+        }
+        .scouts-toolbar {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+        .scouts-day-switch {
+            display: inline-flex;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            backdrop-filter: blur(12px);
+        }
+
+        .scouts-day-switch button {
+            padding: 10px 22px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            background: rgba(212, 175, 55, 0.18);
+            color: var(--brown-dark);
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .scouts-day-switch button.active {
+            background: linear-gradient(135deg, var(--primary-gold) 0%, var(--primary-gold-dark) 100%);
+            color: #fff;
+            box-shadow: 0 12px 24px rgba(212, 175, 55, 0.35);
+        }
+
+        .scouts-day-switch button:hover {
+            transform: translateY(-1px);
+        }
+
+        .scouts-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .scouts-actions .btn {
+            min-width: 180px;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 600;
+            padding-inline: 32px;
+            box-shadow: 0 16px 30px rgba(212, 175, 55, 0.22);
+        }
+
+        @media (max-width: 960px) {
+            .scouts-section-panel {
+                padding: 28px;
+            }
+            .scouts-hero-card {
+                padding: 24px;
+            }
+        .scouts-stats {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            }
+        }
+
+        @media (max-width: 640px) {
+            .scouts-section-panel {
+                padding: 24px 18px;
+            }
+            .scouts-hero-card {
+                padding: 22px;
+            }
+            .scouts-header-text h2 {
+                font-size: 26px;
+            }
+            .scouts-toolbar {
+                gap: 14px;
+            }
+            .scouts-actions .btn {
+                min-width: 140px;
+                padding-inline: 18px;
+            }
+        }
+
+        .scouts-teams-list {
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 22px;
+        }
+        .scout-team-card {
+            border-radius: 18px;
+            padding: 22px;
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(212, 175, 55, 0.22);
+            box-shadow: 0 14px 28px rgba(212, 175, 55, 0.15);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .scout-team-header {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px;
+            align-items: center;
+        }
+
+        .scout-team-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            align-items: center;
+        }
+
+        .scout-team-meta label {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(34, 68, 54, 0.75);
+        }
+
+        .scout-team-meta input {
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(212, 175, 55, 0.24);
+            background: rgba(255, 255, 255, 0.94);
+            font-size: 14px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .scout-team-meta input:focus {
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.18);
+            outline: none;
+        }
+
+        .scout-team-header input,
+        .scout-team-header select {
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(212, 175, 55, 0.28);
+            background: rgba(255, 255, 255, 0.86);
+            font-size: 15px;
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6);
+        }
+
+        .scout-team-header button {
+            padding: 11px 16px;
+            border-radius: 14px;
+            border: none;
+            background: rgba(220, 38, 38, 0.85);
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 12px 24px rgba(220, 38, 38, 0.25);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .scout-team-header button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 18px 32px rgba(220, 38, 38, 0.32);
+        }
+
+        .scout-team-summary {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+        }
+
+        .scout-summary-card {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--brown-dark);
+            padding: 14px;
+            border-radius: 16px;
+            font-size: 13px;
+            line-height: 1.4;
+            border: 1px solid rgba(16, 185, 129, 0.18);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        }
+
+        .scout-summary-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(34, 68, 54, 0.8);
+            letter-spacing: 0.4px;
+        }
+
+        .scout-summary-value {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .scout-summary-value.scout-summary-static {
+            color: var(--brown-dark);
+        }
+
+        .scout-summary-input {
+            flex: 1;
+            min-width: 0;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            background: rgba(255, 255, 255, 0.95);
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--brown-dark);
+            text-align: center;
+        }
+
+        .scout-summary-input:focus {
+            outline: none;
+            border-color: rgba(16, 185, 129, 0.55);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18);
+        }
+
+        .scout-summary-unit {
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(34, 68, 54, 0.75);
+        }
+
+        .scout-team-table {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 16px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        }
+
+        .scout-team-table thead {
+            background: rgba(212, 175, 55, 0.16);
+        }
+
+        .scout-team-table th,
+        .scout-team-table td {
+            padding: 12px 16px;
+            text-align: right;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            font-size: 14px;
+        }
+
+        .scout-team-table th.scout-member-actions-header,
+        .scout-team-table td.scout-member-actions {
+            width: 140px;
+            white-space: nowrap;
+        }
+
+        .scout-team-table th.scout-member-name-header,
+        .scout-team-table td.scout-member-name-cell {
+            width: 100%;
+        }
+
+        .scout-team-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .scout-member-name-input,
+        .scout-member-new-name-input {
+            width: 100%;
+            min-width: 0;
+            max-width: 100%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(212, 175, 55, 0.24);
+            background: rgba(255, 255, 255, 0.94);
+            font-size: 15px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .scout-member-name-input:focus,
+        .scout-member-new-name-input:focus {
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.18);
+            outline: none;
+        }
+
+        .scout-team-table .scout-member-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-start;
+        }
+
+        .scout-team-table .scout-member-actions button {
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .scout-member-remove-btn {
+            background: rgba(220, 38, 38, 0.12);
+            color: rgba(185, 28, 28, 0.96);
+        }
+
+        .scout-member-remove-btn:hover {
+            background: rgba(220, 38, 38, 0.18);
+        }
+
+        .scout-team-empty {
+            color: var(--muted);
+            font-size: 13px;
+            text-align: center;
+            padding: 18px 0;
+        }
+
+        .scout-member-new-row td {
+            background: rgba(245, 230, 211, 0.35);
+        }
+
+        .scout-member-new-hint {
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .scout-member-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(212, 175, 55, 0.16);
+            color: var(--brown-dark);
+        }
+
+        .live-donor-progress-circle {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .live-donor-progress-circle svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .live-donor-progress-bg {
+            fill: none;
+            stroke: rgba(212, 175, 55, 0.2);
+            stroke-width: 6;
+        }
+
+        .live-donor-progress-fill {
+            fill: none;
+            stroke-width: 6;
+            stroke-linecap: round;
+        }
+
+        .live-donor-percentage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--brown-dark);
+        }
+
+        .live-donor-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            align-items: flex-start;
+            text-align: left;
+            width: 100%;
+            padding-left: 0;
+            padding-right: 0;
+            margin-right: auto;
+        }
+
+        .live-donor-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--brown-dark);
+            margin: 0;
+            line-height: 1.3;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .live-donor-group {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--muted);
+            margin: 0;
+        }
+
+        .live-donor-amount {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--brown-dark);
+            margin-top: 2px;
+        }
+
+        /* אזור מובילים בצד */
+        .live-leaders-sidebar {
+            flex: 0 0 25%;
+            max-width: 360px;
+            min-width: 220px;
+            background: transparent;
+            backdrop-filter: none;
+            border-right: none;
+            padding: 16px 18px;
+            overflow: visible;
+            box-shadow: none;
+            display: flex;
+            flex-direction: column;
+        }
+        .live-leaders-scroll-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+            opacity: 1;
+            filter: brightness(1) saturate(1);
+            transition: opacity 0.6s ease-in-out, filter 0.6s ease-in-out;
+            /* הסתרת scrollbar בעמודת המובילים */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+        }
+        
+        .live-leaders-scroll-wrapper::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+
+        .live-leaders-scroll-wrapper.fade-bright {
+            filter: brightness(1.9) saturate(1.4);
+        }
+
+        .live-leaders-scroll {
+            padding-bottom: 10px;
+        }
+        
+        .live-leaders-scroll-clone {
+            padding-bottom: 10px;
+        }
+        
+        /* גלילה אינסופית למובילים */
+        #leadersScrollPrimary {
+            will-change: transform;
+        }
+        
+        #leadersScrollClone {
+            will-change: transform;
+        }
+
+        .live-leaders-content {
+            transition: opacity 0.6s ease-in-out;
+        }
+
+        .live-leaders-content.hidden {
+            opacity: 0;
+        }
+
+        .leaders-title {
+            font-size: 32px;
+            color: var(--brown-dark);
+            margin-bottom: 18px;
+            text-align: center;
+            padding-bottom: 12px;
+            border-bottom: 2px solid rgba(212, 175, 55, 0.6);
+            font-weight: 700;
+        }
+
+        .live-leaders-scroll-wrapper {
+            position: relative;
+            overflow-y: auto;
+            overflow-x: hidden;
+            height: 100%;
+            /* הסתרת scrollbar בעמודת המובילים */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+        }
+        
+        .live-leaders-scroll-wrapper::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+
+        .live-leaders-scroll {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            animation: none;
+            will-change: auto;
+        }
+
+        /* הקלון יוצב אחרי התוכן המקורי לגלילה אינסופית */
+        .live-leaders-scroll-clone {
+            display: block;
+        }
+
+        @keyframes leadersScroll {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-50%);
+            }
+        }
+        .leader-item {
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid rgba(212, 175, 55, 0.35);
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px rgba(212, 175, 55, 0.18);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 0;
+        }
+
+        .leader-item:hover {
+            border-color: var(--primary-gold);
+            transform: translateX(-5px);
+            box-shadow: 0 8px 24px rgba(212, 175, 55, 0.3);
+        }
+
+        /* אנימציות עדינות */
+        @keyframes subtleGlow {
+            0%, 100% {
+                box-shadow: 0 6px 20px rgba(255, 215, 0, 0.25),
+                            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            }
+            50% {
+                box-shadow: 0 8px 24px rgba(255, 215, 0, 0.3),
+                            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            }
+        }
+
+        @keyframes subtleFloat {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-2px);
+            }
+        }
+
+        /* עיצוב מיוחד למקום הראשון - זהב בולט */
+        .leader-item.rank-1 {
+            background: linear-gradient(135deg, 
+                rgba(255, 215, 0, 0.25) 0%, 
+                rgba(255, 248, 180, 0.9) 50%,
+                rgba(255, 255, 240, 0.95) 100%);
+            border: 3px solid rgba(255, 215, 0, 0.75);
+            box-shadow: 0 10px 35px rgba(255, 215, 0, 0.45),
+                        0 0 25px rgba(255, 215, 0, 0.2),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            padding: 16px 20px;
+            animation: subtleGlow 3s ease-in-out infinite;
+        }
+
+        .leader-item.rank-1::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 215, 0, 0.6) 50%, 
+                transparent 100%);
+        }
+
+        .leader-item.rank-1:hover {
+            border-color: rgba(255, 215, 0, 0.7);
+            box-shadow: 0 10px 32px rgba(255, 215, 0, 0.4),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            transform: translateX(-5px) translateY(-2px);
+            animation: none;
+        }
+
+        /* עיצוב מיוחד למקום שני - כסף בולט */
+        .leader-item.rank-2 {
+            background: linear-gradient(135deg, 
+                rgba(192, 192, 192, 0.2) 0%, 
+                rgba(230, 230, 230, 0.9) 50%,
+                rgba(250, 250, 250, 0.95) 100%);
+            border: 2px solid rgba(192, 192, 192, 0.7);
+            box-shadow: 0 8px 28px rgba(192, 192, 192, 0.4),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+
+        .leader-item.rank-2:hover {
+            border-color: rgba(192, 192, 192, 0.6);
+            box-shadow: 0 7px 22px rgba(192, 192, 192, 0.3);
+            transform: translateX(-5px) translateY(-1px);
+        }
+
+        /* עיצוב מיוחד למקום שלישי - ארד בולט */
+        .leader-item.rank-3 {
+            background: linear-gradient(135deg, 
+                rgba(205, 127, 50, 0.2) 0%, 
+                rgba(255, 220, 180, 0.9) 50%,
+                rgba(255, 245, 230, 0.95) 100%);
+            border: 2px solid rgba(205, 127, 50, 0.7);
+            box-shadow: 0 8px 28px rgba(205, 127, 50, 0.4),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+
+        .leader-item.rank-3:hover {
+            border-color: rgba(205, 127, 50, 0.6);
+            box-shadow: 0 7px 22px rgba(205, 127, 50, 0.3);
+            transform: translateX(-5px) translateY(-1px);
+        }
+
+        /* עיצוב מיוחד למקום רביעי - זהב כהה בולט */
+        .leader-item.rank-4 {
+            background: linear-gradient(135deg, 
+                rgba(184, 134, 11, 0.18) 0%, 
+                rgba(255, 240, 200, 0.9) 50%,
+                rgba(255, 250, 235, 0.95) 100%);
+            border: 2px solid rgba(184, 134, 11, 0.65);
+            box-shadow: 0 7px 25px rgba(184, 134, 11, 0.35),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+
+        .leader-item.rank-4:hover {
+            border-color: rgba(184, 134, 11, 0.5);
+            box-shadow: 0 6px 20px rgba(184, 134, 11, 0.25);
+            transform: translateX(-5px);
+        }
+
+        /* עיצוב מיוחד למקום חמישי - חום בולט */
+        .leader-item.rank-5 {
+            background: linear-gradient(135deg, 
+                rgba(139, 69, 19, 0.18) 0%, 
+                rgba(255, 230, 200, 0.9) 50%,
+                rgba(255, 245, 230, 0.95) 100%);
+            border: 2px solid rgba(139, 69, 19, 0.65);
+            box-shadow: 0 7px 25px rgba(139, 69, 19, 0.35),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+
+        .leader-item.rank-5:hover {
+            border-color: rgba(139, 69, 19, 0.5);
+            box-shadow: 0 6px 20px rgba(139, 69, 19, 0.25);
+            transform: translateX(-5px);
+        }
+
+        .leader-rank {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-gold-dark);
+            min-width: 42px;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .leader-item.rank-1 .leader-rank {
+            color: #FFD700;
+            font-weight: 800;
+            text-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+        }
+
+        .leader-item.rank-1 .leader-rank::after {
+            content: '🥇';
+            font-size: 36px;
+            margin-right: 6px;
+            transition: transform 0.3s ease;
+            display: inline-block;
+            line-height: 1;
+        }
+
+        .leader-item.rank-1:hover .leader-rank::after {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .leader-item.rank-2 .leader-rank {
+            color: #C0C0C0;
+            text-shadow: 0 2px 6px rgba(192, 192, 192, 0.3);
+        }
+
+        .leader-item.rank-2 .leader-rank::after {
+            content: '🥈';
+            font-size: 32px;
+            margin-right: 6px;
+            transition: transform 0.3s ease;
+            display: inline-block;
+            line-height: 1;
+        }
+
+        .leader-item.rank-2:hover .leader-rank::after {
+            transform: scale(1.05);
+        }
+
+        .leader-item.rank-3 .leader-rank {
+            color: #CD7F32;
+            text-shadow: 0 2px 6px rgba(205, 127, 50, 0.3);
+        }
+
+        .leader-item.rank-3 .leader-rank::after {
+            content: '🥉';
+            font-size: 32px;
+            margin-right: 6px;
+            transition: transform 0.3s ease;
+            display: inline-block;
+            line-height: 1;
+        }
+
+        .leader-item.rank-3:hover .leader-rank::after {
+            transform: scale(1.05);
+        }
+
+        .leader-item.rank-4 .leader-rank {
+            color: #8B6914;
+        }
+
+        .leader-item.rank-4 .leader-rank::after {
+            content: '4️⃣';
+            font-size: 28px;
+            margin-right: 6px;
+            transition: transform 0.3s ease;
+            display: inline-block;
+            line-height: 1;
+        }
+
+        .leader-item.rank-4:hover .leader-rank::after {
+            transform: scale(1.05);
+        }
+
+        .leader-item.rank-5 .leader-rank {
+            color: #654321;
+        }
+
+        .leader-item.rank-5 .leader-rank::after {
+            content: '5️⃣';
+            font-size: 28px;
+            margin-right: 6px;
+            transition: transform 0.3s ease;
+            display: inline-block;
+            line-height: 1;
+        }
+
+        .leader-item.rank-5:hover .leader-rank::after {
+            transform: scale(1.05);
+        }
+
+        .leader-info {
+            flex: 1;
+            margin: 0 12px;
+        }
+
+        .leader-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--brown-dark);
+            margin-bottom: 2px;
+        }
+
+        .leader-amount {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .leader-total {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-gold-dark);
+        }
+
+        .leader-item.rank-1 .leader-total {
+            color: #FFD700;
+            font-weight: 800;
+            font-size: 20px;
+            text-shadow: 0 2px 6px rgba(255, 215, 0, 0.3);
+        }
+
+        .leader-item.rank-1 .leader-name {
+            font-weight: 800;
+            color: #8B4513;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+
+        .leaders-targets-section {
+            margin-top: 24px;
+            border-top: 1px solid var(--border);
+            padding-top: 16px;
+        }
+
+        .leaders-overall-progress {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .leaders-overall-progress-label {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--brown-dark);
+            text-align: center;
+            letter-spacing: 0.3px;
+        }
+
+        .leaders-overall-progress-bar {
+            position: relative;
+            height: 60px;
+            border-radius: 22px;
+            background: rgba(187, 247, 208, 0.5);
+            box-shadow: inset 0 0 0 2px rgba(21, 128, 61, 0.18), 0 22px 36px rgba(34, 197, 94, 0.22);
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .leaders-overall-progress-fill {
+            position: absolute;
+            top: 0;
+            right: 0;
+            left: auto;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #0f9a43 0%, #16a34a 55%, #22c55e 100%);
+            box-shadow: 0 12px 26px rgba(34, 197, 94, 0.45);
+            transition: width 0.6s ease;
+            border-radius: inherit;
+        }
+
+        .leaders-overall-progress-bar.no-goal .leaders-overall-progress-fill {
+            width: 0%;
+            box-shadow: none;
+        }
+
+        .leaders-overall-progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: clamp(20px, 2.8vw, 28px);
+            font-weight: 800;
+            color: #134e1d;
+            text-shadow: 0 3px 12px rgba(255, 255, 255, 0.5);
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .leaders-overall-progress-note {
+            font-size: clamp(18px, 2.6vw, 26px);
+            font-weight: 600;
+            color: rgba(21, 128, 61, 0.9);
+            text-align: center;
+        }
+
+        .leaders-targets-title {
+            margin-top: 20px;
+        }
+
+
+        .leaders-targets-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+        .leader-target-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 3px 12px rgba(212, 175, 55, 0.18);
+            width: 100%;
+            margin-bottom: 0;
+        }
+        .leader-target-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--brown-dark);
+            text-align: right;
+        }
+        .leader-target-meta {
+            font-size: 12px;
+            color: var(--muted);
+            text-align: right;
+            font-weight: 400;
+        }
+
+        .leader-target-progress-bar {
+            position: relative;
+            width: 100%;
+            height: 26px;
+            background: #ededed;
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .leader-target-progress-fill {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, #b9f6ab, #7fe76a);
+            border-radius: 14px;
+            transition: width 0.6s ease;
+        }
+
+        .leader-target-progress-fill.complete {
+            background: linear-gradient(90deg, #72e76f, #3ed45b);
+        }
+        .leader-target-progress-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 12px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #1f2d0a;
+            direction: rtl;
+            text-align: center;
+            white-space: nowrap;
+        }
+        /* הודעות */
+        .notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--primary-gold);
+            border-radius: 16px;
+            padding: 20px 40px;
+            color: var(--brown-dark);
+            font-size: 18px;
+            font-weight: 500;
+            z-index: 10000;
+            display: none;
+            box-shadow: 0 8px 40px rgba(212, 175, 55, 0.4);
+        }
+
+        .notification.show {
+            display: block;
+            animation: fadeInOut 2s ease;
+        }
+
+        body.app-locked {
+            overflow: hidden;
+        }
+
+        body.app-locked .app-container {
+            filter: blur(6px);
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .app-lock-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(29, 20, 9, 0.6);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+
+        .app-lock-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .app-lock-dialog {
+            background: rgba(255, 255, 255, 0.96);
+            border: 2px solid var(--primary-gold);
+            border-radius: 28px;
+            padding: 32px;
+            width: min(92vw, 420px);
+            text-align: center;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25);
+        }
+
+        .app-lock-dialog h2 {
+            margin-bottom: 10px;
+            color: var(--brown-dark);
+        }
+
+        .app-lock-dialog p {
+            margin-bottom: 14px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .app-lock-password-input {
+            width: 100%;
+            padding: 14px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+
+        .app-lock-actions {
+            display: flex;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        .app-lock-error {
+            min-height: 24px;
+            margin-top: 14px;
+            color: var(--error);
+            font-weight: 600;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            10%, 90% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        /* סקרולבר */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-gold);
+            border-radius: 12px;
+            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.4);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-gold-dark);
+        }
+
+        html,
+        body,
+        .content-area {
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-gold) transparent;
+        }
+
+        /* מסכים גדולים - 70 אינץ' ומעלה */
+        @media (min-width: 1920px) {
+            .sidebar-nav {
+                width: 320px;
+            }
+
+            .content-section {
+                padding: 50px 60px;
+            }
+
+            .section-header {
+                font-size: 36px;
+            }
+
+            .home-title {
+                font-size: 56px;
+            }
+
+            .stat-card {
+                padding: 36px;
+            }
+
+            .live-donor-name {
+                font-size: 24px;
+            }
+
+            .live-donor-group {
+                font-size: 18px;
+            }
+
+            .live-donor-amount {
+                font-size: 18px;
+            }
+
+            .live-donor-card {
+                padding: 16px 20px;
+                min-height: 120px;
+                gap: 15px;
+            }
+
+            .live-donor-progress-circle-wrapper {
+                width: 100px;
+                height: 100px;
+                margin-left: 18px;
+            }
+
+            .live-donor-progress-circle {
+                width: 100%;
+                height: 100%;
+            }
+
+            .live-donor-progress-bg,
+            .live-donor-progress-fill {
+                stroke-width: 7;
+            }
+
+            .live-donor-percentage {
+                font-size: 20px;
+            }
+
+            .live-leaders-sidebar {
+                width: 380px;
+                padding: 45px 32px;
+            }
+
+            .leader-item {
+                padding: 18px 22px;
+            }
+
+            .leaders-list {
+                gap: 14px;
+            }
+
+            .leaders-title {
+                font-size: 40px;
+                margin-bottom: 32px;
+            }
+            .leader-name {
+                font-size: 22px;
+            }
+
+            .leader-amount {
+                font-size: 16px;
+            }
+
+            .leader-total {
+                font-size: 28px;
+            }
+
+            .leader-rank {
+                font-size: 26px;
+            }
+
+            .back-home-btn {
+                width: 54px;
+                height: 54px;
+                font-size: 26px;
+            }
+        }
+
+        @media (min-width: 2200px) {
+            .sidebar-nav {
+                width: 360px;
+            }
+
+            .content-section {
+                padding: 60px 80px;
+            }
+
+            .section-header {
+                font-size: 40px;
+                margin-bottom: 35px;
+            }
+
+            .stat-card {
+                padding: 42px;
+                font-size: 1.05em;
+            }
+
+            .home-title {
+                font-size: 64px;
+                margin-bottom: 40px;
+            }
+
+            .live-donors-scroll {
+                grid-template-columns: repeat(4, minmax(320px, 1fr));
+                gap: 18px;
+                padding: 16px;
+            }
+
+            .live-donor-card {
+                padding: 22px 26px;
+                min-height: 150px;
+                gap: 26px;
+            }
+
+            .live-donor-progress-circle-wrapper {
+                width: 120px;
+                height: 120px;
+                margin-left: 26px;
+            }
+
+            .live-donor-percentage {
+                font-size: 26px;
+            }
+
+            .live-donor-name {
+                font-size: 28px;
+            }
+
+            .live-donor-group,
+            .live-donor-amount {
+                font-size: 22px;
+            }
+
+            .live-leaders-sidebar {
+                width: 420px;
+                padding: 50px 38px;
+            }
+
+            .leaders-title {
+                font-size: 44px;
+            }
+        }
+
+        @media (min-width: 3000px) {
+            .sidebar-nav {
+                width: 420px;
+            }
+
+            .content-section {
+                padding: 80px 110px;
+            }
+
+            .section-header {
+                font-size: 46px;
+            }
+
+            .stat-card {
+                padding: 48px;
+                font-size: 1.1em;
+            }
+
+            .home-title {
+                font-size: 72px;
+            }
+
+            .live-donors-scroll {
+                grid-template-columns: repeat(5, minmax(340px, 1fr));
+                gap: 22px;
+            }
+
+            .live-donor-card {
+                padding: 26px 32px;
+                min-height: 170px;
+            }
+
+            .live-donor-progress-circle-wrapper {
+                width: 140px;
+                height: 140px;
+                margin-left: 30px;
+            }
+
+            .live-donor-percentage {
+                font-size: 30px;
+            }
+
+            .live-donor-name {
+                font-size: 32px;
+            }
+
+            .live-donor-group,
+            .live-donor-amount {
+                font-size: 24px;
+            }
+
+            .live-leaders-sidebar {
+                width: 480px;
+            }
+
+            .leaders-title {
+                font-size: 48px;
+            }
+        }
+
+        /* רספונסיבי */
+        @media (max-width: 1024px) {
+            .sidebar-nav {
+                width: 220px;
+            }
+
+            .groups-grid {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+
+            .live-leaders-sidebar {
+                width: 300px;
+            }
+        }
+        /* תמיכה במסכי טלוויזיה גדולים - Android TV */
+        @media (min-width: 1920px) {
+            .sidebar-nav {
+                max-width: 360px;
+                min-width: 320px;
+            }
+            
+            .nav-item {
+                padding: 28px 40px;
+                font-size: 26px;
+                min-height: 70px;
+            }
+            
+            .btn {
+                padding: 20px 40px;
+                font-size: 22px;
+                min-height: 60px;
+                min-width: 140px;
+            }
+            
+            .content-section {
+                padding: 60px;
+            }
+            
+            .form-group input,
+            .form-group select {
+                padding: 18px;
+                font-size: 20px;
+                min-height: 56px;
+            }
+        }
+
+        @media (min-width: 2560px) {
+            .sidebar-nav {
+                max-width: 400px;
+                min-width: 360px;
+            }
+            
+            .nav-item {
+                padding: 32px 48px;
+                font-size: 28px;
+                min-height: 80px;
+            }
+            
+            .btn {
+                padding: 24px 48px;
+                font-size: 24px;
+                min-height: 68px;
+                min-width: 160px;
+            }
+            
+            .content-section {
+                padding: 80px;
+            }
+            
+            .form-group input,
+            .form-group select {
+                padding: 20px;
+                font-size: 22px;
+                min-height: 64px;
+            }
+        }
+
+        /* תמיכה במסכים קטנים יותר (אם צריך) */
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+
+            .sidebar-nav {
+            width: 100%;
+                height: auto;
+                flex-direction: row;
+                border-left: none;
+                border-bottom: 4px solid var(--primary-gold);
+                max-width: 100%;
+                min-width: 100%;
+            }
+
+            .nav-menu {
+                display: flex;
+                flex-direction: row;
+                overflow-x: auto;
+            }
+
+            .nav-item {
+                padding: 18px 24px;
+                white-space: nowrap;
+                border-right: none;
+                border-bottom: 4px solid transparent;
+                min-height: 56px;
+            }
+
+            .nav-item.active {
+                border-bottom-color: var(--primary-gold);
+                border-right: none;
+            }
+
+            .nav-item.active::before {
+                display: none;
+            }
+
+            .logo-container {
+                padding: 15px;
+            }
+
+            .logo-img {
+                max-height: 60px;
+            }
+
+            .content-section {
+                padding: 20px;
+            }
+
+            .groups-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .management-reset-panel,
+        .liveview-settings-panel {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid var(--border);
+            box-shadow: 0 4px 16px rgba(212, 175, 55, 0.15);
+        }
+
+        .liveview-settings-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(260px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+            align-items: stretch;
+        }
+
+        .liveview-settings-grid .liveview-setting-group:nth-child(4) {
+            grid-column: 2 / span 1;
+        }
+
+        @media (max-width: 1200px) {
+            .liveview-settings-grid {
+                grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            }
+            .liveview-settings-grid .liveview-setting-group:nth-child(4) {
+                grid-column: auto;
+            }
+        }
+
+        .liveview-setting-group {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .liveview-setting-group h4 {
+            margin: 0 0 12px;
+            font-size: 16px;
+            color: var(--brown-dark);
+            font-weight: 600;
+        }
+
+        .liveview-setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 12px;
+        }
+
+        .liveview-setting-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .liveview-setting-row > label:first-child {
+            flex: 1;
+            font-size: 14px;
+            color: var(--brown-dark);
+            font-weight: 500;
+        }
+        
+        .liveview-setting-row .switch {
+            flex-shrink: 0;
+        }
+
+        .liveview-setting-row input[type="range"] {
+            flex: 2;
+            max-width: 200px;
+        }
+
+        .liveview-setting-row input[type="color"] {
+            width: 60px;
+            height: 36px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .liveview-setting-row input[type="number"] {
+            width: 80px;
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .liveview-setting-row select {
+            flex: 2;
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .liveview-setting-row select:hover {
+            border-color: var(--primary-gold);
+        }
+
+        .liveview-setting-row span {
+            min-width: 50px;
+            font-size: 14px;
+            color: var(--muted);
+            text-align: left;
+        }
+
+        .liveview-settings-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+        .management-reset-panel h3 {
+            margin: 0 0 12px;
+            font-size: 18px;
+            color: var(--brown-dark);
+        }
+
+        .reset-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .reset-actions .btn {
+            flex: 1 1 220px;
+        }
+
+        .reset-hint {
+            font-size: 12px;
+            color: var(--muted);
+            margin: 0;
+        }
+
+        .home-finance-panel {
+            margin-top: 30px;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 18px;
+            border: 2px solid var(--border);
+            box-shadow: 0 10px 34px rgba(212, 175, 55, 0.18);
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .home-finance-panel h2 {
+            margin: 0;
+            font-size: 26px;
+            text-align: center;
+            color: var(--brown-dark);
+        }
+
+        .finance-balance-row,
+        .finance-entry-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .finance-balance-row label {
+            font-weight: 600;
+            color: var(--brown-dark);
+        }
+
+        .finance-balance-row input {
+            width: 200px;
+            padding: 10px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .finance-entry-form input,
+        .finance-entry-form select {
+            padding: 10px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .finance-entry-form input[type="number"] {
+            width: 140px;
+        }
+
+        .finance-entry-form input[type="text"] {
+            min-width: 180px;
+        }
+
+        .finance-summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        .finance-summary-card {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.18), rgba(255, 255, 255, 0.95));
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            border-radius: 14px;
+            padding: 18px;
+            text-align: center;
+        }
+
+        .finance-summary-card h4 {
+            margin: 0 0 8px;
+            font-size: 16px;
+            color: var(--brown-dark);
+        }
+
+        .finance-summary-card span {
+            font-size: 20px;
+            font-weight: 700;
+            color: #007d8a;
+        }
+
+        .finance-entries-list {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .finance-entry-item {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 10px;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.92);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-size: 13px;
+        }
+
+        .finance-entry-item:last-child {
+            border-bottom: none;
+        }
+        .finance-entry-type.expense {
+            color: #d62828;
+            font-weight: 600;
+        }
+
+        .finance-entry-empty {
+            text-align: center;
+            padding: 18px;
+            color: var(--muted);
+        }
+
+        .finance-entry-item button {
+            border: none;
+            background: rgba(239, 68, 68, 0.88);
+            color: #fff;
+            border-radius: 8px;
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .finance-entry-item button:hover {
+            background: rgba(220, 38, 38, 0.95);
+        }
+
+        .finance-entry-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+            text-align: left;
+        }
+
+        .finance-entry-meta small {
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .finance-controls-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .finance-controls-row .btn-secondary {
+            background: rgba(107, 114, 128, 0.9);
+        }
+
+        .finance-controls-row .btn-secondary:hover {
+            background: rgba(75, 85, 99, 0.95);
+        }
+
+        .finance-analytics {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .finance-analytics-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .finance-analytics-header h3 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--brown-dark);
+        }
+
+        .finance-analytics-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .finance-analytics-filters select,
+        .finance-analytics-filters button {
+            padding: 8px 12px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 13px;
+            background: #fff;
+        }
+
+        .finance-analytics-filters button {
+            background: var(--primary-gold);
+            color: var(--brown-dark);
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .finance-analytics-filters button:hover {
+            background: var(--primary-gold-dark);
+            color: #fff;
+        }
+
+        .finance-analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+        }
+        .finance-table {
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(212, 175, 55, 0.15);
+        }
+
+        .finance-table h4 {
+            margin: 0;
+            padding: 12px 16px;
+            background: rgba(212, 175, 55, 0.15);
+            font-size: 16px;
+            color: var(--brown-dark);
+        }
+        .finance-table table {
+            width: 100%;
+            border-collapse: collapse;
+            direction: rtl;
+        }
+        .finance-table th,
+        .finance-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-size: 13px;
+            text-align: right;
+        }
+
+        .finance-table tbody tr:nth-child(odd) {
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .finance-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .donors-summary {
+            margin: 10px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+        }
+
+        .donors-summary-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            box-shadow: 0 4px 14px rgba(212, 175, 55, 0.16);
+        }
+
+        .donors-summary-card h4 {
+            margin: 0 0 6px;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .donors-summary-card span {
+            font-size: 18px;
+            font-weight: 700;
+            color: #007d8a;
+        }
+
+        .donors-summary-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .donor-history {
+            margin-top: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+            padding: 10px;
+            display: none;
+        }
+
+        .donor-history.active {
+            display: block;
+        }
+
+        .donor-history table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+
+        .donor-history th,
+        .donor-history td {
+            font-size: 12px;
+            padding: 6px 8px;
+            text-align: right;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .donor-history tbody tr:nth-child(odd) {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .donor-history-footer {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .donor-history-empty {
+            text-align: center;
+            color: var(--muted);
+            padding: 8px 0;
+        }
+
+        .btn-small {
+            padding: 12px 20px;
+            font-size: clamp(14px, 0.9vw, 16px);
+            min-height: 44px;
+            min-width: 100px;
+        }
+
+        /* מערכת הגרלות מפוארת */
+        .raffle-section {
+            background: linear-gradient(135deg, rgba(245, 230, 211, 0.95) 0%, rgba(255, 248, 220, 0.95) 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-lock-overlay hidden" id="appLockOverlay" role="dialog" aria-modal="true" aria-labelledby="appLockTitle">
+        <div class="app-lock-dialog">
+            <h2 id="appLockTitle">כניסת מנהל</h2>
+            <p>המערכת נעולה. הזן את סיסמת הניהול כדי להמשיך לעבוד.</p>
+            <input type="password" id="appLockPasswordInput" class="app-lock-password-input" placeholder="סיסמה" autocomplete="current-password" onkeydown="handleAppLockKeyDown(event)">
+            <div class="app-lock-actions">
+                <button class="btn" type="button" onclick="handleAppLockSubmit()">כניסה</button>
+            </div>
+            <p class="app-lock-error" id="appLockError"></p>
+        </div>
+    </div>
+    <div class="app-container">
+        <!-- תפריט ניווט בצד -->
+        <nav class="sidebar-nav">
+            <div class="logo-container">
+                <img src="http://i.postimg.cc/ZRMCLxgW/wgw-t-t-dhws.png" alt="לוגו תומכי תורה" class="logo-img" id="logoImg">
+            </div>
+            <div class="nav-menu">
+                <button class="nav-item active" data-section="home">דף הבית</button>
+                <button class="nav-item" data-section="liveview">תצוגה בלייב</button>
+                <button class="nav-item" data-section="breakdown">פילוח נתונים</button>
+                <button class="nav-item" data-section="management">ניהול</button>
+                <button class="nav-item" data-section="raffle">מערכת הגרלות</button>
+                <button class="nav-item" data-section="scouts">ניהול סיירות</button>
+                <button class="nav-item" data-section="toolkit">ארגז כלים לתתני״ק הצעיר</button>
+                <button class="nav-item" data-section="finance">חישוב לכל השנה</button>
+                <button class="nav-item" data-section="planning">תכנון קמפיין לשנים הבאות</button>
+                <button class="nav-item" data-section="groomGrant">מענק לחתנים</button>
+                <button class="nav-item" data-section="grants">קבלת מענקים למתרמים</button>
+                <button class="nav-item" data-section="addresses">כתובות</button>
+                <button class="nav-item" data-section="instructions">הוראות שימוש בתוכנה</button>
+                </div>
+        </nav>
+
+    <!-- Supabase (שלב 1): טעינת SDK דרך CDN + קונפיג בסיסי -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // ניתן לשים כאן את הערכים האמיתיים כשיהיו מוכנים
+        // חשוב: אלו מפתחות ציבוריים (anon) בלבד; אין לשים סודות צד־שרת בקוד לקוח
+        window.SUPABASE_URL = window.SUPABASE_URL || '';
+        window.SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || '';
+    </script>
+    <script>
+        (function initSupabaseRealtime() {
+            if (!window.supabase || !window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) {
+                console.info('[Supabase] לא מאותחל (אין מפתחות/SDK). המערכת ממשיכה מקומית כרגיל.');
+                return;
+            }
+            const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+            window.__supabase = supabase;
+            console.info('[Supabase] מחובר, מפעיל Realtime…');
+            
+            // מנוי ריל-טיים לטבלאות בסיס: donations, donors, groups
+            const channel = supabase.channel('ohel-torah-realtime')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'donations' }, (payload) => {
+                    try {
+                        // רענון תצוגת לייב/מובילים אם קיימות הפונקציות
+                        if (typeof updateLiveView === 'function') updateLiveView();
+                        if (typeof updateLeadersList === 'function') updateLeadersList();
+                    } catch (e) { console.warn('Realtime donations update error', e); }
+                })
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'donors' }, (payload) => {
+                    try {
+                        if (typeof updateDonorsList === 'function') updateDonorsList();
+                        if (typeof updateLiveView === 'function') updateLiveView();
+                    } catch (e) { console.warn('Realtime donors update error', e); }
+                })
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'groups' }, (payload) => {
+                    try {
+                        if (typeof updateGroupsDisplay === 'function') updateGroupsDisplay();
+                        if (typeof updateLiveView === 'function') updateLiveView();
+                    } catch (e) { console.warn('Realtime groups update error', e); }
+                })
+                .subscribe((status) => {
+                    console.info('[Supabase] Realtime status:', status);
+                });
+        })();
+    </script>
+        <!-- אזור תוכן -->
+        <div class="content-area">
+            <!-- דף הבית -->
+            <section class="content-section home-section active" id="homeSection">
+                <div class="home-content">
+                    <div class="stats-grid" id="homeStats">
+                        <!-- יוטען דינמית -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- פילוח נתונים -->
+            <section class="content-section breakdown-section" id="breakdownSection">
+                <div class="home-donor-breakdown" id="homeDonorBreakdown">
+                    <div class="home-donor-header">
+                        <h2>פילוח תרומות לפי מצב יעד</h2>
+                    </div>
+                    <div class="home-donor-filter-grid" id="homeDonorFilterGrid">
+                        <div class="home-donor-filter-card status-none" data-highlight="none">
+                            <div class="home-donor-filter-card-info">
+                                <span class="home-donor-filter-title">לא תרמו</span>
+                                <span class="home-donor-filter-count" data-count-for="none">סה"כ: 0</span>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" class="home-donor-filter-toggle" data-highlight="none">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                        <div class="home-donor-filter-card status-progress" data-highlight="progress">
+                            <div class="home-donor-filter-card-info">
+                                <span class="home-donor-filter-title">אספו אך לא הגיעו ליעד</span>
+                                <span class="home-donor-filter-count" data-count-for="progress">סה"כ: 0</span>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" class="home-donor-filter-toggle" data-highlight="progress">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                        <div class="home-donor-filter-card status-met" data-highlight="met">
+                            <div class="home-donor-filter-card-info">
+                                <span class="home-donor-filter-title">עמדו ביעד</span>
+                                <span class="home-donor-filter-count" data-count-for="met">סה"כ: 0</span>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" class="home-donor-filter-toggle" data-highlight="met">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                        <div class="home-donor-filter-card status-exceeded" data-highlight="exceeded">
+                            <div class="home-donor-filter-card-info">
+                                <span class="home-donor-filter-title">עברו את היעד</span>
+                                <span class="home-donor-filter-count" data-count-for="exceeded">סה"כ: 0</span>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" class="home-donor-filter-toggle" data-highlight="exceeded">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="home-donor-actions">
+                        <div class="home-donor-export">
+                            <button class="btn btn-secondary" onclick="exportBreakdownToExcel()" id="exportBreakdownBtn" disabled>
+                                ייצוא לאקסל – מודגשים בלבד
+                            </button>
+                        </div>
+                        <div class="home-donor-toggle" id="homeDonorSortToggleWrapper">
+                            <span>מודגשים בראש הרשימה</span>
+                            <label class="switch">
+                                <input type="checkbox" id="homeDonorSortToggle">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="home-donor-list" id="homeDonorBreakdownList">
+                        <!-- יוטען דינמית -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- מערכת הגרלות -->
+            <section class="content-section raffle-section" id="raffleSection">
+                <div class="instructions-panel">
+                    <h2>מערכת הגרלות</h2>
+                    <p>לחץ על הקישור הבא לפתיחת מערכת ההגרלות החיצונית:</p>
+                    <div class="external-action-card">
+                        <div class="external-action-content">
+                            <span class="external-action-label">הפעל את</span>
+                            <strong class="external-action-title">מגריל ההגרלות</strong>
+                            <p class="external-action-note">כלי אינטואיטיבי לניהול ההגרלה שלך, עם ייבוא רשימות ותצוגה מרשימה.</p>
+                        </div>
+                        <a class="external-action-button" href="https://abaye.co/LotteryGenerator/" target="_blank" rel="noopener noreferrer">
+                            לחץ כאן למעבר
+                        </a>
+                    </div>
+                </div>
+            </section>
+            <!-- ניהול סיירות -->
+            <section class="content-section instructions-section" id="scoutsSection">
+                <div class="scouts-section-panel">
+                    <div class="scouts-hero">
+                        <div class="scouts-hero-card accent">
+                            <div class="scouts-header-text">
+                                <h2>ניהול סירת פורים</h2>
+                                <p>מרכז שליטה אלגנטי לסירות השטח: תכננו צוותים, נטרו כפילויות, נהלו יעד עיר וחווו אינטראקציה חכמה ונוחה לכל מנהלי הקמפיין.</p>
+                                <span class="scouts-guideline">טיפ: הגדירו יעד אישי לכל מתרים ושמרו על שקיפות מלאה בימי הפורים.</span>
+                            </div>
+                        </div>
+                        <div class="scouts-hero-card">
+                            <span class="scouts-stats-title">מדדי סירת השטח</span>
+                            <div class="scouts-stats" id="scoutsStats"></div>
+                        </div>
+                    </div>
+                    <div class="scouts-toolbar">
+                    <div class="scouts-day-switch" id="scoutsDaySwitch">
+                        <button type="button" data-day="day14" class="active">יום י״ד באדר</button>
+                        <button type="button" data-day="day15">יום ט״ו באדר</button>
+                    </div>
+                        <div class="scouts-actions">
+                        <button class="btn btn-small" type="button" onclick="scoutsAddTeam()">הוסף סירת </button>
+                        </div>
+                    </div>
+                    <div class="scouts-teams-list" id="scoutsTeamsContainer"></div>
+                    <datalist id="scoutDonorSuggestions"></datalist>
+                </div>
+            </section>
+
+            <!-- ארגז כלים לתתני״ק הצעיר -->
+            <section class="content-section instructions-section" id="toolkitSection">
+                <div class="instructions-panel">
+                    <h2>ארגז כלים לתתני״ק הצעיר</h2>
+                    <div class="toolkit-tips-manager">
+                        <h3>טיפים מהשטח</h3>
+                        <p class="toolkit-tip-hint">הוסיפו כאן טיפים קצרים שיסייעו למגייסים הצעירים. הטיפים נשמרים מקומית וניתן לעדכן או להסיר אותם בכל עת.</p>
+                        <div class="toolkit-tips-list" id="toolkitTipsList"></div>
+                        <div class="toolkit-tip-form">
+                            <label for="toolkitTipInput">הוספת טיפ חדש</label>
+                            <textarea id="toolkitTipInput" placeholder="לדוגמה: פתחו בשיחה אישית קצרה לפני שבקשת התרומה עצמה" maxlength="400"></textarea>
+                            <div class="toolkit-tips-actions">
+                                <button type="button" class="btn btn-small" id="toolkitAddTipButton">הוסף טיפ</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- קבלת מענקים למתרמים -->
+            <section class="content-section instructions-section" id="grantsSection">
+                <div class="instructions-panel">
+                    <h2>קבלת מענקים למתרמים</h2>
+                    <p>המדור מרכז את תהליך הגשת הבקשות למענקים, ניהול קריטריונים ואישור ההטבות למתרימים העומדים באמות המידה של הארגון.</p>
+
+                    <div class="instructions-grid">
+                        <div class="instructions-card">
+                            <h3>מסגרת המענק</h3>
+                            <ol>
+                                <li>הזכאות מיועדת למתרימים שעמדו ביעד האישי שלהם בכל שנות הפעילות.</li>
+                                <li>הזכאות נבחנת בעת נישואי המתרימים בלבד, לאחר אימות רשמי של הגעה ליעדים בכל שנה.</li>
+                                <li>המענק מורכב משני חלקים: 10% מכלל הסכומים שגייס המתרים לאורך השנים, ותוספת קבועה של 3,500 ש״ח.</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div class="instructions-note">
+                        <strong>חשוב:</strong> כל הענקת מענקים מתבצעת בפועל בהנחיית מורנו ראש הישיבה שליט״א, ולאחר קבלת אישורו הסופי.
+                    </div>
+                </div>
+            </section>
+
+            <!-- מענק לחתנים -->
+            <section class="content-section groom-grant-section" id="groomGrantSection">
+                <div class="groom-grant-panel">
+                    <div class="groom-grant-header">
+                        <h2>מענק לחתנים</h2>
+                        <p>נהל מעקב אחר גיוסי החתנים לאורך השנים, קבע יעדים שנתיים ובדוק מתי מגיע להם הבונוס לחתן. החישוב משלב 10% מהסכום המצטבר ובונוס קבוע של 3,500 ש״ח אם כל היעדים הושגו.</p>
+                    </div>
+                    <div class="groom-grant-actions">
+                        <button type="button" class="btn btn-secondary btn-small" onclick="exportGroomGrantsToExcel()">ייצוא נתוני חתנים לאקסל</button>
+                    </div>
+                    <div class="groom-grant-form" id="groomGrantForm">
+                        <div class="groom-grant-form-fields">
+                            <input type="text" id="groomGrantNameInput" placeholder="שם החתן" autocomplete="off">
+                            <button type="button" class="btn" onclick="addGroomGrant()">הוסף חתן</button>
+                        </div>
+                        <p class="groom-grant-hint">לאחר הוספת החתן הוסיפו שורות סכומים – התוכנה תחשב אוטומטית 10% ועוד בונוס קבוע של 3,500 ש״ח.</p>
+                    </div>
+                    <div class="groom-grant-list" id="groomGrantList">
+                        <!-- ימולא דינמית -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- חישוב לכל השנה -->
+            <section class="content-section finance-section" id="financeSection">
+                <div class="home-finance-panel">
+                    <h2>חישוב לכל השנה</h2>
+                    <div class="finance-balance-row">
+                        <label for="financeCurrentBalanceInput">סכום נוכחי בקופה</label>
+                        <input type="number" id="financeCurrentBalanceInput" placeholder="₪" min="0" step="1">
+                        <button class="btn" onclick="updateFinanceBalance()">עדכן</button>
+                    </div>
+                    <div class="finance-entry-form">
+                        <select id="financeEntryType">
+                            <option value="income">הכנסה</option>
+                            <option value="expense">הוצאה</option>
+                        </select>
+                        <input type="text" id="financeEntryCategory" placeholder="סוג הוצאה / הכנסה">
+                        <input type="number" id="financeEntryAmount" placeholder="סכום ₪" min="0" step="1">
+                        <input type="text" id="financeEntryNote" placeholder="הערה (לא חובה)">
+                        <button class="btn" onclick="addFinanceEntry()">הוסף רשומה</button>
+                    </div>
+                    <div class="finance-summary-cards" id="financeSummary">
+                        <!-- יוטען דינמית -->
+                    </div>
+                    <div class="finance-analytics">
+                        <div class="finance-analytics-header">
+                            <h3>ניתוח ההכנסות וההוצאות</h3>
+                            <div class="finance-analytics-filters">
+                                <select id="financeFilterType" onchange="onFinanceFilterChange()">
+                                    <option value="all">כל הסוגים</option>
+                                    <option value="income">הכנסות בלבד</option>
+                                    <option value="expense">הוצאות בלבד</option>
+                                </select>
+                                <select id="financeFilterYear" onchange="onFinanceFilterChange()">
+                                    <option value="all">כל השנים</option>
+                                </select>
+                                <button onclick="exportFinanceToExcel()">ייצוא לאקסל</button>
+                            </div>
+                        </div>
+                        <div class="finance-analytics-grid">
+                            <div class="finance-table" id="financeCategoryBreakdown">
+                                <!-- יוטען דינמית -->
+                            </div>
+                            <div class="finance-table" id="financeMonthlyBreakdown">
+                                <!-- יוטען דינמית -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="finance-entries-list" id="financeEntriesList">
+                        <!-- יוטען דינמית -->
+                    </div>
+                    <div class="finance-controls-row">
+                        <button class="btn btn-secondary" onclick="clearFinanceEntries()">אפס רשומות שנה</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- מדור ניהול -->
+            <section class="content-section management-section" id="managementSection">
+                <h2 class="section-header">ניהול מתרימים וקבוצות</h2>
+                
+                <div class="default-goal-panel">
+                    <label for="defaultDonorGoalInput">יעד ברירת מחדל לכל מתרים</label>
+                    <div class="default-goal-controls">
+                        <input type="number" id="defaultDonorGoalInput" min="1" step="1" placeholder="לדוגמה: 2100">
+                        <button class="btn" onclick="updateDefaultDonorGoal()">עדכן יעד כללי</button>
+                    </div>
+                    <div class="default-goal-note">השינוי ישפיע על מתרימים חדשים ויעדכן מתרימים קיימים שמשתמשים ביעד ברירת המחדל.</div>
+                </div>
+                
+                <div class="management-tabs">
+                    <button class="management-tab active" data-tab="groups">ניהול קבוצות</button>
+                    <button class="management-tab" data-tab="donors">ניהול מתרימים</button>
+                    <button class="management-tab" data-tab="liveview">הגדרות תצוגת לייב</button>
+                    <button type="button" class="management-tab management-calculator-trigger" onclick="toggleManagementCalculator()">
+                        מחשבון
+                    </button>
+                    <button class="management-tab" data-tab="reset">אפשרויות איפוס</button>
+                    <button class="management-tab" data-tab="password">הגדרת סיסמה</button>
+                </div>
+
+                <div class="management-calculator-panel" id="managementCalculatorPanel">
+                    <div class="management-calculator-display" id="managementCalculatorDisplay">0</div>
+                    <div class="management-calculator-grid">
+                        <button onclick="managementCalcInput('7')">7</button>
+                        <button onclick="managementCalcInput('8')">8</button>
+                        <button onclick="managementCalcInput('9')">9</button>
+                        <button class="operator" onclick="managementCalcInput('/')">÷</button>
+                        <button onclick="managementCalcInput('4')">4</button>
+                        <button onclick="managementCalcInput('5')">5</button>
+                        <button onclick="managementCalcInput('6')">6</button>
+                        <button class="operator" onclick="managementCalcInput('*')">×</button>
+                        <button onclick="managementCalcInput('1')">1</button>
+                        <button onclick="managementCalcInput('2')">2</button>
+                        <button onclick="managementCalcInput('3')">3</button>
+                        <button class="operator" onclick="managementCalcInput('-')">−</button>
+                        <button onclick="managementCalcInput('0')">0</button>
+                        <button onclick="managementCalcInput('.')">.</button>
+                        <button onclick="managementCalcClear()">C</button>
+                        <button class="operator" onclick="managementCalcInput('+')">+</button>
+                        <button class="span-two" onclick="managementCalcCalculate()">=</button>
+                    </div>
+                </div>
+
+                <!-- ניהול קבוצות -->
+                <div class="management-content active" id="groupsContent">
+                    <div class="management-actions-row">
+                        <button class="btn" onclick="addNewGroup()">הוסף קבוצה חדשה</button>
+                    </div>
+                    <div class="groups-grid" id="groupsGrid">
+                        <!-- יוטען דינמית -->
+                    </div>
+                </div>
+
+                <!-- ניהול מתרימים -->
+                <div class="management-content" id="donorsContent">
+                    <div class="donors-management">
+                        <div class="donors-search-bar">
+                            <div class="donors-search-input-wrapper">
+                                <input type="text" id="donorSearchInput" class="donors-search-input" placeholder="חיפוש מתרימים לפי שם, קבוצה או סכום">
+                                <button type="button" id="donorSearchClear" class="donor-search-clear" aria-label="נקה חיפוש">×</button>
+                            </div>
+                            <div class="donors-search-hint">אפשר להזין חלק מהשם, שם קבוצה או מספר. ניתן לחפש כמה מילים יחד.</div>
+                            <div class="donors-summary" id="donorsSummary"></div>
+                            <div class="donors-summary-actions">
+                                <button class="btn btn-secondary btn-small" onclick="exportDonorsHistoryToExcel()">ייצוא היסטוריה לאקסל</button>
+                            </div>
+                            <div class="donors-search-meta" id="donorsSearchMeta"></div>
+                        </div>
+                        <div class="donors-list" id="donorsListContainer">
+                            <!-- יוטען דינמית -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- אפשרויות איפוס -->
+                <div class="management-content" id="resetContent">
+                    <div class="management-reset-panel">
+                        <h3>כלי ניקוי מהירים</h3>
+                        <div class="reset-actions">
+                            <button class="btn" onclick="confirmResetDonationSums()">איפוס סכומי תרומות</button>
+                            <button class="btn btn-danger" onclick="confirmClearDonors()">מחק את כל המתרימים</button>
+                            <button class="btn btn-secondary" onclick="confirmResetApp()">איפוס מלא של המערכת</button>
+                        </div>
+                        <p class="reset-hint">שימוש בזהירות: הפעולות אינן ניתנות לשחזור.</p>
+                    </div>
+                </div>
+
+                <!-- הגדרות תצוגת לייב -->
+                <div class="management-content" id="liveviewContent">
+                    <div class="liveview-settings-panel">
+                        <h3>הגדרות תצוגת לייב</h3>
+                        <p style="color: var(--muted); margin-bottom: 20px;">הגדר את אופן התצוגה במסך הלייב - צבעים, גדלים, מה להציג ועוד</p>
+                        
+                        <div class="liveview-settings-grid">
+                            <div class="liveview-setting-group">
+                                <h4>צבע רקע</h4>
+                                <div class="liveview-setting-row">
+                                    <label>צבע רקע ראשי:</label>
+                                    <input type="color" id="liveviewBgColor" value="#f5e6d3" onchange="updateLiveViewSettings()">
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>צבע רקע משני:</label>
+                                    <input type="color" id="liveviewBgColor2" value="#fff8dc" onchange="updateLiveViewSettings()">
+                                </div>
+                            </div>
+
+                            <div class="liveview-setting-group">
+                                <h4>גודל פונטים</h4>
+                                <div class="liveview-setting-row">
+                                    <label>גודל כותרת מובילים:</label>
+                                    <input type="range" id="liveviewTitleSize" min="24" max="48" value="32" oninput="updateLiveViewSettings()">
+                                    <span id="liveviewTitleSizeValue">32px</span>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>גודל שם מתרים:</label>
+                                    <input type="range" id="liveviewDonorNameSize" min="14" max="28" value="18" oninput="updateLiveViewSettings()">
+                                    <span id="liveviewDonorNameSizeValue">18px</span>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>גודל סכום:</label>
+                                    <input type="range" id="liveviewAmountSize" min="14" max="32" value="14" oninput="updateLiveViewSettings()">
+                                    <span id="liveviewAmountSizeValue">14px</span>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>גודל שם קבוצה:</label>
+                                    <input type="range" id="liveviewGroupNameSize" min="18" max="36" value="28" oninput="updateLiveViewSettings()">
+                                    <span id="liveviewGroupNameSizeValue">28px</span>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>גודל שם קבוצה במתרים:</label>
+                                    <input type="range" id="liveviewDonorGroupSize" min="12" max="20" value="13" oninput="updateLiveViewSettings()">
+                                    <span id="liveviewDonorGroupSizeValue">13px</span>
+                                </div>
+                            </div>
+
+                            <div class="liveview-setting-group">
+                                <h4>צבעי טקסט</h4>
+                                <div class="liveview-setting-row">
+                                    <label>צבע שם מתרים:</label>
+                                    <input type="color" id="liveviewDonorNameColor" value="#3d2f1f" onchange="updateLiveViewSettings()">
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>צבע סכום:</label>
+                                    <input type="color" id="liveviewAmountColor" value="#3d2f1f" onchange="updateLiveViewSettings()">
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>צבע שם קבוצה:</label>
+                                    <input type="color" id="liveviewGroupNameColor" value="#3d2f1f" onchange="updateLiveViewSettings()">
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>צבע כותרת מובילים:</label>
+                                    <input type="color" id="liveviewLeadersTitleColor" value="#3d2f1f" onchange="updateLiveViewSettings()">
+                                </div>
+                            </div>
+
+                            <div class="liveview-setting-group">
+                                <h4>צבעי רקע וכרטיסיות</h4>
+                                <div class="liveview-setting-row">
+                                    <label>צבע רקע כרטיסית מתרים:</label>
+                                    <input type="color" id="liveviewDonorCardBg" value="#ffffff" onchange="updateLiveViewSettings()">
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>שקיפות כרטיסית מתרים:</label>
+                                    <input type="range" id="liveviewDonorCardOpacity" min="0" max="100" value="92" oninput="updateLiveViewSettings()">
+                                    <span id="liveviewDonorCardOpacityValue">92%</span>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>צבע רקע כרטיסית מוביל:</label>
+                                    <input type="color" id="liveviewLeaderCardBg" value="#ffffff" onchange="updateLiveViewSettings()">
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>צבע רקע כותרת קבוצה:</label>
+                                    <input type="color" id="liveviewGroupHeaderBg" value="#ffffff" onchange="updateLiveViewSettings()">
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>שקיפות כותרת קבוצה:</label>
+                                    <input type="range" id="liveviewGroupHeaderOpacity" min="0" max="100" value="92" oninput="updateLiveViewSettings()">
+                                    <span id="liveviewGroupHeaderOpacityValue">92%</span>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>צבע רקע כרטיסית סיכום:</label>
+                                    <input type="color" id="liveviewSummaryCardBg" value="#ffffff" onchange="updateLiveViewSettings()">
+                                </div>
+                            </div>
+
+                            <div class="liveview-setting-group">
+                                <h4>גבולות וצללים</h4>
+                                <div class="liveview-setting-row">
+                                    <label>עובי גבול כרטיסיות:</label>
+                                    <input type="range" id="liveviewCardBorderWidth" min="0" max="5" value="3" oninput="updateLiveViewSettings()">
+                                    <span id="liveviewCardBorderWidthValue">3px</span>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>צבע גבול כרטיסיות:</label>
+                                    <input type="color" id="liveviewCardBorderColor" value="#D4AF37" onchange="updateLiveViewSettings()">
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>רדיוס פינות כרטיסיות:</label>
+                                    <input type="range" id="liveviewCardBorderRadius" min="0" max="30" value="18" oninput="updateLiveViewSettings()">
+                                    <span id="liveviewCardBorderRadiusValue">18px</span>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>עוצמת צל כרטיסיות:</label>
+                                    <input type="range" id="liveviewCardShadow" min="0" max="20" value="12" oninput="updateLiveViewSettings()">
+                                    <span id="liveviewCardShadowValue">12px</span>
+                                </div>
+                            </div>
+
+                            <div class="liveview-setting-group">
+                                <h4>מרווחים ופדינג</h4>
+                                <div class="liveview-setting-row">
+                                    <label>מרווח בין מתרימים:</label>
+                                    <input type="range" id="liveviewDonorGap" min="0" max="40" value="0" oninput="updateLiveViewSettings()">
+                                    <span id="liveviewDonorGapValue">0px</span>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>מרווח בין קבוצות:</label>
+                                    <input type="range" id="liveviewGroupGap" min="0" max="60" value="0" oninput="updateLiveViewSettings()">
+                                    <span id="liveviewGroupGapValue">0px</span>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>פדינג כרטיסית מתרים:</label>
+                                    <input type="range" id="liveviewDonorCardPadding" min="8" max="30" value="14" oninput="updateLiveViewSettings()">
+                                    <span id="liveviewDonorCardPaddingValue">14px</span>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>פדינג כרטיסית מוביל:</label>
+                                    <input type="range" id="liveviewLeaderCardPadding" min="8" max="30" value="12" oninput="updateLiveViewSettings()">
+                                    <span id="liveviewLeaderCardPaddingValue">12px</span>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>מרווח בין כרטיסיות מובילים:</label>
+                                    <input type="range" id="liveviewLeadersGap" min="0" max="40" value="14" oninput="updateLiveViewSettings()">
+                                    <span id="liveviewLeadersGapValue">14px</span>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>מרווח לפני כרטיסית סיכום:</label>
+                                    <input type="range" id="liveviewSummaryCardGap" min="0" max="60" value="28" oninput="updateLiveViewSettings()">
+                                    <span id="liveviewSummaryCardGapValue">28px</span>
+                                </div>
+                            </div>
+
+                            <div class="liveview-setting-group">
+                                <h4>פס התקדמות</h4>
+                                <div class="liveview-setting-row">
+                                    <label>צבע פס התקדמות:</label>
+                                    <input type="color" id="liveviewProgressColor" value="#b9f6ab" onchange="updateLiveViewSettings()">
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>צבע רקע פס התקדמות:</label>
+                                    <input type="color" id="liveviewProgressBgColor" value="#ededed" onchange="updateLiveViewSettings()">
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>גובה פס התקדמות:</label>
+                                    <input type="range" id="liveviewProgressHeight" min="4" max="30" value="26" oninput="updateLiveViewSettings()">
+                                    <span id="liveviewProgressHeightValue">26px</span>
+                                </div>
+                            </div>
+
+                            <div class="liveview-setting-group">
+                                <h4>עיגול התקדמות</h4>
+                                <div class="liveview-setting-row">
+                                    <label>גודל עיגול התקדמות:</label>
+                                    <input type="range" id="liveviewProgressCircleSize" min="40" max="120" value="80" oninput="updateLiveViewSettings()">
+                                    <span id="liveviewProgressCircleSizeValue">80px</span>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>עובי עיגול התקדמות:</label>
+                                    <input type="range" id="liveviewProgressCircleWidth" min="4" max="16" value="6" oninput="updateLiveViewSettings()">
+                                    <span id="liveviewProgressCircleWidthValue">6px</span>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>צבע עיגול התקדמות:</label>
+                                    <input type="color" id="liveviewProgressCircleColor" value="#D4AF37" onchange="updateLiveViewSettings()">
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>צבע רקע עיגול:</label>
+                                    <input type="color" id="liveviewProgressCircleBgColor" value="#e5e7eb" onchange="updateLiveViewSettings()">
+                                </div>
+                            </div>
+
+                            <div class="liveview-setting-group">
+                                <h4>גדלי אזורים</h4>
+                                <div class="liveview-setting-row">
+                                    <label>רוחב עמודת מובילים (%):</label>
+                                    <input type="range" id="liveviewLeadersWidth" min="20" max="50" value="25" oninput="updateLiveViewSettings()">
+                                    <span id="liveviewLeadersWidthValue">25%</span>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>רוחב אזור מתרימים (%):</label>
+                                    <input type="range" id="liveviewDonorsWidth" min="50" max="80" value="75" oninput="updateLiveViewSettings()">
+                                    <span id="liveviewDonorsWidthValue">75%</span>
+                                </div>
+                            </div>
+
+                            <div class="liveview-setting-group">
+                                <h4>אנימציות</h4>
+                                <div class="liveview-setting-row">
+                                    <label>מהירות אנימציות:</label>
+                                    <input type="range" id="liveviewAnimationSpeed" min="0.1" max="2" step="0.1" value="1" oninput="updateLiveViewSettings()">
+                                    <span id="liveviewAnimationSpeedValue">1x</span>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label class="switch-label">
+                                        <input type="checkbox" id="liveviewEnableHoverEffects" checked onchange="updateLiveViewSettings()">
+                                        <span>הפעל אפקטי hover</span>
+                                    </label>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label class="switch-label">
+                                        <input type="checkbox" id="liveviewEnableTransitions" checked onchange="updateLiveViewSettings()">
+                                        <span>הפעל מעברים חלקים</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="liveview-setting-group">
+                                <h4>מה להציג</h4>
+                                <div class="liveview-setting-row">
+                                    <label>הצג עמודת מובילים:</label>
+                                    <label class="switch">
+                                        <input type="checkbox" id="liveviewShowLeaders" checked onchange="updateLiveViewSettings()">
+                                        <span class="switch-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>הצג רשימת מתרימים:</label>
+                                    <label class="switch">
+                                        <input type="checkbox" id="liveviewShowDonors" checked onchange="updateLiveViewSettings()">
+                                        <span class="switch-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>הצג כרטיסית סיכום כללי:</label>
+                                    <label class="switch">
+                                        <input type="checkbox" id="liveviewShowSummary" checked onchange="updateLiveViewSettings()">
+                                        <span class="switch-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>הסתר עמודת מובילים והצג שני טורים:</label>
+                                    <label class="switch">
+                                        <input type="checkbox" id="liveviewHideLeadersColumn" onchange="updateLiveViewSettings()">
+                                        <span class="switch-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="liveview-setting-group">
+                                <h4>מהירות גלילה</h4>
+                                <div class="liveview-setting-row">
+                                    <label>מהירות גלילת מתרימים:</label>
+                                    <input type="range" id="liveviewDonorsScrollSpeed" min="10" max="100" value="50" oninput="updateLiveViewSettings()">
+                                    <span id="liveviewDonorsScrollSpeedValue">50</span>
+                                </div>
+                            </div>
+
+                            <div class="liveview-setting-group">
+                                <h4>סדר הצגת קבוצות</h4>
+                                <div class="liveview-setting-row">
+                                    <label>מיין קבוצות לפי:</label>
+                                    <select id="liveviewGroupsSortBy" onchange="updateLiveViewSettings()">
+                                        <option value="name">שם (א-ב)</option>
+                                        <option value="collected">סכום שנאסף (גבוה לנמוך)</option>
+                                        <option value="collected-asc">סכום שנאסף (נמוך לגבוה)</option>
+                                        <option value="percentage">אחוז היעד (גבוה לנמוך)</option>
+                                        <option value="percentage-asc">אחוז היעד (נמוך לגבוה)</option>
+                                        <option value="goal">יעד הקבוצה (גבוה לנמוך)</option>
+                                        <option value="goal-asc">יעד הקבוצה (נמוך לגבוה)</option>
+                                    </select>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>הצג רק קבוצות:</label>
+                                    <select id="liveviewGroupsFilter" onchange="updateLiveViewSettings()">
+                                        <option value="all">כל הקבוצות</option>
+                                        <option value="with-donors">עם מתרימים</option>
+                                        <option value="met-goal">שעמדו ביעד</option>
+                                        <option value="not-met-goal">שלא עמדו ביעד</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="liveview-setting-group">
+                                <h4>סדר הצגת מתרימים</h4>
+                                <div class="liveview-setting-row">
+                                    <label>מיין מתרימים לפי:</label>
+                                    <select id="liveviewDonorsSortBy" onchange="updateLiveViewSettings()">
+                                        <option value="name">שם (א-ב)</option>
+                                        <option value="amount">סכום (גבוה לנמוך)</option>
+                                        <option value="amount-asc">סכום (נמוך לגבוה)</option>
+                                        <option value="percentage">אחוז היעד (גבוה לנמוך)</option>
+                                        <option value="percentage-asc">אחוז היעד (נמוך לגבוה)</option>
+                                    </select>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>הצג רק מתרימים:</label>
+                                    <select id="liveviewDonorsFilter" onchange="updateLiveViewSettings()">
+                                        <option value="all">כל המתרימים</option>
+                                        <option value="with-amount">עם תרומה</option>
+                                        <option value="met-goal">שעמדו ביעד</option>
+                                        <option value="not-met-goal">שלא עמדו ביעד</option>
+                                    </select>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>מספר מקסימלי של מתרימים להצגה בכל קבוצה:</label>
+                                    <input type="number" id="liveviewMaxDonorsPerGroup" min="0" max="1000" value="0" onchange="updateLiveViewSettings()">
+                                    <span style="font-size: 12px; color: var(--muted);">(0 = ללא הגבלה)</span>
+                                </div>
+                            </div>
+
+                            <div class="liveview-setting-group">
+                                <h4>אפקטים</h4>
+                                <div class="liveview-setting-row">
+                                    <label>הפעל אנימציות:</label>
+                                    <label class="switch">
+                                        <input type="checkbox" id="liveviewEnableAnimations" checked onchange="updateLiveViewSettings()">
+                                        <span class="switch-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>הפעל גלילה אוטומטית:</label>
+                                    <label class="switch">
+                                        <input type="checkbox" id="liveviewEnableAutoScroll" checked onchange="updateLiveViewSettings()">
+                                        <span class="switch-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="liveview-settings-actions">
+                            <button class="btn" onclick="saveLiveViewSettings()">שמור הגדרות</button>
+                            <button class="btn btn-secondary" onclick="resetLiveViewSettings()">איפוס לברירת מחדל</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- הגדרת סיסמה -->
+                <div class="management-content" id="passwordContent">
+                    <div class="password-settings-panel">
+                        <h3>הגדרת סיסמה למדורים</h3>
+                        <div class="password-toggle-row">
+                            <label class="switch-label">
+                                <input type="checkbox" id="passwordEnableToggle">
+                                <span>הפעל דרישת סיסמה למדורים שנבחרו</span>
+                            </label>
+                        </div>
+                        <div class="password-toggle-row">
+                            <label class="switch-label">
+                                <input type="checkbox" id="passwordAppLockToggle">
+                                <span>דרוש סיסמה כבר במסך הכניסה לתוכנה</span>
+                            </label>
+                        </div>
+                        <p class="password-lock-note">
+                            כאשר אפשרות זו פעילה, המערכת תציג מסך נעילה לפני הצגת כל הנתונים ותיפתח רק לאחר הזנת הסיסמה.
+                        </p>
+
+                        <div class="password-sections">
+                            <h4>בחר אילו מדורים ידרשו סיסמה</h4>
+                            <div class="password-sections-list" id="passwordSectionsList">
+                                <!-- ימולא דינמית -->
+                            </div>
+                        </div>
+
+                        <div class="password-update-form">
+                            <h4>ניהול סיסמה</h4>
+                            <div class="password-inputs">
+                                <input type="password" id="currentPasswordInput" placeholder="סיסמה נוכחית (אם קיימת)">
+                                <input type="password" id="newPasswordInput" placeholder="סיסמה חדשה">
+                                <input type="password" id="confirmPasswordInput" placeholder="אישור סיסמה חדשה">
+                            </div>
+                            <div class="password-actions">
+                                <button class="btn" onclick="savePasswordSettings()">שמור הגדרות</button>
+                                <button class="btn btn-secondary" onclick="clearPasswordSettings()">בטל הגנת סיסמה</button>
+                            </div>
+                            <p class="password-hint" id="passwordSettingsHint"></p>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+            <!-- תצוגה בלייב -->
+            <section class="content-section live-view-section" id="liveviewSection">
+                <button class="back-home-btn" onclick="exitLiveView()" aria-label="חזרה לדף הבית">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 10.5L12 3L21 10.5V20C21 20.55 20.55 21 20 21H15C14.45 21 14 20.55 14 20V15C14 14.45 13.55 14 13 14H11C10.45 14 10 14.45 10 15V20C10 20.55 9.55 21 9 21H4C3.45 21 3 20.55 3 20V10.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <div class="live-content">
+                    <!-- אזור מובילים בצד -->
+                    <div class="live-leaders-sidebar">
+                        <div class="live-leaders-scroll-wrapper" id="leadersScrollWrapper">
+                            <div class="live-leaders-scroll" id="leadersScrollPrimary">
+                                <div class="live-leaders-content" id="leadersContentBlock">
+                                    <h2 class="leaders-title">מובילים</h2>
+                                    <div class="leaders-list" id="leadersList">
+                                        <!-- יוטען דינמית -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="live-leaders-scroll live-leaders-scroll-clone" id="leadersScrollClone">
+                                <!-- ימולא דינמית -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- אזור מתרימים במרכז -->
+                    <div class="live-donors-area">
+                        <div class="live-donors-container">
+                            <div class="live-donors-scroll" id="liveDonorsScroll">
+                                <!-- יוטען דינמית -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- מדור כתובות -->
+            <section class="content-section addresses-section" id="addressesSection">
+                <h2 class="section-header">ניהול כתובות</h2>
+                <div class="addresses-panel">
+                    <div class="addresses-form">
+                        <h3>הוספת כתובת חדשה</h3>
+                        <div class="address-form-row">
+                            <label for="addressCity">עיר:</label>
+                            <input type="text" id="addressCity" placeholder="הזן שם עיר">
+                        </div>
+                        <div class="address-form-row">
+                            <label for="addressStreet">רחוב:</label>
+                            <input type="text" id="addressStreet" placeholder="הזן שם רחוב ומספר בית">
+                        </div>
+                        <div class="address-form-row">
+                            <label for="addressDate">תאריך:</label>
+                            <input type="date" id="addressDate">
+                        </div>
+                        <div class="address-form-row">
+                            <label for="addressAmount">סכום תרומה (₪):</label>
+                            <input type="number" id="addressAmount" min="0" step="1" placeholder="0">
+                        </div>
+                        <div class="address-form-actions">
+                            <button class="btn" onclick="addAddress()">הוסף כתובת</button>
+                            <button class="btn btn-secondary" onclick="exportAllAddressesToExcel()">ייצוא כל הכתובות לאקסל</button>
+                        </div>
+                    </div>
+                    <div class="addresses-list-container">
+                        <h3>רשימת כתובות</h3>
+                        <div class="addresses-list" id="addressesList">
+                            <!-- יוטען דינמית -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- תכנון קמפיין -->
+            <section class="content-section planning-section" id="planningSection">
+                <div class="campaign-planning-panel">
+                    <div class="campaign-planning-header">
+                        <h2>תכנון הקמפיין לשנים הבאות</h2>
+                        <div class="campaign-planning-actions">
+                            <button class="btn btn-secondary btn-small" onclick="resetCampaignPlanning()">איפוס הערכים</button>
+                            <button class="btn btn-small" onclick="saveCampaignPlanning()">שמור תכנית</button>
+                            <button class="btn btn-danger btn-small" onclick="applyCampaignPlanning()">הפעל על המערכת</button>
+                        </div>
+                    </div>
+                    <div class="campaign-planning-grid">
+                        <div class="campaign-planning-field">
+                            <label for="planningCampaignName">שם הקמפיין</label>
+                            <input type="text" id="planningCampaignName" placeholder="לדוגמה: תומכי תורה 2026">
+                        </div>
+                        <div class="campaign-planning-field">
+                            <label for="planningYear">שנת יעד</label>
+                            <input type="number" id="planningYear" min="2024" step="1">
+                        </div>
+                        <div class="campaign-planning-field">
+                            <label for="planningCampaignGoal">יעד כללי (₪)</label>
+                            <input type="number" id="planningCampaignGoal" min="0" step="1000">
+                        </div>
+                        <div class="campaign-planning-field">
+                            <label for="planningPerDonorGoal">יעד אישי לכל בחור (₪)</label>
+                            <input type="number" id="planningPerDonorGoal" min="0" step="50">
+                        </div>
+                        <div class="campaign-planning-field">
+                            <label for="planningGroupGoal">יעד לכל קבוצה (₪)</label>
+                            <input type="number" id="planningGroupGoal" min="0" step="1000">
+                        </div>
+                        <div class="campaign-planning-field">
+                            <label for="planningVolunteersCount">מספר מגייסים/בחורים</label>
+                            <input type="number" id="planningVolunteersCount" min="0" step="1">
+                        </div>
+                    </div>
+                    <div class="campaign-planning-field">
+                        <label for="planningNotes">הערות ומשימות פתיחה</label>
+                        <textarea id="planningNotes" placeholder="משימות חשובות לקראת הקמפיין, תזכורות, ספקים, רעיונות..."></textarea>
+                    </div>
+                    <div class="campaign-planning-summary" id="campaignPlanningSummary">
+                        <!-- תמצית התכנית תוצג כאן -->
+                    </div>
+                </div>
+            </section>
+            <!-- הוראות שימוש -->
+            <section class="content-section instructions-section" id="instructionsSection">
+                <div class="instructions-panel">
+                    <h2>הוראות שימוש בתוכנה</h2>
+                    <p>ברוכים הבאים לכלי הניהול של &quot;תומכי תורה&quot;. בפרק זה תמצאו הסברים מפורטים ליצירת קובצי אקסל, טעינת רשימות, ייצוא נתונים, תפעול יומיומי והבנת כל המדורים במערכת.</p>
+
+                    <div class="instructions-grid">
+                        <div class="instructions-card">
+                            <h3>הכנת קובץ אקסל לייבוא</h3>
+                            <ol>
+                                <li>פתחו גיליון חדש באקסל והוסיפו שורת כותרת עם העמודות: <strong>שם מתרים</strong> (חובה), <strong>סכום</strong>, <strong>קבוצה</strong>, <strong>יעד אישי</strong>. ניתן להשתמש גם בכותרות באנגלית (Name, Amount, Group, Goal).</li>
+                                <li>ליצירת רשימת שמות בלבד ניתן להשאיר עמודת סכום ויעד ריקות. המערכת תגדיר לכל מתרים סכום פתיחה 0 ויעד ברירת מחדל.</li>
+                                <li>כדי לשייך מתרים לקבוצה קיימת, ודאו ששם הקבוצה בגיליון זהה בדיוק לשם שמופיע במערכת. אם העמודה &quot;קבוצה&quot; ריקה – ניתן לבחור קבוצה בזמן הטעינה.</li>
+                                <li>שמרו את הקובץ בפורמט <strong>.xlsx</strong> (שם מומלץ: donors_import.xlsx) וודאו שאין שורות ריקות מיותרות בסוף הקובץ.</li>
+                            </ol>
+                        </div>
+
+                        <div class="instructions-card">
+                            <h3>טעינת הרשימה לתוכנה</h3>
+                            <ol>
+                                <li>עברו למדור <strong>ניהול</strong>, פתחו את כרטיס הקבוצה הרצויה ולחצו על הכפתור <strong>טעינת רשימה מקובץ אקסל</strong>.</li>
+                                <li>בחרו את הקובץ שהכנתם. אם מופיעה עמודת &quot;קבוצה&quot; בגיליון, המערכת תזהה את הקבוצה אוטומטית; אחרת המתרימים יתווספו לקבוצה שנבחרה בעת הלחיצה.</li>
+                                <li>המערכת מזהה כותרות כגון &quot;שם&quot;, &quot;שם מתרים&quot;, Name וכדומה. אם נמצאו רק שמות בעמודה הראשונה – המתרימים ייווצרו עם יעד ברירת מחדל וסכום 0.</li>
+                                <li>בסיום הטעינה תופיע הודעה כמה מתרימים נטענו. עברו על הרשימה, תקנו סכומים או שמות לפי הצורך ולבסוף לחצו על &quot;שמור&quot; אם נעשו שינויים ידניים.</li>
+                            </ol>
+                        </div>
+
+                        <div class="instructions-card">
+                            <h3>ייצוא נתונים ודוחות</h3>
+                            <ol>
+                                <li>במדור <strong>חישוב לכל השנה</strong> השתמשו בכפתור <strong>ייצוא לאקסל</strong> להפקת קובץ finance_export.xlsx הכולל הכנסות, הוצאות ויתרות.</li>
+                                <li>במדור <strong>ניהול</strong> בתוך פרטי מתרים ניתן ללחוץ על <strong>ייצוא היסטוריה לאקסל</strong> לקבלת קובץ donors_history.xlsx עם כל הפעולות שהוזנו.</li>
+                                <li>שלבו את הנתונים המיוצאים עם הסיכומים על המסך (סכומים, ממוצעים, עמידה ביעדים) לצורך הדפסה, שיתוף וניהול מעקב של הנהלה וגזברות.</li>
+                            </ol>
+                        </div>
+
+                        <div class="instructions-card">
+                            <h3>סקירת המדורים והפעלתם</h3>
+                            <ol>
+                                <li><strong>דף הבית:</strong> מציג מדדים מרכזיים – יעד המצ&apos;ינג, סכום שנאסף, מספר מתרימים וממוצע תרומה.</li>
+                                <li><strong>ניהול:</strong> יצירת קבוצות, הוספת מתרימים, ניהול סיסמה, טעינת אקסל, הזנת תשלומים והיסטוריית פעולות.</li>
+                                <li><strong>תצוגה בלייב:</strong> תצוגת אירוע חיה למקרן/מסך גדול עם מובילים, עמידה ביעדים ועיצוב דינמי.</li>
+                                <li><strong>חישוב לכל השנה:</strong> רישום הכנסות והוצאות, סינון לפי סוג או שנה, תצוגות גרפיות וייצוא.</li>
+                                <li><strong>תכנון קמפיין:</strong> קביעת יעדים לשנה הבאה, תאריכים, משימות פתיחה והחלת התכנית על הנתונים.</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div class="instructions-note">
+                        <strong>טיפ:</strong> בצעו גיבוי שבועי לקבצי האקסל, בדקו שהיעדים מעודכנים לפני אירועים גדולים ודאגו לעדכן את התצוגה בלייב לאחר כל טעינה או שינוי נתונים משמעותי.
+                    </div>
+                    <div class="instructions-note">
+                        <strong>פתרון תקלות:</strong> אם מתקבלת שגיאה בייבוא, ודאו שהעמודות ממוספרות נכון, שאין תווים מיותרים בכותרות, ושמרו מחדש את הקובץ כ-.xlsx. הודעות המערכת בתחתית המסך יסייעו באיתור הבעיה.
+                    </div>
+
+                    <div class="raffle-embed-wrapper">
+                        <h3>מגריל ההגרלות – הפעלה מתוך המערכת</h3>
+                        <p>אפשר להפעיל כאן את כלי ההגרלות החיצוני או לפתוח אותו בלשונית נפרדת לנוחות מרבית.</p>
+                        <div class="raffle-embed-actions">
+                            <a href="https://l.gourl.es/l/b881ef70e77df67e682e3b39e527c6176deb396d?u=12165450" target="_blank" rel="noopener noreferrer">
+                                פתיחה בחלון חדש
+                            </a>
+                        </div>
+                        <iframe class="raffle-embed-frame"
+                                src="https://l.gourl.es/l/b881ef70e77df67e682e3b39e527c6176deb396d?u=12165450"
+                                title="מגריל ההגרלות"
+                                loading="lazy"
+                                allow="clipboard-read; clipboard-write">
+                        </iframe>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+    <div class="notification" id="notification"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        // Wrapper functions ל-Apps Script - החלפת localStorage
+        // פונקציה לבדיקה אם אנחנו ב-Apps Script (בדיקה דינמית)
+        function isAppsScript() {
+            try {
+                return typeof google !== 'undefined' && google.script && typeof google.script.run === 'function';
+            } catch (e) {
+                return false;
+            }
+        }
+        
+        // Wrapper ל-localStorage.setItem
+        function storageSetItem(key, value) {
+            if (isAppsScript()) {
+                // ב-Apps Script - שמירה דרך השרת
+                try {
+                    google.script.run
+                        .withSuccessHandler(() => {
+                            // הצלחה - שקט
+                        })
+                        .withFailureHandler((error) => {
+                            console.error('שגיאה בשמירה ב-Apps Script:', error);
+                            // נסה לשמור ב-localStorage כגיבוי
+                            try {
+                                localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+                            } catch (e) {
+                                console.error('שגיאה גם ב-localStorage:', e);
+                            }
+                        })
+                        .saveToStorage(key, value);
+                } catch (e) {
+                    console.error('שגיאה בקריאה ל-google.script.run:', e);
+                    // נסה לשמור ב-localStorage כגיבוי
+                    try {
+                        localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+                    } catch (e2) {
+                        console.error('שגיאה גם ב-localStorage:', e2);
+                    }
+                }
+            } else {
+                // בדפדפן רגיל - localStorage
+                try {
+                    localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+                } catch (e) {
+                    console.error('שגיאה ב-localStorage:', e);
+                }
+            }
+        }
+        
+        // Wrapper ל-localStorage.getItem
+        function storageGetItem(key, callback) {
+            if (isAppsScript()) {
+                // ב-Apps Script - טעינה דרך השרת
+                google.script.run
+                    .withSuccessHandler((result) => {
+                        if (result && result.success) {
+                            callback(result.data);
+                        } else {
+                            callback(null);
+                        }
+                    })
+                    .withFailureHandler((error) => {
+                        console.error('שגיאה בטעינה:', error);
+                        callback(null);
+                    })
+                    .loadFromStorage(key);
+            } else {
+                // בדפדפן רגיל - localStorage
+                try {
+                    const value = localStorage.getItem(key);
+                    callback(value ? (value.startsWith('{') || value.startsWith('[') ? JSON.parse(value) : value) : null);
+                } catch (e) {
+                    console.error('שגיאה ב-localStorage:', e);
+                    callback(null);
+                }
+            }
+        }
+        
+        // Wrapper ל-localStorage.removeItem
+        function storageRemoveItem(key) {
+            if (isAppsScript()) {
+                google.script.run
+                    .withSuccessHandler(() => {})
+                    .withFailureHandler((error) => {
+                        console.error('שגיאה במחיקה:', error);
+                    })
+                    .removeFromStorage(key);
+            } else {
+                try {
+                    localStorage.removeItem(key);
+                } catch (e) {
+                    console.error('שגיאה ב-localStorage:', e);
+                }
+            }
+        }
+        
+        // Wrapper ל-localStorage.clear
+        function storageClear() {
+            if (isAppsScript()) {
+                google.script.run
+                    .withSuccessHandler(() => {})
+                    .withFailureHandler((error) => {
+                        console.error('שגיאה בניקוי:', error);
+                    })
+                    .clearStorage();
+            } else {
+                try {
+                    localStorage.clear();
+                } catch (e) {
+                    console.error('שגיאה ב-localStorage:', e);
+                }
+            }
+        }
+        
+        // פונקציה סינכרונית לטעינה (עם Promise)
+        function storageGetItemSync(key) {
+            return new Promise((resolve) => {
+                storageGetItem(key, (value) => {
+                    resolve(value);
+                });
+            });
+        }
+        
+            // משתנים גלובליים
+        const MATCHING_GOAL_DEFAULT = 750000; // יעד כללי
+        const INITIAL_DEFAULT_DONOR_GOAL = 2100; // יעד ברירת מחדל לכל מתרים
+        const DEFAULT_GROUP_GOAL_DEFAULT = 112000; // יעד לכל קבוצה
+        const TOTAL_DONORS_DEFAULT = 365; // מספר מתרמים כולל
+        const dayLabels = ['יום א׳', 'יום ב׳', 'יום ג׳', 'יום ד׳', 'יום ה׳', 'יום ו׳', 'יום שבת'];
+        const SCOUT_CITY_OPTIONS = [
+            'אופקים', 'הרצליה', 'נצרת', 'קריית גת',
+            'אור יהודה', 'חדרה', 'נצרת עילית', 'קריית חיים',
+            'אשדוד', 'חולון', 'נשר', 'קריית טבעון',
+            'אשקלון', 'חיפה', 'נתיבות', 'קריית ים',
+            'באר שבע', 'טבריה', 'נתניה', 'קריית מוצקין',
+            'בית שמש', 'יבנה', 'סביון', 'קריית מלאכי',
+            'בני ברק', 'יהוד-מונוסון', 'עומר', 'ראשון לציון',
+            'בת ים', 'ירושלים', 'עכו', 'רחובות',
+            'גבעת שמואל', 'כפר סבא', 'עפולה', 'רמלה',
+            'גבעתיים', 'כרמיאל', 'ערד', 'רמת גן',
+            'גדרה', 'לוד', 'פתח תקווה', 'רמת השרון',
+            'גן יבנה', 'מגדל העמק', 'קריית אונו', 'רעננה',
+            'דימונה', 'נהריה', 'קריית אתא', 'שדרות',
+            'הוד השרון', 'נס ציונה', 'קריית ביאליק', 'תל אביב - יפו'
+        ];
+        const SCOUT_DAY_LABELS = {
+            day14: 'יום י״ד באדר',
+            day15: 'יום ט״ו באדר'
+        };
+        const GROOM_GRANT_BONUS = 3500;
+        let matchingGoal = MATCHING_GOAL_DEFAULT;
+        let defaultDonorGoal = INITIAL_DEFAULT_DONOR_GOAL;
+        let defaultGroupGoal = DEFAULT_GROUP_GOAL_DEFAULT;
+        let totalRecruiters = TOTAL_DONORS_DEFAULT;
+        let donors = [];
+        let donorSearchTerm = '';
+        let addresses = [];
+        let groups = [
+            { id: 'group1', name: 'קבוצה 1', goal: defaultGroupGoal },
+            { id: 'group2', name: 'קבוצה 2', goal: defaultGroupGoal },
+            { id: 'group3', name: 'קבוצה 3', goal: defaultGroupGoal },
+            { id: 'group4', name: 'קבוצה 4', goal: defaultGroupGoal },
+            { id: 'group5', name: 'קבוצה 5', goal: defaultGroupGoal },
+            { id: 'group6', name: 'קבוצה 6', goal: defaultGroupGoal }
+        ];
+        let financeState = {
+            currentBalance: 0,
+            entries: []
+        };
+        let groomGrants = [];
+        let financeFilters = {
+            type: 'all',
+            year: 'all'
+        };
+        let editingDonorId = null;
+        let editingShouldFocus = false;
+        let lastLiveViewStructure = '';
+        let lastLiveViewData = new Map();
+        let accessControl = {
+            enabled: false,
+            password: '',
+            protectedSections: [],
+            requireAppUnlock: false
+        };
+        let authorizedSections = new Set();
+        let appLockResolved = false;
+        const AUTHORIZED_ALL_SECTION_KEY = '__all__';
+        const SECTION_OPTIONS = [
+            { id: 'addresses', label: 'כתובות' },
+            { id: 'home', label: 'דף הבית' },
+            { id: 'breakdown', label: 'פילוח נתונים' },
+            { id: 'management', label: 'ניהול' },
+            { id: 'liveview', label: 'תצוגה בלייב' },
+            { id: 'raffle', label: 'מערכת הגרלות' },
+            { id: 'scouts', label: 'ניהול סיירות' },
+            { id: 'toolkit', label: 'ארגז כלים לתתני״ק הצעיר' },
+            { id: 'finance', label: 'חישוב לכל השנה' },
+            { id: 'planning', label: 'תכנון קמפיין לשנים הבאות' },
+            { id: 'groomGrant', label: 'מענק לחתנים' },
+            { id: 'grants', label: 'קבלת מענקים למתרמים' },
+            { id: 'addresses', label: 'כתובות' },
+            { id: 'instructions', label: 'הוראות שימוש בתוכנה' }
+        ];
+        let campaignPlanning = {
+            campaignName: '',
+            year: new Date().getFullYear() + 1,
+            campaignGoal: matchingGoal,
+            perDonorGoal: defaultDonorGoal,
+            groupGoal: defaultGroupGoal,
+            volunteersCount: totalRecruiters,
+            notes: ''
+        };
+        let toolkitTips = [];
+        let scoutsSchedule = getDefaultScoutsSchedule();
+        let scoutsActiveDay = 'day14';
+        let scoutsSectionInitialized = false;
+        let homeDonorHighlights = new Set();
+        let homeDonorSortHighlightedFirst = false;
+        let liveViewBackButtonTimer = null;
+        let liveViewInteractionBound = false;
+        const LIVE_VIEW_BACK_BUTTON_TIMEOUT = 4000;
+        const LIVE_VIEW_INTERACTION_EVENTS = ['mousemove', 'keydown', 'touchstart', 'touchmove'];
+        let homeDonorFiltersInitialized = false;
+        let groupDragState = {
+            draggingId: null
+        };
+
+        function getDefaultScoutsSchedule() {
+            return {
+                day14: [],
+                day15: []
+            };
+        }
+
+        function generateScoutTeamId() {
+            return `scout_team_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
+        }
+
+        function normalizeScoutMember(member) {
+            if (typeof member === 'string') {
+                const trimmed = member.trim();
+                if (!trimmed) return null;
+                return { name: trimmed, amount: 0 };
+            }
+            if (!member || typeof member !== 'object') return null;
+            const name = (member.name || '').toString().trim();
+            if (!name) return null;
+            const amount = Math.max(0, Math.round(parseFloat(member.amount) || 0));
+            return { name, amount };
+        }
+
+        function normalizeScoutsSchedule(data) {
+            const defaults = getDefaultScoutsSchedule();
+            if (!data || typeof data !== 'object') {
+                return defaults;
+            }
+            const normalizeDay = (value) => {
+                if (!Array.isArray(value)) return [];
+                const idsSeen = new Set();
+                return value.map(team => {
+                    let teamId = team?.id || generateScoutTeamId();
+                    if (idsSeen.has(teamId)) {
+                        teamId = generateScoutTeamId();
+                    }
+                    idsSeen.add(teamId);
+                    const memberSet = new Set();
+                    const members = Array.isArray(team?.members)
+                        ? team.members.map(normalizeScoutMember).filter(normalized => {
+                            if (!normalized) return false;
+                            const key = normalized.name.toLowerCase();
+                            if (memberSet.has(key)) return false;
+                            memberSet.add(key);
+                            return true;
+                        })
+                        : [];
+                    return {
+                        id: teamId,
+                        name: (team?.name || 'סירת ').toString(),
+                        city: SCOUT_CITY_OPTIONS.includes(team?.city) ? team.city : '',
+                        members
+                    };
+                });
+            };
+            return {
+                day14: normalizeDay(data.day14),
+                day15: normalizeDay(data.day15)
+            };
+        }
+        function normalizeDonor(donor) {
+            if (!donor) return null;
+            donor.id = donor.id || Date.now();
+            donor.name = donor.name || 'ללא שם';
+            donor.amount = Math.max(0, Math.round(parseFloat(donor.amount) || 0));
+            donor.personalGoal = Math.max(0, Math.round(parseFloat(donor.personalGoal) || defaultDonorGoal));
+            donor.createdAt = donor.createdAt || donor.date || new Date().toISOString();
+            donor.history = Array.isArray(donor.history) ? donor.history : [];
+            donor.dailyBreakdown = normalizeDailyBreakdown(donor);
+            if (!donor.history.length && donor.amount > 0) {
+                donor.history.push({
+                    id: Date.now() + Math.floor(Math.random() * 1000),
+                    date: donor.createdAt,
+                    delta: donor.amount,
+                    amountAfter: donor.amount,
+                    source: 'initial-import',
+                    note: ''
+                });
+            }
+            alignBreakdownToAmount(donor, donor.amount);
+            donor.amount = Math.max(0, Math.round(donor.amount || 0));
+            return donor;
+        }
+        function ensureDonorsNormalized() {
+            donors = donors.map(normalizeDonor).filter(Boolean);
+        }
+
+        function ensureFinanceDefaults() {
+            if (!financeState || typeof financeState !== 'object') {
+                financeState = { currentBalance: 0, entries: [] };
+            }
+            financeState.currentBalance = Number(financeState.currentBalance) || 0;
+            if (!Array.isArray(financeState.entries)) {
+                financeState.entries = [];
+            }
+        }
+
+        function normalizeToolkitTips(data) {
+            if (!Array.isArray(data)) return [];
+            return data
+                .map(item => (typeof item === 'string' ? item.trim() : ''))
+                .filter(Boolean);
+        }
+
+        function generateGroomGrantId() {
+            return `groom_${Date.now().toString(36)}_${Math.random().toString(16).slice(2, 8)}`;
+        }
+
+        function generateGroomYearId() {
+            return `groom_year_${Date.now().toString(36)}_${Math.random().toString(16).slice(2, 8)}`;
+        }
+
+        function normalizeGroomGrantYear(entry) {
+            if (!entry || typeof entry !== 'object') return null;
+            const normalizedYear = (entry.year ?? '').toString().trim();
+            const normalizedAmount = Math.max(0, Math.round(parseFloat(entry.amount) || 0));
+            return {
+                id: entry.id || generateGroomYearId(),
+                year: normalizedYear,
+                amount: normalizedAmount
+            };
+        }
+
+        function normalizeGroomGrant(item) {
+            if (!item || typeof item !== 'object') return null;
+            const normalized = {
+                id: item.id || generateGroomGrantId(),
+                name: (item.name || '').toString(),
+                years: Array.isArray(item.years) ? item.years.map(normalizeGroomGrantYear).filter(Boolean) : [],
+                createdAt: item.createdAt || new Date().toISOString()
+            };
+            return normalized;
+        }
+
+        function normalizeGroomGrants(data) {
+            if (!Array.isArray(data)) return [];
+            const seen = new Set();
+            return data
+                .map(normalizeGroomGrant)
+                .filter(grant => {
+                    if (!grant) return false;
+                    if (seen.has(grant.id)) {
+                        grant.id = generateGroomGrantId();
+                    }
+                    seen.add(grant.id);
+                    return true;
+                });
+        }
+
+        function calculateGroomGrantSummary(groom) {
+            const entries = Array.isArray(groom?.years) ? groom.years : [];
+            const totalCollected = entries.reduce((sum, entry) => sum + (Number(entry?.amount) || 0), 0);
+            const baseGrant = Math.round(totalCollected * 0.1);
+            const bonus = totalCollected > 0 ? GROOM_GRANT_BONUS : 0;
+            const totalGrant = baseGrant + bonus;
+            return {
+                totalCollected,
+                baseGrant,
+                bonus,
+                totalGrant
+            };
+        }
+
+        function renderGroomGrantList({ focus } = {}) {
+            const container = document.getElementById('groomGrantList');
+            if (!container) return;
+
+            if (!Array.isArray(groomGrants) || groomGrants.length === 0) {
+                container.innerHTML = `
+                    <div class="groom-year-empty">
+                        עדיין לא נרשמו חתנים. הוסיפו חתן חדש ולאחר מכן מלאו שורות סכומים כדי לחשב מענק.
+                    </div>
+                `;
+                return;
+            }
+
+            const cardsHtml = groomGrants.map(groom => {
+                const summary = calculateGroomGrantSummary(groom);
+                const years = Array.isArray(groom.years) ? [...groom.years] : [];
+
+                const yearsRows = years.length
+                    ? years.map(entry => {
+                        return `
+                            <tr data-year-id="${entry.id}">
+                                <td>
+                                    <input type="text" class="groom-year-input" data-field="label" value="${escapeHtml(entry.year || '')}" placeholder="שנה / תיאור">
+                                </td>
+                                <td>
+                                    <input type="number" class="groom-year-input" data-field="amount" value="${entry.amount}" min="0" step="1">
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-secondary btn-small groom-remove-year" data-year-id="${entry.id}">הסר</button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('')
+                    : `
+                        <tr class="groom-year-empty-row">
+                            <td colspan="3" class="groom-year-empty">
+                                עדיין לא נוספו שורות לחתן זה. הוסיפו שורה עם סכום שנאסף כדי לחשב מענק.
+                            </td>
+                        </tr>
+                    `;
+
+                const bonusClass = summary.totalCollected > 0 ? 'groom-bonus-eligible' : 'groom-bonus-missing';
+                const bonusText = summary.totalCollected > 0
+                    ? `הבונוס הקבוע של ${formatCurrency(GROOM_GRANT_BONUS)} נוסף למענק.`
+                    : 'הזינו לפחות סכום אחד כדי להוסיף את בונוס החתן הקבוע של 3,500 ש״ח.';
+
+                return `
+                    <div class="groom-grant-card" data-id="${groom.id}">
+                        <div class="groom-card-header">
+                            <div class="groom-card-title">
+                                <label>שם החתן</label>
+                                <input type="text" class="groom-name-input" data-field="name" value="${escapeHtml(groom.name || '')}" placeholder="לדוגמה: יעקב כהן">
+                            </div>
+                            <div class="groom-card-actions">
+                                <button type="button" class="btn btn-secondary btn-small groom-remove-card" data-id="${groom.id}">מחק חתן</button>
+                            </div>
+                        </div>
+                        <div class="groom-card-summary">
+                            <div class="groom-summary-grid">
+                                <div class="groom-summary-card">
+                                    <span class="groom-summary-label">סה״כ נאסף</span>
+                                    <strong class="groom-summary-value">${formatCurrency(summary.totalCollected)}</strong>
+                                </div>
+                                <div class="groom-summary-card">
+                                    <span class="groom-summary-label">מענק בסיסי (10%)</span>
+                                    <strong class="groom-summary-value">${formatCurrency(summary.baseGrant)}</strong>
+                                </div>
+                                <div class="groom-summary-card">
+                                    <span class="groom-summary-label">מענק חתן (בונוס)</span>
+                                    <strong class="groom-summary-value">${formatCurrency(summary.bonus)}</strong>
+                                </div>
+                                <div class="groom-summary-card">
+                                    <span class="groom-summary-label">מענק כולל</span>
+                                    <strong class="groom-summary-value">${formatCurrency(summary.totalGrant)}</strong>
+                                </div>
+                            </div>
+                            <div class="groom-bonus-status ${bonusClass}">
+                                ${bonusText}
+                            </div>
+                        </div>
+                        <div class="groom-year-form">
+                            <input type="text" class="groom-add-label" placeholder="שנה / תיאור">
+                            <input type="number" class="groom-add-amount" placeholder="סכום שנאסף (₪)" min="0" step="1">
+                            <button type="button" class="btn btn-small groom-add-entry-button" data-action="add-entry">הוסף שורה</button>
+                        </div>
+                        <div class="groom-year-table-wrapper">
+                            <table class="groom-year-table">
+                                <thead>
+                                    <tr>
+                                        <th>שנה / תיאור</th>
+                                        <th>סכום נאסף (₪)</th>
+                                        <th>פעולות</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${yearsRows}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = cardsHtml;
+
+            if (focus && focus.id) {
+                setTimeout(() => {
+                    let selector = '';
+                    if (focus.type === 'name') {
+                        selector = `.groom-grant-card[data-id="${focus.id}"] .groom-name-input`;
+                    } else if (focus.type === 'entry' && focus.yearId) {
+                        selector = `.groom-grant-card[data-id="${focus.id}"] tr[data-year-id="${focus.yearId}"] .groom-year-input[data-field="${focus.field}"]`;
+                    }
+                    if (!selector) return;
+                    const element = document.querySelector(selector);
+                    if (element) {
+                        element.focus();
+                        if (typeof focus.caret === 'number') {
+                            const position = Math.min(focus.caret, element.value.length);
+                            element.setSelectionRange(position, position);
+                        }
+                    }
+                }, 0);
+            }
+        }
+
+        function addGroomGrant() {
+            const nameInput = document.getElementById('groomGrantNameInput');
+            if (!nameInput) return;
+
+            const name = nameInput.value.trim();
+
+            if (!name) {
+                showNotification('אנא הזן שם חתן לפני ההוספה');
+                nameInput.focus();
+                return;
+            }
+
+            const groom = {
+                id: generateGroomGrantId(),
+                name,
+                years: [],
+                createdAt: new Date().toISOString()
+            };
+
+            groomGrants.push(groom);
+            nameInput.value = '';
+            renderGroomGrantList();
+            saveData();
+            notifyDataChanged();
+            showNotification('החתן נוסף למעקב המענקים');
+        }
+
+        function handleGroomGrantInput(event) {
+            const target = event.target;
+            if (!(target instanceof HTMLInputElement)) return;
+            const card = target.closest('.groom-grant-card');
+            if (!card) return;
+            const groomId = card.dataset.id;
+            const groom = groomGrants.find(item => item.id === groomId);
+            if (!groom) return;
+
+            const caret = target.selectionStart || target.value.length;
+            let focusInfo = { id: groomId, caret };
+
+            if (target.classList.contains('groom-name-input')) {
+                groom.name = target.value;
+                focusInfo.type = 'name';
+            } else if (target.classList.contains('groom-year-input')) {
+                const row = target.closest('tr');
+                if (!row) return;
+                const yearId = row.dataset.yearId;
+                const field = target.dataset.field;
+                const yearEntry = groom.years.find(item => item.id === yearId);
+                if (!yearEntry || !field) return;
+                if (field === 'label') {
+                    yearEntry.year = target.value;
+                } else if (field === 'amount') {
+                    const parsedValue = Math.max(0, Math.round(parseFloat(target.value) || 0));
+                    yearEntry.amount = parsedValue;
+                    target.value = parsedValue || '';
+                }
+                focusInfo = { id: groomId, type: 'entry', yearId, field, caret };
+            } else {
+                return;
+            }
+
+            renderGroomGrantList({ focus: focusInfo });
+        }
+
+        function handleGroomGrantChange() {
+            saveData();
+            notifyDataChanged();
+        }
+
+        function handleGroomGrantClick(event) {
+            const target = event.target;
+            const card = target.closest('.groom-grant-card');
+            if (!card) return;
+            const groomId = card.dataset.id;
+            const groom = groomGrants.find(item => item.id === groomId);
+            if (!groom) return;
+
+            if (target.classList.contains('groom-remove-card')) {
+                if (confirm('למחוק את החתן מהרשימה? הפעולה אינה הפיכה.')) {
+                    groomGrants = groomGrants.filter(item => item.id !== groomId);
+                    renderGroomGrantList();
+                    saveData();
+                    notifyDataChanged();
+                    showNotification('החתן הוסר מרשימת המענקים');
+                }
+                return;
+            }
+
+            if (target.dataset.action === 'add-entry') {
+                const labelInput = card.querySelector('.groom-add-label');
+                const amountInput = card.querySelector('.groom-add-amount');
+                if (!labelInput || !amountInput) return;
+
+                const labelValue = labelInput.value.trim();
+                const amountValue = Math.max(0, Math.round(parseFloat(amountInput.value) || 0));
+
+                if (amountValue <= 0) {
+                    showNotification('אנא הזן סכום תקין לפני ההוספה');
+                    amountInput.focus();
+                    return;
+                }
+
+                groom.years.push({
+                    id: generateGroomYearId(),
+                    year: labelValue,
+                    amount: amountValue
+                });
+
+                labelInput.value = '';
+                amountInput.value = '';
+
+                renderGroomGrantList();
+                saveData();
+                notifyDataChanged();
+                showNotification('השורה נוספה בהצלחה');
+                return;
+            }
+
+            if (target.classList.contains('groom-remove-year')) {
+                const yearId = target.dataset.yearId;
+                groom.years = groom.years.filter(year => year.id !== yearId);
+                renderGroomGrantList();
+                saveData();
+                notifyDataChanged();
+                showNotification('השורה הוסרה מהרשימה');
+            }
+        }
+
+        function exportGroomGrantsToExcel() {
+            if (!Array.isArray(groomGrants) || groomGrants.length === 0) {
+                showNotification('אין נתונים של חתנים לייצוא');
+                return;
+            }
+
+            const summaryRows = groomGrants.map(groom => {
+                const summary = calculateGroomGrantSummary(groom);
+                return {
+                    'שם החתן': groom.name || 'ללא שם',
+                    'סה״כ נאסף (₪)': summary.totalCollected,
+                    'מענק בסיסי (10%) (₪)': summary.baseGrant,
+                    'בונוס קבוע (₪)': summary.bonus,
+                    'מענק כולל (₪)': summary.totalGrant,
+                    'מספר שורות סכומים': Array.isArray(groom.years) ? groom.years.length : 0
+                };
+            });
+
+            const entriesRows = [];
+            groomGrants.forEach(groom => {
+                const entries = Array.isArray(groom.years) ? groom.years : [];
+                if (entries.length) {
+                    entries.forEach(entry => {
+                        entriesRows.push({
+                            'שם החתן': groom.name || 'ללא שם',
+                            'שנה / תיאור': entry.year || '',
+                            'סכום נאסף (₪)': entry.amount || 0
+                        });
+                    });
+                } else {
+                    entriesRows.push({
+                        'שם החתן': groom.name || 'ללא שם',
+                        'שנה / תיאור': '(אין שורות)',
+                        'סכום נאסף (₪)': 0
+                    });
+                }
+            });
+
+            try {
+                const workbook = XLSX.utils.book_new();
+                const summarySheet = XLSX.utils.json_to_sheet(summaryRows);
+                XLSX.utils.book_append_sheet(workbook, summarySheet, 'GroomSummary');
+                const entriesSheet = XLSX.utils.json_to_sheet(entriesRows);
+                XLSX.utils.book_append_sheet(workbook, entriesSheet, 'GroomEntries');
+                XLSX.writeFile(workbook, 'groom_grants_export.xlsx');
+                showNotification('קובץ אקסל נוצר בהצלחה');
+            } catch (error) {
+                console.error('שגיאת ייצוא מענק חתנים:', error);
+                showNotification('אירעה שגיאה בעת ייצוא הנתונים');
+            }
+        }
+
+        function initGroomGrantSection() {
+            const list = document.getElementById('groomGrantList');
+            if (!list || list.dataset.initialized === 'true') return;
+
+            list.addEventListener('input', handleGroomGrantInput);
+            list.addEventListener('change', handleGroomGrantChange, true);
+            list.addEventListener('click', handleGroomGrantClick);
+            list.dataset.initialized = 'true';
+        }
+
+        function saveToolkitTipsToStorage() {
+            try {
+                storageSetItem('toolkitTips', toolkitTips);
+            } catch (error) {
+                console.error('שגיאה בשמירת טיפים:', error);
+            }
+        }
+
+        function saveScoutsScheduleToStorage() {
+            try {
+                storageSetItem('scoutsSchedule', scoutsSchedule);
+            } catch (error) {
+                console.error('שגיאה בשמירת נתוני סיירות:', error);
+            }
+        }
+
+        function renderToolkitTips() {
+            const list = document.getElementById('toolkitTipsList');
+            if (!list) return;
+            if (!Array.isArray(toolkitTips) || toolkitTips.length === 0) {
+                list.innerHTML = `
+                    <div class="instructions-note toolkit-tip toolkit-tip-empty">
+                        עדיין לא נוספו טיפים. הוסיפו טיפ חדש והם יוצגו כאן.
+                    </div>
+                `;
+                return;
+            }
+            list.innerHTML = toolkitTips.map((tip, index) => `
+                <div class="instructions-note toolkit-tip" data-index="${index}">
+                <span class="toolkit-tip-number">${index + 1}.</span>
+                <span>${escapeHtml(tip).replace(/\n/g, '<br>')}</span>
+                    <button type="button" class="btn btn-small btn-secondary toolkit-tip-remove" data-index="${index}">הסר</button>
+                </div>
+            `).join('');
+            list.querySelectorAll('.toolkit-tip-remove').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const idx = parseInt(event.currentTarget.dataset.index, 10);
+                    if (!Number.isNaN(idx)) {
+                        removeToolkitTip(idx);
+                    }
+                });
+            });
+        }
+
+        function ensureGroupsGridDragSupport() {
+            const grid = document.getElementById('groupsGrid');
+            if (!grid) return;
+            if (grid.dataset.dragHandlersAttached === 'true') return;
+            grid.addEventListener('dragover', handleGroupsGridDragOver);
+            grid.addEventListener('drop', handleGroupsGridDrop);
+            grid.dataset.dragHandlersAttached = 'true';
+        }
+
+        function attachGroupCardDragHandlers(card) {
+            card.addEventListener('dragstart', handleGroupDragStart);
+            card.addEventListener('dragover', handleGroupDragOver);
+            card.addEventListener('dragleave', handleGroupDragLeave);
+            card.addEventListener('drop', handleGroupDrop);
+            card.addEventListener('dragend', handleGroupDragEnd);
+        }
+
+        function handleGroupDragStart(event) {
+            const card = event.currentTarget;
+            groupDragState.draggingId = card.dataset.groupId;
+            card.classList.add('dragging');
+            groupDragState.scrollInterval = startAutoScrollForDrag();
+            if (event.dataTransfer) {
+                event.dataTransfer.effectAllowed = 'move';
+                try {
+                    event.dataTransfer.setData('text/plain', card.dataset.groupId);
+                } catch (err) {
+                    // ignore
+                }
+            }
+        }
+
+        function handleGroupDragOver(event) {
+            if (!groupDragState.draggingId) return;
+            event.preventDefault();
+            event.stopPropagation();
+            const target = event.currentTarget;
+            if (target.dataset.groupId === groupDragState.draggingId) return;
+            target.classList.add('drag-over');
+            if (event.dataTransfer) {
+                event.dataTransfer.dropEffect = 'move';
+            }
+        }
+
+        function handleGroupDragLeave(event) {
+            event.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleGroupDrop(event) {
+            if (!groupDragState.draggingId) return;
+            event.preventDefault();
+            event.stopPropagation();
+            const target = event.currentTarget;
+            target.classList.remove('drag-over');
+            const targetId = target.dataset.groupId;
+            const dragId = groupDragState.draggingId;
+            if (!targetId || dragId === targetId) {
+                return;
+            }
+            const rect = target.getBoundingClientRect();
+            const placeAfter = (event.clientY - rect.top) > rect.height / 2;
+            reorderGroupsByDrag(dragId, targetId, placeAfter);
+        }
+
+        function handleGroupDragEnd(event) {
+            event.currentTarget.classList.remove('dragging');
+            stopAutoScrollForDrag();
+            cleanupGroupDragHighlights();
+            groupDragState.draggingId = null;
+        }
+
+        function handleGroupsGridDragOver(event) {
+            if (!groupDragState.draggingId) return;
+            event.preventDefault();
+            if (event.dataTransfer) {
+                event.dataTransfer.dropEffect = 'move';
+            }
+        }
+
+        function handleGroupsGridDrop(event) {
+            if (!groupDragState.draggingId) return;
+            const card = event.target.closest('.group-card');
+            if (card) {
+                return;
+            }
+            event.preventDefault();
+            reorderGroupsByDrag(groupDragState.draggingId);
+        }
+
+        function cleanupGroupDragHighlights() {
+            document.querySelectorAll('.group-card.drag-over').forEach(card => card.classList.remove('drag-over'));
+        }
+
+        function reorderGroupsByDrag(dragId, targetId = null, placeAfter = false) {
+            ensureDonorsNormalized();
+            const fromIndex = groups.findIndex(group => group.id === dragId);
+            if (fromIndex === -1) return;
+            const [dragged] = groups.splice(fromIndex, 1);
+            let insertIndex;
+            if (targetId) {
+                insertIndex = groups.findIndex(group => group.id === targetId);
+                if (insertIndex === -1) {
+                    groups.splice(fromIndex, 0, dragged);
+                    return;
+                }
+                if (placeAfter) {
+                    insertIndex += 1;
+                }
+            } else {
+                insertIndex = groups.length;
+            }
+            insertIndex = Math.max(0, Math.min(insertIndex, groups.length));
+            groups.splice(insertIndex, 0, dragged);
+            groupDragState.draggingId = null;
+            cleanupGroupDragHighlights();
+            saveData();
+            updateGroupsDisplay();
+            updateGroupSelect();
+            updateLiveTargets();
+            updateLiveView();
+            showNotification('סדר הקבוצות עודכן');
+        }
+
+        function startAutoScrollForDrag() {
+            const SCROLL_SPEED = 18;
+            const EDGE_THRESHOLD = 80;
+            ensureManagementScrollContainer();
+            const scrollContainer = groupDragState.scrollContainer;
+            if (!scrollContainer) return null;
+            return setInterval(() => {
+                if (!groupDragState.draggingId) return;
+                const rect = scrollContainer.getBoundingClientRect();
+                const pointerY = groupDragState.pointerY ?? 0;
+                let delta = 0;
+                if (pointerY < rect.top + EDGE_THRESHOLD) {
+                    delta = -SCROLL_SPEED;
+                } else if (pointerY > rect.bottom - EDGE_THRESHOLD) {
+                    delta = SCROLL_SPEED;
+                }
+                if (delta !== 0) {
+                    scrollContainer.scrollTop = scrollContainer.scrollTop + delta;
+                }
+            }, 40);
+        }
+
+        function stopAutoScrollForDrag() {
+            if (groupDragState.scrollInterval) {
+                clearInterval(groupDragState.scrollInterval);
+                groupDragState.scrollInterval = null;
+            }
+        }
+
+        function ensureManagementScrollContainer() {
+            if (groupDragState.scrollContainer && document.body.contains(groupDragState.scrollContainer)) {
+                return;
+            }
+            const managementContent = document.getElementById('managementSection');
+            if (managementContent) {
+                groupDragState.scrollContainer = managementContent.closest('.content-section') || managementContent.parentElement;
+            } else {
+                groupDragState.scrollContainer = document.querySelector('.content-area');
+            }
+        }
+
+        document.addEventListener('dragover', (event) => {
+            if (!groupDragState.draggingId) return;
+            groupDragState.pointerY = event.clientY;
+        }, true);
+
+        function addToolkitTip() {
+            const input = document.getElementById('toolkitTipInput');
+            if (!input) return;
+            const value = input.value.trim();
+            if (!value) {
+                showNotification('אנא הזן טיפ לפני ההוספה');
+                input.focus();
+                return;
+            }
+            toolkitTips.push(value);
+            input.value = '';
+            renderToolkitTips();
+            saveToolkitTipsToStorage();
+            notifyDataChanged();
+            showNotification('הטיפ נוסף בהצלחה');
+        }
+
+        function removeToolkitTip(index) {
+            if (!Array.isArray(toolkitTips) || index < 0 || index >= toolkitTips.length) {
+                return;
+            }
+            toolkitTips.splice(index, 1);
+            renderToolkitTips();
+            saveToolkitTipsToStorage();
+            notifyDataChanged();
+            showNotification('הטיפ הוסר');
+        }
+
+        function initToolkitTipsUI() {
+            renderToolkitTips();
+            const addButton = document.getElementById('toolkitAddTipButton');
+            if (addButton) {
+                addButton.addEventListener('click', addToolkitTip);
+            }
+            const input = document.getElementById('toolkitTipInput');
+            if (input) {
+                input.addEventListener('keydown', (event) => {
+                    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                        event.preventDefault();
+                        addToolkitTip();
+                    }
+                });
+            }
+        }
+
+        function normalizeDailyBreakdown(donor) {
+            let breakdown = Array.isArray(donor?.dailyBreakdown) ? donor.dailyBreakdown : [];
+            if (breakdown.length < dayLabels.length) {
+                breakdown = breakdown.concat(Array(dayLabels.length - breakdown.length).fill(0));
+            } else if (breakdown.length > dayLabels.length) {
+                breakdown = breakdown.slice(0, dayLabels.length);
+            }
+            breakdown = breakdown.map(value => Math.max(0, Math.round(parseFloat(value) || 0)));
+            if (donor) donor.dailyBreakdown = breakdown;
+            return breakdown;
+        }
+
+        function alignBreakdownToAmount(donor, targetAmount) {
+            const breakdown = normalizeDailyBreakdown(donor).slice();
+            const target = Math.max(0, Math.round(parseFloat(targetAmount) || 0));
+            let currentSum = breakdown.reduce((sum, val) => sum + val, 0);
+            if (target === 0) {
+                donor.dailyBreakdown = Array(dayLabels.length).fill(0);
+                return donor.dailyBreakdown;
+            }
+            if (currentSum === 0) {
+                breakdown[0] = target;
+            } else if (currentSum < target) {
+                breakdown[0] += target - currentSum;
+            } else if (currentSum > target) {
+                let diff = currentSum - target;
+                for (let i = breakdown.length - 1; i >= 0 && diff > 0; i--) {
+                    const reducible = Math.min(breakdown[i], diff);
+                    breakdown[i] -= reducible;
+                    diff -= reducible;
+                }
+                if (diff > 0) {
+                    breakdown[0] = Math.max(0, breakdown[0] - diff);
+                }
+            }
+            donor.dailyBreakdown = breakdown.map(val => Math.max(0, Math.round(val || 0)));
+            return donor.dailyBreakdown;
+        }
+
+        function getDonorDailyBreakdown(donor) {
+            return normalizeDailyBreakdown(donor);
+        }
+
+        function addAmountToDailyBreakdown(donor, amount, date = new Date()) {
+            if (!donor) return;
+            ensureDonorsNormalized();
+            const breakdown = getDonorDailyBreakdown(donor);
+            const validDate = date instanceof Date && !Number.isNaN(date.getTime()) ? date : new Date();
+            const dayIndex = Math.max(0, Math.min(dayLabels.length - 1, ((validDate.getDay() + 6) % 7)));
+            const delta = Math.round(amount || 0);
+            const currentValue = breakdown[dayIndex] || 0;
+            if (delta >= 0) {
+                breakdown[dayIndex] = currentValue + delta;
+            } else {
+                breakdown[dayIndex] = Math.max(0, currentValue + delta);
+            }
+            donor.dailyBreakdown = breakdown;
+            alignBreakdownToAmount(donor, donor.amount || breakdown.reduce((sum, val) => sum + val, 0));
+        }
+
+        function getDefaultAccessControl() {
+            return {
+                enabled: false,
+                password: '',
+                protectedSections: [],
+                requireAppUnlock: false
+            };
+        }
+
+        function normalizeAccessControl(data) {
+            const defaults = getDefaultAccessControl();
+            if (!data || typeof data !== 'object') {
+                return defaults;
+            }
+            const password = typeof data.password === 'string' ? data.password : '';
+            const enabled = Boolean(data.enabled && password);
+            const requireAppUnlock = Boolean(data.requireAppUnlock);
+            const protectedSections = Array.isArray(data.protectedSections)
+                ? data.protectedSections.filter(sectionId => SECTION_OPTIONS.some(opt => opt.id === sectionId))
+                : [];
+            return {
+                enabled: enabled && password ? true : false,
+                password,
+                protectedSections: enabled && password ? protectedSections : [],
+                requireAppUnlock: enabled && password ? requireAppUnlock : false
+            };
+        }
+        function resetAuthorizedSections() {
+            authorizedSections = new Set();
+        }
+
+        function markAllProtectedSectionsAuthorized() {
+            authorizedSections = new Set(accessControl.protectedSections || []);
+            authorizedSections.add(AUTHORIZED_ALL_SECTION_KEY);
+        }
+
+        function isSectionProtected(sectionId) {
+            if (!sectionId) return false;
+            if (!accessControl || !accessControl.enabled || !accessControl.password) return false;
+            return Array.isArray(accessControl.protectedSections) && accessControl.protectedSections.includes(sectionId);
+        }
+
+        function isAppLockRequired() {
+            return Boolean(accessControl?.enabled && accessControl?.password && accessControl?.requireAppUnlock);
+        }
+
+        function toggleAppLockOverlay(show) {
+            const overlay = document.getElementById('appLockOverlay');
+            const input = document.getElementById('appLockPasswordInput');
+            const error = document.getElementById('appLockError');
+            if (!overlay) return;
+            if (show) {
+                overlay.classList.remove('hidden');
+                document.body?.classList.add('app-locked');
+                if (error) error.textContent = '';
+                if (input) {
+                    input.value = '';
+                    setTimeout(() => input.focus(), 50);
+                }
+            } else {
+                overlay.classList.add('hidden');
+                document.body?.classList.remove('app-locked');
+                if (error) error.textContent = '';
+                if (input) input.value = '';
+            }
+        }
+
+        function initAppLock(options = {}) {
+            const shouldForce = Boolean(options.force);
+            if (!isAppLockRequired()) {
+                appLockResolved = true;
+                toggleAppLockOverlay(false);
+                return;
+            }
+            if (!shouldForce && appLockResolved) {
+                return;
+            }
+            appLockResolved = false;
+            toggleAppLockOverlay(true);
+        }
+
+        function handleAppLockSubmit() {
+            if (!isAppLockRequired()) {
+                toggleAppLockOverlay(false);
+                appLockResolved = true;
+                return;
+            }
+            const input = document.getElementById('appLockPasswordInput');
+            const error = document.getElementById('appLockError');
+            const entered = (input?.value || '').trim();
+            if (!entered) {
+                if (error) error.textContent = 'אנא הזן סיסמה';
+                input?.focus();
+                return;
+            }
+            if (entered !== accessControl.password) {
+                if (error) error.textContent = 'סיסמה שגויה, נסה שוב.';
+                if (input) {
+                    input.select();
+                }
+                return;
+            }
+            appLockResolved = true;
+            markAllProtectedSectionsAuthorized();
+            toggleAppLockOverlay(false);
+            if (error) error.textContent = '';
+            if (input) input.value = '';
+            showNotification('ברוך הבא למערכת');
+        }
+
+        function handleAppLockKeyDown(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                handleAppLockSubmit();
+            }
+        }
+
+        function getDefaultAppSettings() {
+            return {
+                matchingGoal: MATCHING_GOAL_DEFAULT,
+                defaultGroupGoal: DEFAULT_GROUP_GOAL_DEFAULT,
+                totalRecruiters: TOTAL_DONORS_DEFAULT
+            };
+        }
+
+        function applyAppSettings(settings) {
+            const defaults = getDefaultAppSettings();
+            const normalized = {
+                matchingGoal: Math.max(0, Math.round(parseFloat(settings?.matchingGoal) || defaults.matchingGoal)),
+                defaultGroupGoal: Math.max(0, Math.round(parseFloat(settings?.defaultGroupGoal) || defaults.defaultGroupGoal)),
+                totalRecruiters: Math.max(0, Math.round(parseFloat(settings?.totalRecruiters) || defaults.totalRecruiters))
+            };
+            matchingGoal = normalized.matchingGoal;
+            defaultGroupGoal = normalized.defaultGroupGoal;
+            totalRecruiters = normalized.totalRecruiters;
+        }
+
+        async function loadAppSettings() {
+            try {
+                storageGetItem('appSettings', (saved) => {
+                if (saved) {
+                        applyAppSettings(saved);
+                } else {
+                    applyAppSettings(getDefaultAppSettings());
+                }
+                });
+            } catch (error) {
+                console.warn('שגיאה בטעינת הגדרות מערכת:', error);
+                applyAppSettings(getDefaultAppSettings());
+            }
+        }
+
+        function saveAppSettings() {
+            const settings = {
+                matchingGoal,
+                defaultGroupGoal,
+                totalRecruiters
+            };
+            try {
+                storageSetItem('appSettings', settings);
+            } catch (error) {
+                console.error('שגיאה בשמירת הגדרות מערכת:', error);
+            }
+        }
+
+        function loadAccessControl() {
+            try {
+                storageGetItem('accessControl', (saved) => {
+                if (saved) {
+                        accessControl = normalizeAccessControl(saved);
+                } else {
+                    accessControl = getDefaultAccessControl();
+                }
+                    resetAuthorizedSections();
+                    initPasswordSettingsUI();
+                    initAppLock();
+                });
+            } catch (error) {
+                console.warn('שגיאה בטעינת הגדרות סיסמה:', error);
+                accessControl = getDefaultAccessControl();
+            resetAuthorizedSections();
+            initPasswordSettingsUI();
+            initAppLock();
+            }
+        }
+
+        function saveAccessControl() {
+            try {
+                storageSetItem('accessControl', accessControl);
+            } catch (error) {
+                console.error('שגיאה בשמירת הגדרות סיסמה:', error);
+            }
+        }
+
+        function getSectionLabel(sectionId) {
+            const option = SECTION_OPTIONS.find(opt => opt.id === sectionId);
+            return option ? option.label : sectionId;
+        }
+
+        function requestSectionAccess(section) {
+            if (isAppLockRequired() && !appLockResolved) {
+                initAppLock();
+                return false;
+            }
+            if (!isSectionProtected(section)) {
+                return true;
+            }
+
+            if (authorizedSections.has(AUTHORIZED_ALL_SECTION_KEY) || authorizedSections.has(section)) {
+                return true;
+            }
+
+            const enteredPassword = prompt('סיסמת מנהל נדרשת לכניסה למדור זה.');            
+            if (enteredPassword === null) {
+                // המשתמש ביטל את הבקשה
+                return false;
+            }
+
+            if ((enteredPassword || '').trim() !== accessControl.password) {
+                showNotification('סיסמה שגויה - הגישה נדחתה');
+                return false;
+            }
+
+            markAllProtectedSectionsAuthorized();
+            showNotification('גישה למנהלים אושרה');
+            return true;
+        }
+        function initPasswordSettingsUI() {
+            const enableToggle = document.getElementById('passwordEnableToggle');
+            const sectionsList = document.getElementById('passwordSectionsList');
+            const currentInput = document.getElementById('currentPasswordInput');
+            const newInput = document.getElementById('newPasswordInput');
+            const confirmInput = document.getElementById('confirmPasswordInput');
+            const hint = document.getElementById('passwordSettingsHint');
+            const appLockToggle = document.getElementById('passwordAppLockToggle');
+            const isPasswordActive = Boolean(accessControl.enabled && accessControl.password);
+
+            if (enableToggle) {
+                enableToggle.checked = isPasswordActive;
+            }
+
+            if (appLockToggle) {
+                appLockToggle.checked = Boolean(isPasswordActive && accessControl.requireAppUnlock);
+                appLockToggle.disabled = !isPasswordActive;
+            }
+
+            if (sectionsList) {
+                sectionsList.innerHTML = SECTION_OPTIONS.map(option => {
+                    const checked = accessControl.protectedSections.includes(option.id) ? 'checked' : '';
+                    return `
+                        <label class="password-section-option">
+                            <input type="checkbox" value="${option.id}" ${checked}>
+                            <span>${option.label}</span>
+                        </label>
+                    `;
+                }).join('');
+            }
+
+            if (currentInput) currentInput.value = '';
+            if (newInput) newInput.value = '';
+            if (confirmInput) confirmInput.value = '';
+
+            if (hint) {
+                if (isPasswordActive) {
+                    if (accessControl.requireAppUnlock) {
+                        hint.textContent = 'המערכת נעולה בעת פתיחה ותיפתח רק לאחר הזנת סיסמת המנהל.';
+                    } else if (accessControl.protectedSections.length) {
+                        hint.textContent = `כיום דרושה סיסמה עבור ${accessControl.protectedSections.length} מדורים נבחרים.`;
+                    } else {
+                        hint.textContent = 'הסיסמה פעילה אך לא נבחרו מדורים מוגנים.';
+                    }
+                } else {
+                    hint.textContent = 'הגנת הסיסמה אינה פעילה כרגע.';
+                }
+            }
+        }
+
+        const HOME_DONOR_STATUS_LABELS = {
+            none: 'לא תרם',
+            met: 'עמד ביעד',
+            exceeded: 'עבר את היעד',
+            progress: 'אסף אך לא הגיע ליעד'
+        };
+        function getHomeDonorStatus(donor) {
+            if (!donor) return 'none';
+            const amount = Math.max(0, Math.round(parseFloat(donor.amount) || 0));
+            const fallbackGoal = defaultDonorGoal || INITIAL_DEFAULT_DONOR_GOAL || 0;
+            const goal = Math.max(0, Math.round(parseFloat(donor.personalGoal) || fallbackGoal));
+            if (amount === 0) return 'none';
+            if (goal <= 0) return amount > 0 ? 'met' : 'none';
+            if (amount > goal) return 'exceeded';
+            if (amount >= goal) return 'met';
+            return 'progress';
+        }
+
+        function formatCurrency(value) {
+            const number = Math.max(0, Math.round(parseFloat(value) || 0));
+            return `₪${number.toLocaleString('he-IL')}`;
+        }
+
+        function formatCurrencyExact(value) {
+            const number = Math.max(0, parseFloat(value) || 0);
+            return `₪${number.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+
+        function updateHomeDonorBreakdown() {
+            const container = document.getElementById('homeDonorBreakdown');
+            const list = document.getElementById('homeDonorBreakdownList');
+            if (!container || !list) return;
+
+            const collator = new Intl.Collator('he-IL', { sensitivity: 'base', numeric: true });
+            const hasHighlights = homeDonorHighlights.size > 0;
+            const baseData = donors.map(donor => {
+                const status = getHomeDonorStatus(donor);
+                const isHighlighted = hasHighlights && homeDonorHighlights.has(status);
+                return { donor, status, isHighlighted };
+            });
+
+            const counts = baseData.reduce((acc, item) => {
+                acc.all += 1;
+                acc[item.status] = (acc[item.status] || 0) + 1;
+                return acc;
+            }, { all: 0, none: 0, met: 0, exceeded: 0, progress: 0 });
+
+            baseData.sort((a, b) => {
+                if (hasHighlights && homeDonorSortHighlightedFirst && a.isHighlighted !== b.isHighlighted) {
+                    return a.isHighlighted ? -1 : 1;
+                }
+                const nameA = (a.donor.name || '').toString();
+                const nameB = (b.donor.name || '').toString();
+                return collator.compare(nameA, nameB);
+            });
+
+            if (!baseData.length) {
+                list.innerHTML = `
+                    <div class="home-donor-item">
+                        <strong>אין מתרימים להצגה</strong>
+                        <span class="home-donor-meta">הוסיפו מתרימים במדור הניהול כדי לראות פילוח כאן.</span>
+                    </div>
+                `;
+            } else {
+                const statusClassMap = {
+                    none: 'home-donor-status home-donor-status-none',
+                    met: 'home-donor-status home-donor-status-met',
+                    exceeded: 'home-donor-status home-donor-status-exceeded',
+                    progress: 'home-donor-status home-donor-status-progress'
+                };
+
+                list.innerHTML = baseData.map(({ donor, status, isHighlighted }) => {
+                    const name = escapeHtml(donor.name || 'ללא שם');
+                    const amountDisplay = formatCurrency(donor.amount || 0);
+                    const goalRaw = Math.max(0, Math.round(parseFloat(donor.personalGoal) || defaultDonorGoal || 0));
+                    const goalDisplay = goalRaw > 0 ? formatCurrency(goalRaw) : 'ללא יעד';
+                    const group = groups.find(groupItem => groupItem.id === donor.groupId);
+                    const groupName = escapeHtml(group ? group.name : 'ללא קבוצה');
+                    const statusLabel = HOME_DONOR_STATUS_LABELS[status] || '';
+                    const statusClass = statusClassMap[status] || 'home-donor-status';
+                    const classes = ['home-donor-item', `status-${status}`];
+                    if (isHighlighted) classes.push('highlighted');
+                    return `
+                        <div class="${classes.join(' ')}" data-status="${status}">
+                            <strong>${name}</strong>
+                            <div class="home-donor-meta">
+                                <span>סכום: ${amountDisplay}</span>
+                                <span>יעד: ${goalDisplay}</span>
+                            </div>
+                            <div class="home-donor-meta">
+                                <span>קבוצה: ${groupName}</span>
+                            </div>
+                            <span class="${statusClass}">${statusLabel}</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            const filterCards = container.querySelectorAll('.home-donor-filter-card');
+            filterCards.forEach(card => {
+                const cardHighlight = card.dataset.highlight || '';
+                const toggle = card.querySelector('.home-donor-filter-toggle');
+                const countEl = card.querySelector('.home-donor-filter-count');
+                const isActive = homeDonorHighlights.has(cardHighlight);
+                card.classList.toggle('active', isActive);
+                if (toggle) {
+                    toggle.checked = isActive;
+                }
+                if (countEl) {
+                    const countValue = counts[cardHighlight] ?? 0;
+                    countEl.textContent = 'סה"כ: ' + countValue.toLocaleString('he-IL');
+                }
+            });
+
+            const sortToggleWrapper = document.getElementById('homeDonorSortToggleWrapper');
+            const sortToggle = document.getElementById('homeDonorSortToggle');
+            const isSortAvailable = hasHighlights;
+            if (sortToggleWrapper) {
+                sortToggleWrapper.classList.toggle('disabled', !isSortAvailable);
+            }
+            if (sortToggle) {
+                sortToggle.disabled = !isSortAvailable;
+                if (!isSortAvailable) {
+                    sortToggle.checked = false;
+                    homeDonorSortHighlightedFirst = false;
+                } else {
+                    sortToggle.checked = homeDonorSortHighlightedFirst;
+                }
+            }
+
+            const exportBtn = document.getElementById('exportBreakdownBtn');
+            if (exportBtn) {
+                const exportStatuses = hasHighlights
+                    ? Array.from(homeDonorHighlights)
+                    : ['none', 'progress', 'met', 'exceeded'];
+                const exportCount = baseData.filter(item => exportStatuses.includes(item.status)).length;
+                exportBtn.textContent = exportCount > 0
+                    ? `ייצוא לאקסל – מודגשים בלבד (${exportCount})`
+                    : 'ייצוא לאקסל – מודגשים בלבד';
+                exportBtn.disabled = exportCount === 0;
+            }
+
+        }
+
+        function exportBreakdownToExcel() {
+            const selectedStatuses = homeDonorHighlights.size > 0
+                ? Array.from(homeDonorHighlights)
+                : ['none', 'progress', 'met', 'exceeded'];
+
+            if (selectedStatuses.length === 0) {
+                showNotification('בחר קטגוריה לייצוא', 'error');
+                return;
+            }
+
+            const donorsToExport = donors.filter(donor => {
+                const status = getHomeDonorStatus(donor);
+                return selectedStatuses.includes(status);
+            });
+
+            if (donorsToExport.length === 0) {
+                showNotification('אין מתרימים בקטגוריות שנבחרו', 'error');
+                return;
+            }
+
+            const namesData = donorsToExport.map(donor => ({
+                'שם': donor.name || 'ללא שם'
+            }));
+
+            const detailedData = donorsToExport.map(donor => {
+                const status = getHomeDonorStatus(donor);
+                const statusLabel = HOME_DONOR_STATUS_LABELS[status] || '';
+                const goalRaw = Math.max(0, Math.round(parseFloat(donor.personalGoal) || defaultDonorGoal || 0));
+                const group = groups.find(g => g.id === donor.groupId);
+                return {
+                    'שם': donor.name || 'ללא שם',
+                    'סכום (₪)': Math.round(donor.amount || 0),
+                    'יעד (₪)': goalRaw,
+                    'קבוצה': group ? group.name : 'ללא קבוצה',
+                    'מצב': statusLabel
+                };
+            });
+
+            try {
+                const workbook = XLSX.utils.book_new();
+                const namesSheet = XLSX.utils.json_to_sheet(namesData);
+                XLSX.utils.book_append_sheet(workbook, namesSheet, 'שמות להגרלה');
+
+                const detailedSheet = XLSX.utils.json_to_sheet(detailedData);
+                XLSX.utils.book_append_sheet(workbook, detailedSheet, 'פרטים');
+
+                const statusLabels = selectedStatuses.map(s => HOME_DONOR_STATUS_LABELS[s] || s).join('_');
+                const fileName = `donors_export_${statusLabels}_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+                XLSX.writeFile(workbook, fileName);
+                showNotification(`קובץ נוצר עם ${donorsToExport.length} מתרימים`);
+            } catch (error) {
+                console.error('שגיאה בייצוא:', error);
+                showNotification('שגיאה בעת ייצוא הקובץ', 'error');
+            }
+        }
+
+        function updateHomeDonorHighlight(status, enabled) {
+            if (!status) return;
+            const shouldEnable = typeof enabled === 'boolean'
+                ? enabled
+                : !homeDonorHighlights.has(status);
+
+            if (shouldEnable) {
+                homeDonorHighlights.add(status);
+            } else {
+                homeDonorHighlights.delete(status);
+            }
+
+            if (homeDonorHighlights.size === 0) {
+                homeDonorSortHighlightedFirst = false;
+            }
+            updateHomeDonorBreakdown();
+        }
+
+        function initHomeDonorFilters() {
+            if (homeDonorFiltersInitialized) return;
+            const container = document.getElementById('homeDonorBreakdown');
+            if (!container) return;
+
+            const filterCards = container.querySelectorAll('.home-donor-filter-card');
+            filterCards.forEach(card => {
+                const highlight = card.dataset.highlight || '';
+                const toggle = card.querySelector('.home-donor-filter-toggle');
+
+                if (toggle) {
+                    toggle.addEventListener('change', (event) => {
+                        updateHomeDonorHighlight(highlight, event.target.checked);
+                    });
+                }
+
+                card.addEventListener('click', (event) => {
+                    if (event.target.classList.contains('home-donor-filter-toggle') || event.target.closest('.switch')) {
+                        return;
+                    }
+                    updateHomeDonorHighlight(highlight);
+                });
+            });
+
+            const sortToggle = document.getElementById('homeDonorSortToggle');
+            if (sortToggle) {
+                sortToggle.addEventListener('change', (event) => {
+                    homeDonorSortHighlightedFirst = event.target.checked;
+                    updateHomeDonorBreakdown();
+                });
+            }
+
+            homeDonorFiltersInitialized = true;
+            updateHomeDonorBreakdown();
+        }
+
+        function getScoutsTeamsForActiveDay() {
+            if (!scoutsSchedule[scoutsActiveDay]) {
+                scoutsSchedule[scoutsActiveDay] = [];
+            }
+            return scoutsSchedule[scoutsActiveDay];
+        }
+
+        function setScoutsActiveDay(day) {
+            if (!scoutsSchedule[day]) {
+                scoutsSchedule[day] = [];
+            }
+            scoutsActiveDay = day;
+            const buttons = document.querySelectorAll('#scoutsDaySwitch button');
+            buttons.forEach(button => {
+                button.classList.toggle('active', button.dataset.day === day);
+            });
+            renderScoutsTeams();
+        }
+
+        function scoutsNameExists(name, exclude = {}) {
+            if (!name) return false;
+            const normalized = name.trim().toLowerCase();
+            if (!normalized) return false;
+            return Object.entries(scoutsSchedule).some(([day, teams]) =>
+                teams.some(team => {
+                    if (exclude.day === day && exclude.teamId === team.id) {
+                        return false;
+                    }
+                    return team.members.some(member => (member?.name || '').toLowerCase() === normalized);
+                })
+            );
+        }
+
+        function parseManualNumber(value) {
+            if (value === null || value === undefined || value === '') return null;
+            const parsed = Math.round(parseFloat(value));
+            if (Number.isNaN(parsed)) return null;
+            return Math.max(0, parsed);
+        }
+
+        function getTeamEffectiveTotals(team) {
+            if (!team) {
+                return { total: 0, average: 0, memberCount: 0 };
+            }
+            const fallbackTotal = (team.members || []).reduce((sum, member) => sum + (member?.amount || 0), 0);
+            const memberCount = (team.members || []).length;
+            const total = typeof team.manualTotal === 'number'
+                ? Math.max(0, Math.round(team.manualTotal))
+                : fallbackTotal;
+            const average = memberCount ? Math.round(total / Math.max(memberCount, 1)) : 0;
+            return { total, average, memberCount };
+        }
+
+        function updateScoutsStats() {
+            const statsEl = document.getElementById('scoutsStats');
+            if (!statsEl) return;
+            const teams = getScoutsTeamsForActiveDay();
+            const totalTeams = teams.length;
+            const allMembers = teams.flatMap(team => team.members);
+            const uniqueMembers = new Set(allMembers.map(member => (member?.name || '').toLowerCase()).filter(Boolean));
+            const totals = teams.map(getTeamEffectiveTotals);
+            const totalAmount = totals.reduce((sum, item) => sum + item.total, 0);
+            const averagePerMember = allMembers.length ? Math.round(totalAmount / allMembers.length) : 0;
+            const averagePerTeam = totalTeams ? Math.round(totalAmount / totalTeams) : 0;
+            const stats = [
+                { label: 'סירות פעילות', value: totalTeams.toLocaleString('he-IL') },
+                { label: 'סה״כ מתרימים', value: allMembers.length.toLocaleString('he-IL') },
+                { label: 'מתרימים ייחודיים', value: uniqueMembers.size.toLocaleString('he-IL') },
+                { label: 'סה״כ נאסף', value: formatCurrency(totalAmount) },
+                { label: 'ממוצע למתרים', value: formatCurrency(averagePerMember) },
+                { label: 'ממוצע לסירת ', value: formatCurrency(averagePerTeam) }
+            ];
+            statsEl.innerHTML = stats.map(stat => `
+                <div class="scouts-stat-card">
+                    <span class="scouts-stat-label">${stat.label}</span>
+                    <strong class="scouts-stat-value">${stat.value}</strong>
+                </div>
+            `).join('');
+        }
+        function renderScoutsTeams() {
+            const container = document.getElementById('scoutsTeamsContainer');
+            if (!container) return;
+            updateScoutsDatalist();
+            const teams = getScoutsTeamsForActiveDay();
+            if (!teams.length) {
+                container.innerHTML = `
+                    <div class="instructions-note">
+                        עדיין לא נוצרו סירות לשטח ביום ${SCOUT_DAY_LABELS[scoutsActiveDay]}. הוסיפו סירת  חדשה באמצעות הכפתור למעלה.
+                    </div>
+                `;
+                updateScoutsStats();
+                return;
+            } else {
+                container.innerHTML = teams.map(team => {
+                    const cityOptions = [
+                        '<option value="">בחירת עיר יעד</option>',
+                        ...SCOUT_CITY_OPTIONS.map(city => `<option value="${city}" ${team.city === city ? 'selected' : ''}>${city}</option>`)
+                    ].join('');
+                    const { total: effectiveTotal, average: effectiveAverage } = getTeamEffectiveTotals(team);
+                    const memberCount = team.members.length;
+                    const hasLeader = team.leader && team.leader.trim().length > 0;
+                    const totalParticipants = memberCount + (hasLeader ? 1 : 0);
+                    const amountPerMember = totalParticipants > 0 ? (effectiveTotal / totalParticipants) : 0;
+                    const membersRows = team.members.length
+                        ? team.members.map((member, index) => {
+                            return `
+                                <tr>
+                                    <td class="scout-member-name-cell">
+                                        <input type="text"
+                                            value="${escapeHtml(member.name)}"
+                                            placeholder="שם מתרים"
+                                            class="scout-member-name-input"
+                                        data-team-id="${team.id}"
+                                        data-member-index="${index}"
+                                            list="scoutDonorSuggestions">
+                                    </td>
+                                    <td class="scout-member-actions">
+                                        <button type="button"
+                                            class="scout-member-remove-btn"
+                                            data-team-id="${team.id}"
+                                            data-member-index="${index}">
+                                            הסר
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')
+                        : `<tr><td class="scout-team-empty scout-member-name-cell">עדיין לא נרשמו מתרימים לסירת השטח הזו.</td><td></td></tr>`;
+                    const newMemberRow = `
+                        <tr class="scout-member-new-row">
+                            <td class="scout-member-name-cell">
+                                <input type="text"
+                                    class="scout-member-new-name-input"
+                                    data-team-id="${team.id}"
+                                    placeholder="שם מתרים חדש"
+                                    list="scoutDonorSuggestions">
+                            </td>
+                            <td class="scout-member-new-hint">הקישו אנטר להוספת שם חדש לרשימת סירת השטח</td>
+                        </tr>
+                    `;
+                    return `
+                        <div class="scout-team-card" data-team-id="${team.id}">
+                            <div class="scout-team-header">
+                                <input type="text" value="${escapeHtml(team.name)}" placeholder="שם סירת "
+                                    oninput="scoutsUpdateTeamName('${team.id}', this.value)">
+                                <select onchange="scoutsUpdateTeamCity('${team.id}', this.value)">${cityOptions}</select>
+                                <button type="button" onclick="scoutsDeleteTeam('${team.id}')">מחק סירת </button>
+                            </div>
+                            <div class="scout-team-meta">
+                                <label>
+                                    <span>ראש סירת</span>
+                                    <input type="text"
+                                        value="${escapeHtml(team.leader || '')}"
+                                        placeholder="שם ראש הסירת"
+                                        list="scoutDonorSuggestions"
+                                        oninput="scoutsUpdateTeamLeader('${team.id}', this.value)">
+                                </label>
+                            </div>
+                            <div class="scout-team-summary">
+                                <div class="scout-summary-card">
+                                    <span class="scout-summary-label">מספר מתרימים${hasLeader ? ' (כולל ראש סירה)' : ''}</span>
+                                    <div class="scout-summary-value scout-summary-static">${totalParticipants.toLocaleString('he-IL')}</div>
+                                </div>
+                                <div class="scout-summary-card">
+                                    <span class="scout-summary-label">סה״כ נאסף</span>
+                                    <div class="scout-summary-value">
+                                        <input type="number" min="0" step="1"
+                                            class="scout-summary-input scout-summary-total-input"
+                                            value="${effectiveTotal}"
+                                            data-team-id="${team.id}">
+                                        <span class="scout-summary-unit">₪</span>
+                                    </div>
+                                </div>
+                                <div class="scout-summary-card">
+                                    <span class="scout-summary-label">כמה יוצא למתרים</span>
+                                    <div class="scout-summary-value scout-summary-static" style="color: #0066cc; font-weight: 700;">${formatCurrencyExact(amountPerMember)}</div>
+                                </div>
+                                ${totalParticipants > 0 ? `
+                                <div class="scout-summary-card" style="grid-column: 1 / -1;">
+                                    <button type="button" 
+                                        class="btn btn-small" 
+                                        onclick="scoutsCalculateFinal('${team.id}')"
+                                        style="width: 100%; margin-top: 10px;">
+                                        חישוב סופי - חלק שווה בין כל המתרים${hasLeader ? ' וראש הסירה' : ''}
+                                    </button>
+                                </div>
+                                ` : ''}
+                            </div>
+                            <table class="scout-team-table">
+                                <thead>
+                                    <tr>
+                                        <th class="scout-member-name-header">שם מתרים</th>
+                                        <th class="scout-member-actions-header">פעולות</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${membersRows}
+                                    ${newMemberRow}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }).join('');
+            }
+            container.querySelectorAll('.scout-member-name-input').forEach(input => {
+                input.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        scoutsUpdateMemberName(event.target.dataset.teamId, event.target.dataset.memberIndex, event.target.value);
+                    }
+                });
+                input.addEventListener('blur', (event) => {
+                    scoutsUpdateMemberName(event.target.dataset.teamId, event.target.dataset.memberIndex, event.target.value);
+                });
+            });
+            container.querySelectorAll('.scout-member-new-name-input').forEach(input => {
+                input.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        scoutsCommitNewMemberRow(event.target.dataset.teamId, event.target);
+                    }
+                });
+                input.addEventListener('blur', (event) => {
+                    scoutsCommitNewMemberRow(event.target.dataset.teamId, event.target, { silent: true });
+                });
+            });
+            container.querySelectorAll('.scout-member-remove-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const teamId = event.currentTarget.dataset.teamId;
+                    const memberIndex = parseInt(event.currentTarget.dataset.memberIndex, 10);
+                    if (!Number.isNaN(memberIndex)) {
+                        scoutsRemoveMember(teamId, memberIndex);
+                    }
+                });
+            });
+            container.querySelectorAll('.scout-summary-total-input').forEach(input => {
+                input.addEventListener('change', (event) => {
+                    const teamId = event.target.dataset.teamId;
+                    const value = event.target.value;
+                    scoutsUpdateTeamTotal(teamId, value);
+                });
+                input.addEventListener('blur', (event) => {
+                    const teamId = event.target.dataset.teamId;
+                    const value = event.target.value;
+                    scoutsUpdateTeamTotal(teamId, value);
+                });
+            });
+            updateScoutsStats();
+        }
+
+        function scoutsQuickAddMember(teamId, rawName, rawAmount, options = {}) {
+            const teams = getScoutsTeamsForActiveDay();
+            const team = teams.find(item => item.id === teamId);
+            if (!team) return { status: 'not-found' };
+            const trimmed = (rawName || '').toString().trim();
+            if (!trimmed) return { status: 'invalid' };
+            const normalized = trimmed.toLowerCase();
+            if (team.members.some(member => (member?.name || '').toLowerCase() === normalized)) {
+                return { status: 'duplicate-team' };
+            }
+            if (scoutsNameExists(trimmed, { day: scoutsActiveDay, teamId })) {
+                return { status: 'duplicate-global' };
+            }
+            const manualAmount = Math.max(0, Math.round(parseFloat(rawAmount ?? 0) || 0));
+            const donorMatch = donors.find(donor => (donor?.name || '').toString().trim().toLowerCase() === normalized);
+            const donorAmount = donorMatch ? Math.max(0, Math.round(parseFloat(donorMatch.amount) || 0)) : 0;
+            const resolvedAmount = manualAmount > 0 || options?.allowZeroManual
+                ? manualAmount
+                : donorAmount;
+            team.members.push({ name: trimmed, amount: resolvedAmount });
+            saveScoutsScheduleToStorage();
+            let upsertResult = null;
+            if (resolvedAmount > 0) {
+                upsertResult = upsertDonorByName(trimmed, resolvedAmount);
+            }
+            notifyDataChanged();
+            return { status: 'success', member: { name: trimmed, amount: resolvedAmount }, upsertResult };
+        }
+
+        function scoutsCommitNewMemberRow(teamId, nameInput, options = {}) {
+            if (!nameInput) return;
+            const name = (nameInput.value || '').toString().trim();
+            if (!name) {
+                if (!options?.silent) {
+                    showNotification('אנא הזינו שם מתרים לפני ההוספה');
+                }
+                return;
+            }
+            const result = scoutsQuickAddMember(teamId, name);
+            if (result.status === 'success') {
+                nameInput.value = '';
+                renderScoutsTeams();
+                if (!options?.silent) {
+                    showNotification(`המתרים ${result.member.name} נוסף לסירת ה בהצלחה`);
+                }
+            } else if (!options?.silent) {
+                if (result.status === 'duplicate-team') {
+                    showNotification('שם זה כבר קיים בסירת הנוכחית');
+                } else if (result.status === 'duplicate-global') {
+                    showNotification('שם זה כבר משויך לסירת  אחרת ביום זה');
+                } else if (result.status === 'invalid') {
+                    showNotification('אנא הזינו שם מתרים תקין');
+                }
+            }
+        }
+
+        function scoutsUpdateTeamTotal(teamId, value) {
+            const teams = getScoutsTeamsForActiveDay();
+            const team = teams.find(item => item.id === teamId);
+            if (!team) return;
+            const parsed = parseManualNumber(value);
+            const previous = typeof team.manualTotal === 'number' ? team.manualTotal : null;
+            if (parsed === null) {
+                if (previous === null) return;
+                delete team.manualTotal;
+            } else {
+                if (previous === parsed) return;
+                team.manualTotal = parsed;
+            }
+            saveScoutsScheduleToStorage();
+            notifyDataChanged();
+            renderScoutsTeams();
+            showNotification('סה״כ לסירת השטח עודכן');
+        }
+
+        function scoutsCalculateFinal(teamId) {
+            const teams = getScoutsTeamsForActiveDay();
+            const team = teams.find(item => item.id === teamId);
+            if (!team) {
+                showNotification('סירת השטח לא נמצאה', 'error');
+                return;
+            }
+            if (!team.members || team.members.length === 0) {
+                showNotification('אין מתרימים בסירת השטח', 'error');
+                return;
+            }
+            const { total: effectiveTotal } = getTeamEffectiveTotals(team);
+            if (effectiveTotal <= 0) {
+                showNotification('אנא הזינו סה״כ נאסף גדול מ-0 בשדה "סה״כ נאסף" לפני החישוב', 'error');
+                return;
+            }
+            const hasLeader = team.leader && team.leader.trim().length > 0;
+            const totalParticipants = team.members.length + (hasLeader ? 1 : 0);
+            const amountPerMember = effectiveTotal / totalParticipants;
+            const participantsText = hasLeader 
+                ? `${team.members.length} מתרימים + ראש סירה (${totalParticipants} סה״כ)`
+                : `${totalParticipants} מתרימים`;
+            showNotification(`חישוב סופי: ${formatCurrency(effectiveTotal)} ÷ ${participantsText} = ${formatCurrencyExact(amountPerMember)} לכל אחד`);
+            // עדכון מחדש של הרינדור כדי שהערך יתעדכן
+            renderScoutsTeams();
+            // עדכון הסטטיסטיקות
+            updateScoutsStats();
+        }
+
+        function scoutsUpdateMemberName(teamId, memberIndex, value) {
+            const index = parseInt(memberIndex, 10);
+            if (Number.isNaN(index)) return;
+            const teams = getScoutsTeamsForActiveDay();
+            const team = teams.find(item => item.id === teamId);
+            if (!team) return;
+            if (index < 0 || index >= team.members.length) return;
+            const member = team.members[index];
+            if (!member) return;
+            const trimmed = (value || '').toString().trim();
+            if (!trimmed) {
+                team.members.splice(index, 1);
+                saveScoutsScheduleToStorage();
+                notifyDataChanged();
+                renderScoutsTeams();
+                showNotification('המתרים הוסר מסירת השטח');
+                return;
+            }
+            const normalized = trimmed.toLowerCase();
+            const currentNormalized = (member.name || '').toString().trim().toLowerCase();
+            if (currentNormalized === normalized) return;
+            if (team.members.some((item, idx) => idx !== index && (item?.name || '').toLowerCase() === normalized)) {
+                showNotification('שם זה כבר קיים בסירת השטח הנוכחית');
+                renderScoutsTeams();
+                return;
+            }
+            if (scoutsNameExists(trimmed, { day: scoutsActiveDay, teamId })) {
+                showNotification('שם זה כבר משויך לסירת שטח אחרת ביום זה');
+                renderScoutsTeams();
+                return;
+            }
+            member.name = trimmed;
+            saveScoutsScheduleToStorage();
+            notifyDataChanged();
+            upsertDonorByName(trimmed, member.amount || 0);
+            renderScoutsTeams();
+            showNotification('שם המתרים עודכן בסירת השטח בהצלחה');
+        }
+
+        function scoutsAddTeam() {
+            const teams = getScoutsTeamsForActiveDay();
+            const newTeam = {
+                id: generateScoutTeamId(),
+                name: `סירת ${teams.length + 1} (${SCOUT_DAY_LABELS[scoutsActiveDay]})`,
+                city: '',
+                leader: '',
+                members: []
+            };
+            teams.push(newTeam);
+            saveScoutsScheduleToStorage();
+            renderScoutsTeams();
+            notifyDataChanged();
+            showNotification('סירת שטח חדשה נוספה');
+        }
+
+        function scoutsDeleteTeam(teamId) {
+            const teams = getScoutsTeamsForActiveDay();
+            const index = teams.findIndex(team => team.id === teamId);
+            if (index === -1) return;
+            if (!confirm('האם למחוק את סירת השטח הזו?')) return;
+            teams.splice(index, 1);
+            saveScoutsScheduleToStorage();
+            renderScoutsTeams();
+            notifyDataChanged();
+            showNotification('סירת השטח הוסרה מהרשימה');
+        }
+
+        function scoutsUpdateTeamName(teamId, value) {
+            const teams = getScoutsTeamsForActiveDay();
+            const team = teams.find(item => item.id === teamId);
+            if (!team) return;
+            team.name = value.trim() || 'סירת שטח';
+            saveScoutsScheduleToStorage();
+            notifyDataChanged();
+        }
+
+        function scoutsUpdateTeamCity(teamId, city) {
+            const teams = getScoutsTeamsForActiveDay();
+            const team = teams.find(item => item.id === teamId);
+            if (!team) return;
+            team.city = SCOUT_CITY_OPTIONS.includes(city) ? city : '';
+            saveScoutsScheduleToStorage();
+            notifyDataChanged();
+        }
+
+        function scoutsUpdateTeamLeader(teamId, value) {
+            const teams = getScoutsTeamsForActiveDay();
+            const team = teams.find(item => item.id === teamId);
+            if (!team) return;
+            team.leader = (value || '').toString().trim();
+            saveScoutsScheduleToStorage();
+            notifyDataChanged();
+            renderScoutsTeams();
+        }
+
+        function scoutsRemoveMember(teamId, memberIndex) {
+            const index = parseInt(memberIndex, 10);
+            if (Number.isNaN(index)) return;
+            const teams = getScoutsTeamsForActiveDay();
+            const team = teams.find(item => item.id === teamId);
+            if (!team) return;
+            if (index < 0 || index >= team.members.length) return;
+            const [removed] = team.members.splice(index, 1);
+            saveScoutsScheduleToStorage();
+            renderScoutsTeams();
+            notifyDataChanged();
+            if (removed?.name) {
+                showNotification(`המתרים ${removed.name} הוסר מסירת השטח`);
+            } else {
+                showNotification('המתרים הוסר מסירת השטח');
+            }
+        }
+
+        function updateScoutsDatalist() {
+            const datalist = document.getElementById('scoutDonorSuggestions');
+            if (!datalist) return;
+            const names = donors
+                .map(donor => (donor?.name || '').toString().trim())
+                .filter(Boolean);
+            const uniqueNames = Array.from(new Set(names)).sort((a, b) => a.localeCompare(b, 'he'));
+            datalist.innerHTML = uniqueNames.map(name => `<option value="${escapeHtml(name)}"></option>`).join('');
+        }
+
+        function showScoutsSummary() {
+            const teams = getScoutsTeamsForActiveDay();
+            if (!teams.length) {
+                showNotification('אין סירות להצגה', 'error');
+                return;
+            }
+
+            let summaryHTML = `
+                <div style="max-width: 900px; margin: 0 auto; padding: 20px;">
+                    <h2 style="text-align: center; margin-bottom: 30px; color: var(--brown-dark);">סיכום סירות - ${SCOUT_DAY_LABELS[scoutsActiveDay]}</h2>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                            <thead>
+                                <tr style="background: linear-gradient(135deg, var(--primary-gold) 0%, var(--primary-gold-dark) 100%); color: white;">
+                                    <th style="padding: 15px; text-align: right; border-bottom: 2px solid rgba(255,255,255,0.2);">שם סירת</th>
+                                    <th style="padding: 15px; text-align: center; border-bottom: 2px solid rgba(255,255,255,0.2);">מספר מתרימים</th>
+                                    <th style="padding: 15px; text-align: center; border-bottom: 2px solid rgba(255,255,255,0.2);">סה״כ נאסף</th>
+                                    <th style="padding: 15px; text-align: center; border-bottom: 2px solid rgba(255,255,255,0.2);">כמה יוצא למתרים</th>
+                                    <th style="padding: 15px; text-align: right; border-bottom: 2px solid rgba(255,255,255,0.2);">עיר</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+
+            let grandTotal = 0;
+            let grandMemberCount = 0;
+
+            teams.forEach((team, index) => {
+                const { total: effectiveTotal, average: effectiveAverage, memberCount } = getTeamEffectiveTotals(team);
+                const amountPerMember = memberCount > 0 ? Math.round(effectiveTotal / memberCount) : 0;
+                grandTotal += effectiveTotal;
+                grandMemberCount += memberCount;
+
+                const rowStyle = index % 2 === 0 ? 'background: rgba(245, 230, 211, 0.3);' : 'background: white;';
+                summaryHTML += `
+                    <tr style="${rowStyle}">
+                        <td style="padding: 12px 15px; text-align: right; font-weight: 600; color: var(--brown-dark);">${escapeHtml(team.name || 'סירת שטח')}</td>
+                        <td style="padding: 12px 15px; text-align: center;">${memberCount.toLocaleString('he-IL')}</td>
+                        <td style="padding: 12px 15px; text-align: center; font-weight: 600; color: var(--primary-gold);">${formatCurrency(effectiveTotal)}</td>
+                        <td style="padding: 12px 15px; text-align: center; font-weight: 600; color: #0066cc;">${formatCurrency(amountPerMember)}</td>
+                        <td style="padding: 12px 15px; text-align: right; color: var(--muted);">${escapeHtml(team.city || '-')}</td>
+                    </tr>
+                `;
+            });
+
+            const grandAverage = grandMemberCount > 0 ? Math.round(grandTotal / grandMemberCount) : 0;
+
+            summaryHTML += `
+                            </tbody>
+                            <tfoot style="background: rgba(212, 175, 55, 0.15); font-weight: 700;">
+                                <tr>
+                                    <td style="padding: 15px; text-align: right; border-top: 2px solid var(--primary-gold);">סה״כ</td>
+                                    <td style="padding: 15px; text-align: center; border-top: 2px solid var(--primary-gold);">${grandMemberCount.toLocaleString('he-IL')}</td>
+                                    <td style="padding: 15px; text-align: center; border-top: 2px solid var(--primary-gold); color: var(--primary-gold);">${formatCurrency(grandTotal)}</td>
+                                    <td style="padding: 15px; text-align: center; border-top: 2px solid var(--primary-gold); color: #0066cc;">${formatCurrency(grandAverage)}</td>
+                                    <td style="padding: 15px; text-align: right; border-top: 2px solid var(--primary-gold);">-</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            // יצירת חלון מודאלי
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.7);
+                backdrop-filter: blur(5px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 100000;
+                padding: 20px;
+                overflow-y: auto;
+            `;
+
+            const modalContent = document.createElement('div');
+            modalContent.style.cssText = `
+                background: white;
+                border-radius: 20px;
+                padding: 30px;
+                max-width: 1000px;
+                width: 100%;
+                max-height: 90vh;
+                overflow-y: auto;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                position: relative;
+            `;
+
+            modalContent.innerHTML = summaryHTML + `
+                <div style="margin-top: 20px; text-align: center;">
+                    <button onclick="exportScoutsToExcel('${scoutsActiveDay}')" 
+                        style="background: var(--primary-gold); color: white; border: none; border-radius: 8px; padding: 12px 24px; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3); transition: all 0.3s;">
+                        ייצוא לאקסל
+                    </button>
+                </div>
+                <button onclick="this.closest('[style*=\\'position: fixed\\']').remove()" 
+                    style="position: absolute; top: 15px; left: 15px; background: #ff4444; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+                    ×
+                </button>
+            `;
+
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+
+        function exportScoutsToExcel(day = null) {
+            const activeDay = day || scoutsActiveDay;
+            const originalActiveDay = scoutsActiveDay;
+            if (day) {
+                scoutsActiveDay = day;
+            }
+            const teams = getScoutsTeamsForActiveDay();
+            if (day) {
+                scoutsActiveDay = originalActiveDay;
+            }
+            
+            if (!teams.length) {
+                showNotification('אין סירות לייצוא', 'error');
+                return;
+            }
+
+            try {
+                const worksheetData = [];
+                
+                // כותרת
+                worksheetData.push(['סיכום סירות - ' + SCOUT_DAY_LABELS[activeDay]]);
+                worksheetData.push([]);
+                
+                // כותרות טבלה
+                worksheetData.push(['שם סירת', 'מספר מתרימים', 'סה״כ נאסף', 'כמה יוצא למתרים', 'עיר']);
+                
+                let grandTotal = 0;
+                let grandMemberCount = 0;
+                
+                teams.forEach(team => {
+                    const { total: effectiveTotal, average: effectiveAverage, memberCount } = getTeamEffectiveTotals(team);
+                    const amountPerMember = memberCount > 0 ? Math.round(effectiveTotal / memberCount) : 0;
+                    grandTotal += effectiveTotal;
+                    grandMemberCount += memberCount;
+                    
+                    worksheetData.push([
+                        team.name || 'סירת שטח',
+                        memberCount,
+                        effectiveTotal,
+                        amountPerMember,
+                        team.city || '-'
+                    ]);
+                });
+                
+                // סיכום
+                worksheetData.push([]);
+                const grandAverage = grandMemberCount > 0 ? Math.round(grandTotal / grandMemberCount) : 0;
+                worksheetData.push(['סה״כ', grandMemberCount, grandTotal, grandAverage, '-']);
+                
+                // יצירת workbook
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+                
+                // הגדרת רוחב עמודות
+                ws['!cols'] = [
+                    { wch: 20 }, // שם סירת
+                    { wch: 15 }, // מספר מתרימים
+                    { wch: 15 }, // סה״כ נאסף
+                    { wch: 18 }, // כמה יוצא למתרים
+                    { wch: 15 }  // עיר
+                ];
+                
+                XLSX.utils.book_append_sheet(wb, ws, 'סיכום סירות');
+                
+                // הורדת הקובץ
+                const fileName = `scouts_summary_${activeDay}_${new Date().toISOString().split('T')[0]}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+                
+                showNotification('הקובץ יוצא בהצלחה');
+            } catch (error) {
+                console.error('שגיאה בייצוא לאקסל:', error);
+                showNotification('שגיאה בייצוא לאקסל: ' + (error.message || 'שגיאה לא ידועה'));
+            }
+        }
+
+        function refreshAfterDonorChange() {
+            updateDonorsList();
+            updateGroupsDisplay();
+            updateGroupSelect();
+            updateHomeStats();
+            updateLiveView();
+            updateLeadersList();
+            updateLiveTargets();
+            updateScoutsDatalist();
+        }
+        
+        // פונקציות לניהול כתובות
+        function addAddress() {
+            const city = document.getElementById('addressCity').value.trim();
+            const street = document.getElementById('addressStreet').value.trim();
+            const date = document.getElementById('addressDate').value;
+            const amount = parseFloat(document.getElementById('addressAmount').value) || 0;
+            
+            if (!city) {
+                showNotification('אנא הזן שם עיר');
+                return;
+            }
+            
+            if (!street) {
+                showNotification('אנא הזן שם רחוב');
+                return;
+            }
+            
+            const address = {
+                id: Date.now() + Math.random(),
+                city: city,
+                street: street,
+                date: date || new Date().toISOString().split('T')[0],
+                amount: Math.max(0, Math.round(amount)),
+                createdAt: new Date().toISOString()
+            };
+            
+            addresses.push(address);
+            saveAddresses();
+            renderAddresses();
+            
+            // איפוס הטופס
+            document.getElementById('addressCity').value = '';
+            document.getElementById('addressStreet').value = '';
+            document.getElementById('addressDate').value = '';
+            document.getElementById('addressAmount').value = '';
+            
+            showNotification('הכתובת נוספה בהצלחה');
+        }
+        
+        function deleteAddress(addressId) {
+            if (!confirm('האם אתה בטוח שברצונך למחוק כתובת זו?')) {
+                return;
+            }
+            
+            addresses = addresses.filter(a => a.id !== addressId);
+            saveAddresses();
+            renderAddresses();
+            showNotification('הכתובת נמחקה');
+        }
+        
+        function renderAddresses() {
+            const list = document.getElementById('addressesList');
+            if (!list) return;
+            
+            if (addresses.length === 0) {
+                list.innerHTML = '<div style="text-align: center; color: var(--muted); padding: 20px;">אין כתובות להצגה</div>';
+                return;
+            }
+            
+            list.innerHTML = addresses.map(address => `
+                <div class="address-item">
+                    <div class="address-item-info">
+                        <div><strong>עיר:</strong> ${escapeHtml(address.city)}</div>
+                        <div><strong>רחוב:</strong> ${escapeHtml(address.street)}</div>
+                        <div><strong>תאריך:</strong> ${address.date || 'לא צוין'}</div>
+                        <div><strong>סכום תרומה:</strong> ₪${(address.amount || 0).toLocaleString()}</div>
+                    </div>
+                    <div class="address-item-actions">
+                        <button class="btn-export" onclick="exportSingleAddressToExcel('${address.id}')">ייצוא לאקסל</button>
+                        <button class="btn-delete" onclick="deleteAddress('${address.id}')">מחק</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function saveAddresses() {
+            try {
+                storageSetItem('addresses', addresses);
+            } catch (e) {
+                console.error('שגיאה בשמירת כתובות:', e);
+            }
+        }
+        
+        function loadAddresses() {
+            try {
+                storageGetItem('addresses', (saved) => {
+                    if (saved) {
+                        addresses = saved;
+                    } else {
+                        addresses = [];
+                    }
+                });
+            } catch (e) {
+                console.error('שגיאה בטעינת כתובות:', e);
+                addresses = [];
+            }
+        }
+        
+        function exportAllAddressesToExcel() {
+            if (addresses.length === 0) {
+                showNotification('אין כתובות לייצוא');
+                return;
+            }
+            
+            try {
+                const worksheetData = [];
+                
+                // כותרת
+                worksheetData.push(['רשימת כתובות']);
+                worksheetData.push([]);
+                
+                // כותרות טבלה
+                worksheetData.push(['עיר', 'רחוב', 'תאריך', 'סכום תרומה (₪)']);
+                
+                let totalAmount = 0;
+                
+                addresses.forEach(address => {
+                    worksheetData.push([
+                        address.city || '',
+                        address.street || '',
+                        address.date || '',
+                        address.amount || 0
+                    ]);
+                    totalAmount += (address.amount || 0);
+                });
+                
+                // סיכום
+                worksheetData.push([]);
+                worksheetData.push(['סה״כ', '', '', totalAmount]);
+                
+                // יצירת workbook
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+                
+                // הגדרת רוחב עמודות
+                ws['!cols'] = [
+                    { wch: 20 }, // עיר
+                    { wch: 30 }, // רחוב
+                    { wch: 15 }, // תאריך
+                    { wch: 18 }  // סכום
+                ];
+                
+                XLSX.utils.book_append_sheet(wb, ws, 'כתובות');
+                
+                // הורדת הקובץ
+                const fileName = `addresses_${new Date().toISOString().split('T')[0]}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+                
+                showNotification('הקובץ יוצא בהצלחה');
+            } catch (error) {
+                console.error('שגיאה בייצוא לאקסל:', error);
+                showNotification('שגיאה בייצוא לאקסל: ' + (error.message || 'שגיאה לא ידועה'));
+            }
+        }
+        
+        function exportSingleAddressToExcel(addressId) {
+            const address = addresses.find(a => a.id === addressId);
+            if (!address) {
+                showNotification('כתובת לא נמצאה');
+                return;
+            }
+            
+            try {
+                const worksheetData = [];
+                
+                // כותרת
+                worksheetData.push(['פרטי כתובת']);
+                worksheetData.push([]);
+                
+                // נתונים
+                worksheetData.push(['עיר', address.city || '']);
+                worksheetData.push(['רחוב', address.street || '']);
+                worksheetData.push(['תאריך', address.date || '']);
+                worksheetData.push(['סכום תרומה (₪)', address.amount || 0]);
+                
+                // יצירת workbook
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+                
+                // הגדרת רוחב עמודות
+                ws['!cols'] = [
+                    { wch: 20 }, // עמודה ראשונה
+                    { wch: 30 }  // עמודה שנייה
+                ];
+                
+                XLSX.utils.book_append_sheet(wb, ws, 'כתובת');
+                
+                // הורדת הקובץ
+                const fileName = `address_${address.city}_${new Date().toISOString().split('T')[0]}.xlsx`.replace(/[^a-zA-Z0-9._-]/g, '_');
+                XLSX.writeFile(wb, fileName);
+                
+                showNotification('הקובץ יוצא בהצלחה');
+            } catch (error) {
+                console.error('שגיאה בייצוא לאקסל:', error);
+                showNotification('שגיאה בייצוא לאקסל: ' + (error.message || 'שגיאה לא ידועה'));
+            }
+        }
+        function upsertDonorByName(name, amount) {
+            const trimmed = (name || '').toString().trim();
+            if (!trimmed) return { status: 'invalid' };
+            const roundedAmount = Math.max(0, Math.round(parseFloat(amount) || 0));
+            const normalized = trimmed.toLowerCase();
+            const matchingDonors = donors.filter(donor => (donor?.name || '').toString().trim().toLowerCase() === normalized);
+            const now = new Date();
+            if (matchingDonors.length > 0) {
+                let updated = false;
+                matchingDonors.forEach(donor => {
+                    const oldAmount = donor.amount || 0;
+                    if (oldAmount === roundedAmount) {
+                        return;
+                    }
+                    const delta = roundedAmount - oldAmount;
+                    donor.amount = roundedAmount;
+                    addAmountToDailyBreakdown(donor, delta, now);
+                    alignBreakdownToAmount(donor, donor.amount);
+                    recordDonorHistory(donor, delta, donor.amount, 'scouts-update', 'עדכון דרך סיירות', now);
+                    updated = true;
+                });
+                if (updated) {
+                    ensureDonorsNormalized();
+                    saveData();
+                    refreshAfterDonorChange();
+                    return { status: 'updated' };
+                }
+                return { status: 'nochange' };
+            }
+
+            let groupId = groups[0]?.id;
+            if (!groupId) {
+                const newGroup = {
+                    id: `group_${Date.now()}`,
+                    name: 'קבוצת ברירת מחדל',
+                    goal: defaultGroupGoal
+                };
+                groups.push(newGroup);
+                groupId = newGroup.id;
+            }
+
+            const donor = {
+                id: Date.now(),
+                name: trimmed,
+                amount: roundedAmount,
+                groupId,
+                personalGoal: defaultDonorGoal,
+                createdAt: now.toISOString(),
+                history: [],
+                dailyBreakdown: Array(dayLabels.length).fill(0)
+            };
+
+            if (roundedAmount > 0) {
+                recordDonorHistory(donor, roundedAmount, roundedAmount, 'scouts-new', 'נוסף דרך סיירות');
+                addAmountToDailyBreakdown(donor, roundedAmount, now);
+            }
+            donors.push(normalizeDonor(donor));
+            ensureDonorsNormalized();
+            saveData();
+            refreshAfterDonorChange();
+            return { status: 'created' };
+        }
+
+        function initScoutsSection() {
+            const switchContainer = document.getElementById('scoutsDaySwitch');
+            if (!switchContainer) return;
+            if (!scoutsSectionInitialized) {
+                switchContainer.querySelectorAll('button').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const day = button.dataset.day;
+                        if (day && SCOUT_DAY_LABELS[day]) {
+                            setScoutsActiveDay(day);
+                        }
+                    });
+                });
+                scoutsSectionInitialized = true;
+            }
+            setScoutsActiveDay(scoutsActiveDay);
+        }
+
+        function isLiveViewActive() {
+            const liveSection = document.getElementById('liveviewSection');
+            return Boolean(liveSection && liveSection.classList.contains('active'));
+        }
+
+        function hideLiveViewBackButton() {
+            if (liveViewBackButtonTimer) {
+                clearTimeout(liveViewBackButtonTimer);
+                liveViewBackButtonTimer = null;
+            }
+            const btn = document.querySelector('.back-home-btn');
+            if (btn) {
+                btn.classList.remove('visible');
+            }
+        }
+
+        function showLiveViewBackButton() {
+            if (!isLiveViewActive()) return;
+            const btn = document.querySelector('.back-home-btn');
+            if (!btn) return;
+            btn.classList.add('visible');
+            if (liveViewBackButtonTimer) {
+                clearTimeout(liveViewBackButtonTimer);
+            }
+            liveViewBackButtonTimer = setTimeout(() => {
+                hideLiveViewBackButton();
+            }, LIVE_VIEW_BACK_BUTTON_TIMEOUT);
+        }
+
+        function handleLiveViewInteraction() {
+            showLiveViewBackButton();
+        }
+
+        function attachLiveViewInteractionHandlers() {
+            if (liveViewInteractionBound) return;
+            LIVE_VIEW_INTERACTION_EVENTS.forEach(eventName => {
+                document.addEventListener(eventName, handleLiveViewInteraction, { passive: true });
+            });
+            liveViewInteractionBound = true;
+        }
+
+        function detachLiveViewInteractionHandlers() {
+            if (!liveViewInteractionBound) return;
+            LIVE_VIEW_INTERACTION_EVENTS.forEach(eventName => {
+                document.removeEventListener(eventName, handleLiveViewInteraction);
+            });
+            liveViewInteractionBound = false;
+        }
+
+        function collectSelectedProtectedSections() {
+            const sectionsList = document.getElementById('passwordSectionsList');
+            if (!sectionsList) return [];
+            return Array.from(sectionsList.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(input => input.value)
+                .filter(value => SECTION_OPTIONS.some(option => option.id === value));
+        }
+        function savePasswordSettings() {
+            const enableToggle = document.getElementById('passwordEnableToggle');
+            const currentInput = document.getElementById('currentPasswordInput');
+            const newInput = document.getElementById('newPasswordInput');
+            const confirmInput = document.getElementById('confirmPasswordInput');
+            const appLockToggle = document.getElementById('passwordAppLockToggle');
+
+            const enableRequested = enableToggle ? enableToggle.checked : false;
+            const currentPasswordValue = currentInput ? currentInput.value.trim() : '';
+            const newPasswordValue = newInput ? newInput.value.trim() : '';
+            const confirmPasswordValue = confirmInput ? confirmInput.value.trim() : '';
+            const selectedSections = collectSelectedProtectedSections();
+            const hasExistingPassword = Boolean(accessControl.password);
+
+            if (hasExistingPassword && currentPasswordValue !== accessControl.password) {
+                showNotification('סיסמה נוכחית שגויה או חסרה');
+                return;
+            }
+
+            if (newPasswordValue || confirmPasswordValue) {
+                if (newPasswordValue !== confirmPasswordValue) {
+                    showNotification('הסיסמה החדשה ואישור הסיסמה אינם תואמים');
+                    return;
+                }
+                if (newPasswordValue.length < 4) {
+                    showNotification('הסיסמה חייבת להיות באורך של לפחות 4 תווים');
+                    return;
+                }
+                accessControl.password = newPasswordValue;
+            } else if (!hasExistingPassword && enableRequested) {
+                showNotification('יש להגדיר סיסמה חדשה לפני הפעלת ההגנה');
+                return;
+            }
+
+            accessControl.enabled = enableRequested && !!accessControl.password;
+            accessControl.protectedSections = accessControl.enabled ? selectedSections : [];
+            accessControl.requireAppUnlock = accessControl.enabled
+                ? Boolean(appLockToggle && appLockToggle.checked)
+                : false;
+
+            if (!accessControl.enabled) {
+                accessControl.protectedSections = [];
+                accessControl.requireAppUnlock = false;
+            } else if (!accessControl.protectedSections.length && !accessControl.requireAppUnlock) {
+                showNotification('נבחרה סיסמה אך לא נבחרו מדורים מוגנים');
+            }
+
+            saveAccessControl();
+            resetAuthorizedSections();
+            initPasswordSettingsUI();
+            initAppLock({ force: true });
+            notifyDataChanged();
+            showNotification('הגדרות הסיסמה עודכנו');
+        }
+
+        function clearPasswordSettings() {
+            const currentInput = document.getElementById('currentPasswordInput');
+            const currentPasswordValue = currentInput ? currentInput.value.trim() : '';
+            if (accessControl.password && currentPasswordValue !== accessControl.password) {
+                showNotification('סיסמה נוכחית שגויה או חסרה');
+                return;
+            }
+            if (!confirm('האם לבטל את הגנת הסיסמה לכל המדורים?')) {
+                return;
+            }
+            accessControl = getDefaultAccessControl();
+            saveAccessControl();
+            resetAuthorizedSections();
+            initPasswordSettingsUI();
+            initAppLock({ force: true });
+            notifyDataChanged();
+            showNotification('הגנת הסיסמה כובתה');
+        }
+
+        // הגדרות תצוגת לייב - ערכי ברירת מחדל כמו שהיו לפני הוספת מדור הניהול
+        let liveViewSettings = {
+            bgColor: '#f5e6d3',
+            bgColor2: '#fff8dc',
+            titleSize: 32,
+            donorNameSize: 18,
+            amountSize: 14,
+            groupNameSize: 28,
+            donorGroupSize: 13,
+            donorNameColor: '#3d2f1f',
+            amountColor: '#3d2f1f',
+            groupNameColor: '#3d2f1f',
+            leadersTitleColor: '#3d2f1f',
+            donorCardBg: 'rgba(255, 255, 255, 0.92)',
+            donorCardOpacity: 92,
+            leaderCardBg: 'rgba(255, 255, 255, 0.98)',
+            groupHeaderBg: 'rgba(255, 255, 255, 0.92)',
+            groupHeaderOpacity: 92,
+            summaryCardBg: 'rgba(255, 255, 255, 0.9)',
+            cardBorderWidth: 3,
+            cardBorderColor: '#D4AF37',
+            cardBorderRadius: 18,
+            cardShadow: 12,
+            donorGap: 3,
+            groupGap: 3,
+            donorCardPadding: 14,
+            leaderCardPadding: 12,
+            leadersGap: 14,
+            summaryCardGap: 28,
+            progressColor: '#b9f6ab',
+            progressBgColor: '#ededed',
+            progressHeight: 26,
+            progressCircleSize: 80,
+            progressCircleWidth: 6,
+            progressCircleColor: '#D4AF37',
+            progressCircleBgColor: 'rgba(212, 175, 55, 0.2)',
+            leadersWidth: 25,
+            donorsWidth: 75,
+            animationSpeed: 1,
+            enableHoverEffects: true,
+            enableTransitions: true,
+            showLeaders: true,
+            showDonors: true,
+            showSummary: true,
+            hideLeadersColumn: false,
+            donorsScrollSpeed: 50,
+            enableAnimations: true,
+            enableAutoScroll: true,
+            groupsSortBy: 'name',
+            groupsFilter: 'all',
+            donorsSortBy: 'name',
+            donorsFilter: 'all',
+            maxDonorsPerGroup: 0
+        };
+
+        function loadLiveViewSettings() {
+            storageGetItem('liveViewSettings', (saved) => {
+            if (saved) {
+                try {
+                        liveViewSettings = { ...liveViewSettings, ...saved };
+                } catch (e) {
+                    console.error('שגיאה בטעינת הגדרות תצוגת לייב:', e);
+                }
+            }
+            
+            // טעינת הערכים לטופס
+            const bgColor = document.getElementById('liveviewBgColor');
+            const bgColor2 = document.getElementById('liveviewBgColor2');
+            const titleSize = document.getElementById('liveviewTitleSize');
+            const titleSizeValue = document.getElementById('liveviewTitleSizeValue');
+            const donorNameSize = document.getElementById('liveviewDonorNameSize');
+            const donorNameSizeValue = document.getElementById('liveviewDonorNameSizeValue');
+            const amountSize = document.getElementById('liveviewAmountSize');
+            const amountSizeValue = document.getElementById('liveviewAmountSizeValue');
+            const showLeaders = document.getElementById('liveviewShowLeaders');
+            const showDonors = document.getElementById('liveviewShowDonors');
+            const showSummary = document.getElementById('liveviewShowSummary');
+            const donorsScrollSpeed = document.getElementById('liveviewDonorsScrollSpeed');
+            const donorsScrollSpeedValue = document.getElementById('liveviewDonorsScrollSpeedValue');
+            const enableAnimations = document.getElementById('liveviewEnableAnimations');
+            const enableAutoScroll = document.getElementById('liveviewEnableAutoScroll');
+
+            if (bgColor) bgColor.value = liveViewSettings.bgColor;
+            if (bgColor2) bgColor2.value = liveViewSettings.bgColor2;
+            if (titleSize) {
+                titleSize.value = liveViewSettings.titleSize;
+                if (titleSizeValue) titleSizeValue.textContent = liveViewSettings.titleSize + 'px';
+            }
+            if (donorNameSize) {
+                donorNameSize.value = liveViewSettings.donorNameSize;
+                if (donorNameSizeValue) donorNameSizeValue.textContent = liveViewSettings.donorNameSize + 'px';
+            }
+            if (amountSize) {
+                amountSize.value = liveViewSettings.amountSize;
+                if (amountSizeValue) amountSizeValue.textContent = liveViewSettings.amountSize + 'px';
+            }
+            if (showLeaders) showLeaders.checked = liveViewSettings.showLeaders;
+            if (showDonors) showDonors.checked = liveViewSettings.showDonors;
+            if (showSummary) showSummary.checked = liveViewSettings.showSummary;
+            if (donorsScrollSpeed) {
+                donorsScrollSpeed.value = liveViewSettings.donorsScrollSpeed;
+                if (donorsScrollSpeedValue) donorsScrollSpeedValue.textContent = liveViewSettings.donorsScrollSpeed;
+            }
+            if (enableAnimations) enableAnimations.checked = liveViewSettings.enableAnimations;
+            if (enableAutoScroll) enableAutoScroll.checked = liveViewSettings.enableAutoScroll;
+            
+            // המרת #ffffff ל-rgba עבור groupHeaderBg אם צריך
+            if (liveViewSettings.groupHeaderBg === '#ffffff' || liveViewSettings.groupHeaderBg === '#FFFFFF') {
+                liveViewSettings.groupHeaderBg = 'rgba(255, 255, 255, 0.92)';
+            }
+            
+            // טעינת כל ההגדרות החדשות
+            const groupNameSize = document.getElementById('liveviewGroupNameSize');
+            const groupNameSizeValue = document.getElementById('liveviewGroupNameSizeValue');
+            const donorGroupSize = document.getElementById('liveviewDonorGroupSize');
+            const donorGroupSizeValue = document.getElementById('liveviewDonorGroupSizeValue');
+            const donorNameColor = document.getElementById('liveviewDonorNameColor');
+            const amountColor = document.getElementById('liveviewAmountColor');
+            const groupNameColor = document.getElementById('liveviewGroupNameColor');
+            const leadersTitleColor = document.getElementById('liveviewLeadersTitleColor');
+            const donorCardBg = document.getElementById('liveviewDonorCardBg');
+            const leaderCardBg = document.getElementById('liveviewLeaderCardBg');
+            const groupHeaderBg = document.getElementById('liveviewGroupHeaderBg');
+            const summaryCardBg = document.getElementById('liveviewSummaryCardBg');
+            const cardBorderWidth = document.getElementById('liveviewCardBorderWidth');
+            const cardBorderWidthValue = document.getElementById('liveviewCardBorderWidthValue');
+            const cardBorderColor = document.getElementById('liveviewCardBorderColor');
+            const cardBorderRadius = document.getElementById('liveviewCardBorderRadius');
+            const cardBorderRadiusValue = document.getElementById('liveviewCardBorderRadiusValue');
+            const cardShadow = document.getElementById('liveviewCardShadow');
+            const cardShadowValue = document.getElementById('liveviewCardShadowValue');
+            const donorGap = document.getElementById('liveviewDonorGap');
+            const donorGapValue = document.getElementById('liveviewDonorGapValue');
+            const groupGap = document.getElementById('liveviewGroupGap');
+            const groupGapValue = document.getElementById('liveviewGroupGapValue');
+            const donorCardPadding = document.getElementById('liveviewDonorCardPadding');
+            const donorCardPaddingValue = document.getElementById('liveviewDonorCardPaddingValue');
+            const leaderCardPadding = document.getElementById('liveviewLeaderCardPadding');
+            const leaderCardPaddingValue = document.getElementById('liveviewLeaderCardPaddingValue');
+            const progressColor = document.getElementById('liveviewProgressColor');
+            const progressBgColor = document.getElementById('liveviewProgressBgColor');
+            const progressHeight = document.getElementById('liveviewProgressHeight');
+            const progressHeightValue = document.getElementById('liveviewProgressHeightValue');
+            const progressCircleSize = document.getElementById('liveviewProgressCircleSize');
+            const progressCircleSizeValue = document.getElementById('liveviewProgressCircleSizeValue');
+            const progressCircleWidth = document.getElementById('liveviewProgressCircleWidth');
+            const progressCircleWidthValue = document.getElementById('liveviewProgressCircleWidthValue');
+            const progressCircleColor = document.getElementById('liveviewProgressCircleColor');
+            const progressCircleBgColor = document.getElementById('liveviewProgressCircleBgColor');
+            const leadersWidth = document.getElementById('liveviewLeadersWidth');
+            const leadersWidthValue = document.getElementById('liveviewLeadersWidthValue');
+            const donorsWidth = document.getElementById('liveviewDonorsWidth');
+            const donorsWidthValue = document.getElementById('liveviewDonorsWidthValue');
+            const animationSpeed = document.getElementById('liveviewAnimationSpeed');
+            const animationSpeedValue = document.getElementById('liveviewAnimationSpeedValue');
+            const enableHoverEffects = document.getElementById('liveviewEnableHoverEffects');
+            const enableTransitions = document.getElementById('liveviewEnableTransitions');
+            const groupsSortBy = document.getElementById('liveviewGroupsSortBy');
+            const groupsFilter = document.getElementById('liveviewGroupsFilter');
+            const donorsSortBy = document.getElementById('liveviewDonorsSortBy');
+            const donorsFilter = document.getElementById('liveviewDonorsFilter');
+            const maxDonorsPerGroup = document.getElementById('liveviewMaxDonorsPerGroup');
+            
+            if (groupNameSize) {
+                groupNameSize.value = liveViewSettings.groupNameSize || 28;
+                if (groupNameSizeValue) groupNameSizeValue.textContent = (liveViewSettings.groupNameSize || 28) + 'px';
+            }
+            if (donorGroupSize) {
+                donorGroupSize.value = liveViewSettings.donorGroupSize || 13;
+                if (donorGroupSizeValue) donorGroupSizeValue.textContent = (liveViewSettings.donorGroupSize || 13) + 'px';
+            }
+            if (donorNameColor) donorNameColor.value = liveViewSettings.donorNameColor || '#3d2f1f';
+            if (amountColor) amountColor.value = liveViewSettings.amountColor || '#3d2f1f';
+            if (groupNameColor) groupNameColor.value = liveViewSettings.groupNameColor || '#3d2f1f';
+            if (leadersTitleColor) leadersTitleColor.value = liveViewSettings.leadersTitleColor || '#3d2f1f';
+            // המרת rgba ל-hex עבור color picker (color picker לא תומך ב-rgba)
+            const donorCardBgHex = liveViewSettings.donorCardBg && liveViewSettings.donorCardBg.includes('rgba') ? '#ffffff' : (liveViewSettings.donorCardBg || '#ffffff');
+            const leaderCardBgHex = liveViewSettings.leaderCardBg && liveViewSettings.leaderCardBg.includes('rgba') ? '#ffffff' : (liveViewSettings.leaderCardBg || '#ffffff');
+            const summaryCardBgHex = liveViewSettings.summaryCardBg && liveViewSettings.summaryCardBg.includes('rgba') ? '#ffffff' : (liveViewSettings.summaryCardBg || '#ffffff');
+            if (donorCardBg) donorCardBg.value = donorCardBgHex;
+            if (leaderCardBg) leaderCardBg.value = leaderCardBgHex;
+            // המרת rgba ל-hex עבור color picker
+            const groupHeaderBgHex = liveViewSettings.groupHeaderBg && liveViewSettings.groupHeaderBg.includes('rgba') ? '#ffffff' : (liveViewSettings.groupHeaderBg || '#ffffff');
+            if (groupHeaderBg) groupHeaderBg.value = groupHeaderBgHex;
+            if (summaryCardBg) summaryCardBg.value = summaryCardBgHex;
+            
+            // טעינת שקיפויות
+            const donorCardOpacity = document.getElementById('liveviewDonorCardOpacity');
+            const donorCardOpacityValue = document.getElementById('liveviewDonorCardOpacityValue');
+            const groupHeaderOpacity = document.getElementById('liveviewGroupHeaderOpacity');
+            const groupHeaderOpacityValue = document.getElementById('liveviewGroupHeaderOpacityValue');
+            if (donorCardOpacity) {
+                donorCardOpacity.value = liveViewSettings.donorCardOpacity || 92;
+                if (donorCardOpacityValue) donorCardOpacityValue.textContent = (liveViewSettings.donorCardOpacity || 92) + '%';
+            }
+            if (groupHeaderOpacity) {
+                groupHeaderOpacity.value = liveViewSettings.groupHeaderOpacity || 92;
+                if (groupHeaderOpacityValue) groupHeaderOpacityValue.textContent = (liveViewSettings.groupHeaderOpacity || 92) + '%';
+            }
+            if (cardBorderWidth) {
+                cardBorderWidth.value = liveViewSettings.cardBorderWidth || 3;
+                if (cardBorderWidthValue) cardBorderWidthValue.textContent = (liveViewSettings.cardBorderWidth || 3) + 'px';
+            }
+            if (cardBorderColor) cardBorderColor.value = liveViewSettings.cardBorderColor || '#D4AF37';
+            if (cardBorderRadius) {
+                cardBorderRadius.value = liveViewSettings.cardBorderRadius || 18;
+                if (cardBorderRadiusValue) cardBorderRadiusValue.textContent = (liveViewSettings.cardBorderRadius || 18) + 'px';
+            }
+            if (cardShadow) {
+                cardShadow.value = liveViewSettings.cardShadow || 12;
+                if (cardShadowValue) cardShadowValue.textContent = (liveViewSettings.cardShadow || 12) + 'px';
+            }
+            if (donorGap) {
+                donorGap.value = liveViewSettings.donorGap || 0;
+                if (donorGapValue) donorGapValue.textContent = (liveViewSettings.donorGap || 0) + 'px';
+            }
+            if (groupGap) {
+                groupGap.value = liveViewSettings.groupGap || 0;
+                if (groupGapValue) groupGapValue.textContent = (liveViewSettings.groupGap || 0) + 'px';
+            }
+            if (donorCardPadding) {
+                donorCardPadding.value = liveViewSettings.donorCardPadding || 14;
+                if (donorCardPaddingValue) donorCardPaddingValue.textContent = (liveViewSettings.donorCardPadding || 14) + 'px';
+            }
+            if (leaderCardPadding) {
+                leaderCardPadding.value = liveViewSettings.leaderCardPadding || 12;
+                if (leaderCardPaddingValue) leaderCardPaddingValue.textContent = (liveViewSettings.leaderCardPadding || 12) + 'px';
+            }
+            const leadersGap = document.getElementById('liveviewLeadersGap');
+            const leadersGapValue = document.getElementById('liveviewLeadersGapValue');
+            if (leadersGap) {
+                leadersGap.value = liveViewSettings.leadersGap || 14;
+                if (leadersGapValue) leadersGapValue.textContent = (liveViewSettings.leadersGap || 14) + 'px';
+            }
+            const summaryCardGap = document.getElementById('liveviewSummaryCardGap');
+            const summaryCardGapValue = document.getElementById('liveviewSummaryCardGapValue');
+            if (summaryCardGap) {
+                summaryCardGap.value = liveViewSettings.summaryCardGap || 28;
+                if (summaryCardGapValue) summaryCardGapValue.textContent = (liveViewSettings.summaryCardGap || 28) + 'px';
+            }
+            if (progressColor) progressColor.value = liveViewSettings.progressColor || '#b9f6ab';
+            if (progressBgColor) progressBgColor.value = liveViewSettings.progressBgColor || '#ededed';
+            if (progressHeight) {
+                progressHeight.value = liveViewSettings.progressHeight || 26;
+                if (progressHeightValue) progressHeightValue.textContent = (liveViewSettings.progressHeight || 26) + 'px';
+            }
+            if (progressCircleSize) {
+                progressCircleSize.value = liveViewSettings.progressCircleSize || 80;
+                if (progressCircleSizeValue) progressCircleSizeValue.textContent = (liveViewSettings.progressCircleSize || 80) + 'px';
+            }
+            if (progressCircleWidth) {
+                progressCircleWidth.value = liveViewSettings.progressCircleWidth || 6;
+                if (progressCircleWidthValue) progressCircleWidthValue.textContent = (liveViewSettings.progressCircleWidth || 6) + 'px';
+            }
+            if (progressCircleColor) progressCircleColor.value = liveViewSettings.progressCircleColor || '#D4AF37';
+            // המרת rgba ל-hex עבור color picker
+            const progressCircleBgHex = liveViewSettings.progressCircleBgColor && liveViewSettings.progressCircleBgColor.includes('rgba') ? '#e5e7eb' : (liveViewSettings.progressCircleBgColor || '#e5e7eb');
+            if (progressCircleBgColor) progressCircleBgColor.value = progressCircleBgHex;
+            if (leadersWidth) {
+                leadersWidth.value = liveViewSettings.leadersWidth || 25;
+                if (leadersWidthValue) leadersWidthValue.textContent = (liveViewSettings.leadersWidth || 25) + '%';
+            }
+            if (donorsWidth) {
+                donorsWidth.value = liveViewSettings.donorsWidth || 75;
+                if (donorsWidthValue) donorsWidthValue.textContent = (liveViewSettings.donorsWidth || 75) + '%';
+            }
+            if (animationSpeed) {
+                animationSpeed.value = liveViewSettings.animationSpeed || 1;
+                if (animationSpeedValue) animationSpeedValue.textContent = (liveViewSettings.animationSpeed || 1) + 'x';
+            }
+            if (enableHoverEffects) enableHoverEffects.checked = liveViewSettings.enableHoverEffects !== false;
+            if (enableTransitions) enableTransitions.checked = liveViewSettings.enableTransitions !== false;
+            const hideLeadersColumn = document.getElementById('liveviewHideLeadersColumn');
+            if (hideLeadersColumn) hideLeadersColumn.checked = liveViewSettings.hideLeadersColumn === true;
+            if (groupsSortBy) groupsSortBy.value = liveViewSettings.groupsSortBy || 'name';
+            if (groupsFilter) groupsFilter.value = liveViewSettings.groupsFilter || 'all';
+            if (donorsSortBy) donorsSortBy.value = liveViewSettings.donorsSortBy || 'name';
+            if (donorsFilter) donorsFilter.value = liveViewSettings.donorsFilter || 'all';
+            if (maxDonorsPerGroup) maxDonorsPerGroup.value = liveViewSettings.maxDonorsPerGroup || 0;
+            
+            // החלת ההגדרות מיד
+            applyLiveViewSettings();
+            });
+        }
+
+        function updateLiveViewSettings() {
+            const titleSize = document.getElementById('liveviewTitleSize');
+            const titleSizeValue = document.getElementById('liveviewTitleSizeValue');
+            const donorNameSize = document.getElementById('liveviewDonorNameSize');
+            const donorNameSizeValue = document.getElementById('liveviewDonorNameSizeValue');
+            const amountSize = document.getElementById('liveviewAmountSize');
+            const amountSizeValue = document.getElementById('liveviewAmountSizeValue');
+            const groupNameSize = document.getElementById('liveviewGroupNameSize');
+            const groupNameSizeValue = document.getElementById('liveviewGroupNameSizeValue');
+            const donorGroupSize = document.getElementById('liveviewDonorGroupSize');
+            const donorGroupSizeValue = document.getElementById('liveviewDonorGroupSizeValue');
+            const donorsScrollSpeed = document.getElementById('liveviewDonorsScrollSpeed');
+            const donorsScrollSpeedValue = document.getElementById('liveviewDonorsScrollSpeedValue');
+            const cardBorderWidth = document.getElementById('liveviewCardBorderWidth');
+            const cardBorderWidthValue = document.getElementById('liveviewCardBorderWidthValue');
+            const cardBorderRadius = document.getElementById('liveviewCardBorderRadius');
+            const cardBorderRadiusValue = document.getElementById('liveviewCardBorderRadiusValue');
+            const cardShadow = document.getElementById('liveviewCardShadow');
+            const cardShadowValue = document.getElementById('liveviewCardShadowValue');
+            const donorGap = document.getElementById('liveviewDonorGap');
+            const donorGapValue = document.getElementById('liveviewDonorGapValue');
+            const groupGap = document.getElementById('liveviewGroupGap');
+            const groupGapValue = document.getElementById('liveviewGroupGapValue');
+            const donorCardPadding = document.getElementById('liveviewDonorCardPadding');
+            const donorCardPaddingValue = document.getElementById('liveviewDonorCardPaddingValue');
+            const leaderCardPadding = document.getElementById('liveviewLeaderCardPadding');
+            const leaderCardPaddingValue = document.getElementById('liveviewLeaderCardPaddingValue');
+            const progressHeight = document.getElementById('liveviewProgressHeight');
+            const progressHeightValue = document.getElementById('liveviewProgressHeightValue');
+            const progressCircleSize = document.getElementById('liveviewProgressCircleSize');
+            const progressCircleSizeValue = document.getElementById('liveviewProgressCircleSizeValue');
+            const progressCircleWidth = document.getElementById('liveviewProgressCircleWidth');
+            const progressCircleWidthValue = document.getElementById('liveviewProgressCircleWidthValue');
+            const leadersWidth = document.getElementById('liveviewLeadersWidth');
+            const leadersWidthValue = document.getElementById('liveviewLeadersWidthValue');
+            const donorsWidth = document.getElementById('liveviewDonorsWidth');
+            const donorsWidthValue = document.getElementById('liveviewDonorsWidthValue');
+            const animationSpeed = document.getElementById('liveviewAnimationSpeed');
+            const animationSpeedValue = document.getElementById('liveviewAnimationSpeedValue');
+
+            if (titleSize && titleSizeValue) titleSizeValue.textContent = titleSize.value + 'px';
+            if (donorNameSize && donorNameSizeValue) donorNameSizeValue.textContent = donorNameSize.value + 'px';
+            if (amountSize && amountSizeValue) amountSizeValue.textContent = amountSize.value + 'px';
+            if (groupNameSize && groupNameSizeValue) groupNameSizeValue.textContent = groupNameSize.value + 'px';
+            if (donorGroupSize && donorGroupSizeValue) donorGroupSizeValue.textContent = donorGroupSize.value + 'px';
+            if (donorsScrollSpeed && donorsScrollSpeedValue) donorsScrollSpeedValue.textContent = donorsScrollSpeed.value;
+            if (cardBorderWidth && cardBorderWidthValue) cardBorderWidthValue.textContent = cardBorderWidth.value + 'px';
+            if (cardBorderRadius && cardBorderRadiusValue) cardBorderRadiusValue.textContent = cardBorderRadius.value + 'px';
+            if (cardShadow && cardShadowValue) cardShadowValue.textContent = cardShadow.value + 'px';
+            if (donorGap && donorGapValue) donorGapValue.textContent = donorGap.value + 'px';
+            if (groupGap && groupGapValue) groupGapValue.textContent = groupGap.value + 'px';
+            if (donorCardPadding && donorCardPaddingValue) donorCardPaddingValue.textContent = donorCardPadding.value + 'px';
+            if (leaderCardPadding && leaderCardPaddingValue) leaderCardPaddingValue.textContent = leaderCardPadding.value + 'px';
+            const leadersGap = document.getElementById('liveviewLeadersGap');
+            const leadersGapValue = document.getElementById('liveviewLeadersGapValue');
+            if (leadersGap && leadersGapValue) leadersGapValue.textContent = leadersGap.value + 'px';
+            
+            // עדכון מיידי של המרווח - שמירה והחלה
+            const summaryCardGap = document.getElementById('liveviewSummaryCardGap');
+            const summaryCardGapValue = document.getElementById('liveviewSummaryCardGapValue');
+            if (summaryCardGap && summaryCardGapValue) summaryCardGapValue.textContent = summaryCardGap.value + 'px';
+            if (leadersGap) {
+                liveViewSettings.leadersGap = parseInt(leadersGap.value) || 14;
+            }
+            if (summaryCardGap) {
+                liveViewSettings.summaryCardGap = parseInt(summaryCardGap.value) || 28;
+            }
+            if (leadersGap || summaryCardGap) {
+                applyLiveViewSettings();
+            }
+            
+            // עדכון ערכי שקיפות
+            const donorCardOpacity = document.getElementById('liveviewDonorCardOpacity');
+            const donorCardOpacityValue = document.getElementById('liveviewDonorCardOpacityValue');
+            const groupHeaderOpacity = document.getElementById('liveviewGroupHeaderOpacity');
+            const groupHeaderOpacityValue = document.getElementById('liveviewGroupHeaderOpacityValue');
+            if (donorCardOpacity && donorCardOpacityValue) donorCardOpacityValue.textContent = donorCardOpacity.value + '%';
+            if (groupHeaderOpacity && groupHeaderOpacityValue) groupHeaderOpacityValue.textContent = groupHeaderOpacity.value + '%';
+            if (progressHeight && progressHeightValue) progressHeightValue.textContent = progressHeight.value + 'px';
+            if (progressCircleSize && progressCircleSizeValue) progressCircleSizeValue.textContent = progressCircleSize.value + 'px';
+            if (progressCircleWidth && progressCircleWidthValue) progressCircleWidthValue.textContent = progressCircleWidth.value + 'px';
+            if (leadersWidth && leadersWidthValue) leadersWidthValue.textContent = leadersWidth.value + '%';
+            if (donorsWidth && donorsWidthValue) donorsWidthValue.textContent = donorsWidth.value + '%';
+            if (animationSpeed && animationSpeedValue) animationSpeedValue.textContent = parseFloat(animationSpeed.value).toFixed(1) + 'x';
+        }
+
+        function saveLiveViewSettings() {
+            const bgColor = document.getElementById('liveviewBgColor');
+            const bgColor2 = document.getElementById('liveviewBgColor2');
+            const titleSize = document.getElementById('liveviewTitleSize');
+            const donorNameSize = document.getElementById('liveviewDonorNameSize');
+            const amountSize = document.getElementById('liveviewAmountSize');
+            const showLeaders = document.getElementById('liveviewShowLeaders');
+            const showDonors = document.getElementById('liveviewShowDonors');
+            const showSummary = document.getElementById('liveviewShowSummary');
+            const donorsScrollSpeed = document.getElementById('liveviewDonorsScrollSpeed');
+            const enableAnimations = document.getElementById('liveviewEnableAnimations');
+            const enableAutoScroll = document.getElementById('liveviewEnableAutoScroll');
+
+            const groupNameSize = document.getElementById('liveviewGroupNameSize');
+            const donorGroupSize = document.getElementById('liveviewDonorGroupSize');
+            const donorNameColor = document.getElementById('liveviewDonorNameColor');
+            const amountColor = document.getElementById('liveviewAmountColor');
+            const groupNameColor = document.getElementById('liveviewGroupNameColor');
+            const leadersTitleColor = document.getElementById('liveviewLeadersTitleColor');
+            const donorCardBg = document.getElementById('liveviewDonorCardBg');
+            const leaderCardBg = document.getElementById('liveviewLeaderCardBg');
+            const groupHeaderBg = document.getElementById('liveviewGroupHeaderBg');
+            const summaryCardBg = document.getElementById('liveviewSummaryCardBg');
+            const cardBorderWidth = document.getElementById('liveviewCardBorderWidth');
+            const cardBorderColor = document.getElementById('liveviewCardBorderColor');
+            const cardBorderRadius = document.getElementById('liveviewCardBorderRadius');
+            const cardShadow = document.getElementById('liveviewCardShadow');
+            const donorGap = document.getElementById('liveviewDonorGap');
+            const groupGap = document.getElementById('liveviewGroupGap');
+            const donorCardPadding = document.getElementById('liveviewDonorCardPadding');
+            const leaderCardPadding = document.getElementById('liveviewLeaderCardPadding');
+            const progressColor = document.getElementById('liveviewProgressColor');
+            const progressBgColor = document.getElementById('liveviewProgressBgColor');
+            const progressHeight = document.getElementById('liveviewProgressHeight');
+            const progressCircleSize = document.getElementById('liveviewProgressCircleSize');
+            const progressCircleWidth = document.getElementById('liveviewProgressCircleWidth');
+            const progressCircleColor = document.getElementById('liveviewProgressCircleColor');
+            const progressCircleBgColor = document.getElementById('liveviewProgressCircleBgColor');
+            const leadersWidth = document.getElementById('liveviewLeadersWidth');
+            const donorsWidth = document.getElementById('liveviewDonorsWidth');
+            const animationSpeed = document.getElementById('liveviewAnimationSpeed');
+            const enableHoverEffects = document.getElementById('liveviewEnableHoverEffects');
+            const enableTransitions = document.getElementById('liveviewEnableTransitions');
+            const groupsSortBy = document.getElementById('liveviewGroupsSortBy');
+            const groupsFilter = document.getElementById('liveviewGroupsFilter');
+            const donorsSortBy = document.getElementById('liveviewDonorsSortBy');
+            const donorsFilter = document.getElementById('liveviewDonorsFilter');
+            const maxDonorsPerGroup = document.getElementById('liveviewMaxDonorsPerGroup');
+
+            liveViewSettings = {
+                bgColor: bgColor ? bgColor.value : liveViewSettings.bgColor,
+                bgColor2: bgColor2 ? bgColor2.value : liveViewSettings.bgColor2,
+                titleSize: titleSize ? parseInt(titleSize.value) : liveViewSettings.titleSize,
+                donorNameSize: donorNameSize ? parseInt(donorNameSize.value) : liveViewSettings.donorNameSize,
+                amountSize: amountSize ? parseInt(amountSize.value) : liveViewSettings.amountSize,
+                groupNameSize: groupNameSize ? parseInt(groupNameSize.value) : liveViewSettings.groupNameSize,
+                donorGroupSize: donorGroupSize ? parseInt(donorGroupSize.value) : liveViewSettings.donorGroupSize,
+                donorNameColor: donorNameColor ? donorNameColor.value : liveViewSettings.donorNameColor,
+                amountColor: amountColor ? amountColor.value : liveViewSettings.amountColor,
+                groupNameColor: groupNameColor ? groupNameColor.value : liveViewSettings.groupNameColor,
+                leadersTitleColor: leadersTitleColor ? leadersTitleColor.value : liveViewSettings.leadersTitleColor,
+                // שמירת rgba אם זה היה rgba, אחרת שמירת hex
+                donorCardBg: donorCardBg ? (liveViewSettings.donorCardBg && liveViewSettings.donorCardBg.includes('rgba') ? 'rgba(255, 255, 255, 0.92)' : donorCardBg.value) : liveViewSettings.donorCardBg,
+                donorCardOpacity: document.getElementById('liveviewDonorCardOpacity') ? parseInt(document.getElementById('liveviewDonorCardOpacity').value) : (liveViewSettings.donorCardOpacity || 92),
+                leaderCardBg: leaderCardBg ? (liveViewSettings.leaderCardBg && liveViewSettings.leaderCardBg.includes('rgba') ? 'rgba(255, 255, 255, 0.98)' : leaderCardBg.value) : liveViewSettings.leaderCardBg,
+                // שמירת rgba אם זה היה rgba, או אם זה לבן (#ffffff) נמיר ל-rgba, אחרת שמירת hex
+                groupHeaderBg: groupHeaderBg ? (
+                    liveViewSettings.groupHeaderBg && liveViewSettings.groupHeaderBg.includes('rgba') ? 'rgba(255, 255, 255, 0.92)' :
+                    (groupHeaderBg.value === '#ffffff' || groupHeaderBg.value === '#FFFFFF') ? 'rgba(255, 255, 255, 0.92)' :
+                    groupHeaderBg.value
+                ) : liveViewSettings.groupHeaderBg,
+                groupHeaderOpacity: document.getElementById('liveviewGroupHeaderOpacity') ? parseInt(document.getElementById('liveviewGroupHeaderOpacity').value) : (liveViewSettings.groupHeaderOpacity || 92),
+                summaryCardBg: summaryCardBg ? (liveViewSettings.summaryCardBg && liveViewSettings.summaryCardBg.includes('rgba') ? 'rgba(255, 255, 255, 0.9)' : summaryCardBg.value) : liveViewSettings.summaryCardBg,
+                cardBorderWidth: cardBorderWidth ? parseInt(cardBorderWidth.value) : liveViewSettings.cardBorderWidth,
+                cardBorderColor: cardBorderColor ? cardBorderColor.value : liveViewSettings.cardBorderColor,
+                cardBorderRadius: cardBorderRadius ? parseInt(cardBorderRadius.value) : liveViewSettings.cardBorderRadius,
+                cardShadow: cardShadow ? parseInt(cardShadow.value) : liveViewSettings.cardShadow,
+                donorGap: donorGap ? parseInt(donorGap.value) : liveViewSettings.donorGap,
+                groupGap: groupGap ? parseInt(groupGap.value) : liveViewSettings.groupGap,
+                donorCardPadding: donorCardPadding ? parseInt(donorCardPadding.value) : liveViewSettings.donorCardPadding,
+                leaderCardPadding: leaderCardPadding ? parseInt(leaderCardPadding.value) : liveViewSettings.leaderCardPadding,
+                leadersGap: document.getElementById('liveviewLeadersGap') ? parseInt(document.getElementById('liveviewLeadersGap').value) : (liveViewSettings.leadersGap || 14),
+                summaryCardGap: document.getElementById('liveviewSummaryCardGap') ? parseInt(document.getElementById('liveviewSummaryCardGap').value) : (liveViewSettings.summaryCardGap || 28),
+                progressColor: progressColor ? progressColor.value : liveViewSettings.progressColor,
+                progressBgColor: progressBgColor ? progressBgColor.value : liveViewSettings.progressBgColor,
+                progressHeight: progressHeight ? parseInt(progressHeight.value) : liveViewSettings.progressHeight,
+                progressCircleSize: progressCircleSize ? parseInt(progressCircleSize.value) : liveViewSettings.progressCircleSize,
+                progressCircleWidth: progressCircleWidth ? parseInt(progressCircleWidth.value) : liveViewSettings.progressCircleWidth,
+                progressCircleColor: progressCircleColor ? progressCircleColor.value : liveViewSettings.progressCircleColor,
+                // שמירת rgba אם זה היה rgba, אחרת שמירת hex
+                progressCircleBgColor: progressCircleBgColor ? (liveViewSettings.progressCircleBgColor && liveViewSettings.progressCircleBgColor.includes('rgba') ? 'rgba(212, 175, 55, 0.2)' : progressCircleBgColor.value) : liveViewSettings.progressCircleBgColor,
+                leadersWidth: leadersWidth ? parseInt(leadersWidth.value) : liveViewSettings.leadersWidth,
+                donorsWidth: donorsWidth ? parseInt(donorsWidth.value) : liveViewSettings.donorsWidth,
+                animationSpeed: animationSpeed ? parseFloat(animationSpeed.value) : liveViewSettings.animationSpeed,
+                enableHoverEffects: enableHoverEffects ? enableHoverEffects.checked : liveViewSettings.enableHoverEffects,
+                enableTransitions: enableTransitions ? enableTransitions.checked : liveViewSettings.enableTransitions,
+                showLeaders: showLeaders ? showLeaders.checked : liveViewSettings.showLeaders,
+                showDonors: showDonors ? showDonors.checked : liveViewSettings.showDonors,
+                showSummary: showSummary ? showSummary.checked : liveViewSettings.showSummary,
+                hideLeadersColumn: document.getElementById('liveviewHideLeadersColumn') ? document.getElementById('liveviewHideLeadersColumn').checked : liveViewSettings.hideLeadersColumn,
+                donorsScrollSpeed: donorsScrollSpeed ? parseInt(donorsScrollSpeed.value) : liveViewSettings.donorsScrollSpeed,
+                enableAnimations: enableAnimations ? enableAnimations.checked : liveViewSettings.enableAnimations,
+                enableAutoScroll: enableAutoScroll ? enableAutoScroll.checked : liveViewSettings.enableAutoScroll,
+                groupsSortBy: groupsSortBy ? groupsSortBy.value : liveViewSettings.groupsSortBy,
+                groupsFilter: groupsFilter ? groupsFilter.value : liveViewSettings.groupsFilter,
+                donorsSortBy: donorsSortBy ? donorsSortBy.value : liveViewSettings.donorsSortBy,
+                donorsFilter: donorsFilter ? donorsFilter.value : liveViewSettings.donorsFilter,
+                maxDonorsPerGroup: maxDonorsPerGroup ? parseInt(maxDonorsPerGroup.value) || 0 : liveViewSettings.maxDonorsPerGroup
+            };
+
+            storageSetItem('liveViewSettings', liveViewSettings);
+            applyLiveViewSettings();
+            // עדכון התצוגה אם היא פעילה
+            const liveSection = document.getElementById('liveviewSection');
+            if (liveSection && liveSection.classList.contains('active')) {
+                updateLiveView();
+                updateLeadersList();
+            }
+            showNotification('הגדרות תצוגת לייב נשמרו');
+        }
+
+        function resetLiveViewSettings() {
+            if (!confirm('האם לאפס את כל הגדרות תצוגת לייב לברירת מחדל?')) {
+                return;
+            }
+            liveViewSettings = {
+                bgColor: '#f5e6d3',
+                bgColor2: '#fff8dc',
+                titleSize: 32,
+                donorNameSize: 18,
+                amountSize: 14,
+                groupNameSize: 28,
+                donorGroupSize: 13,
+                donorNameColor: '#3d2f1f',
+                amountColor: '#3d2f1f',
+                groupNameColor: '#3d2f1f',
+                leadersTitleColor: '#3d2f1f',
+                donorCardBg: 'rgba(255, 255, 255, 0.92)',
+                donorCardOpacity: 92,
+                leaderCardBg: 'rgba(255, 255, 255, 0.98)',
+                groupHeaderBg: 'rgba(255, 255, 255, 0.92)',
+                groupHeaderOpacity: 92,
+                summaryCardBg: 'rgba(255, 255, 255, 0.9)',
+                cardBorderWidth: 3,
+                cardBorderColor: '#D4AF37',
+                cardBorderRadius: 18,
+                cardShadow: 12,
+                donorGap: 3,
+                groupGap: 3,
+                donorCardPadding: 14,
+                leaderCardPadding: 12,
+                leadersGap: 14,
+                summaryCardGap: 28,
+                progressColor: '#b9f6ab',
+                progressBgColor: '#ededed',
+                progressHeight: 26,
+                progressCircleSize: 80,
+                progressCircleWidth: 6,
+                progressCircleColor: '#D4AF37',
+                progressCircleBgColor: 'rgba(212, 175, 55, 0.2)',
+                leadersWidth: 25,
+                donorsWidth: 75,
+                animationSpeed: 1,
+                enableHoverEffects: true,
+                enableTransitions: true,
+                showLeaders: true,
+                showDonors: true,
+                showSummary: true,
+                hideLeadersColumn: false,
+                donorsScrollSpeed: 50,
+                enableAnimations: true,
+                enableAutoScroll: true,
+                groupsSortBy: 'name',
+                groupsFilter: 'all',
+                donorsSortBy: 'name',
+                donorsFilter: 'all',
+                maxDonorsPerGroup: 0
+            };
+            storageSetItem('liveViewSettings', liveViewSettings);
+            loadLiveViewSettings();
+            applyLiveViewSettings();
+            showNotification('הגדרות תצוגת לייב אופסו לברירת מחדל');
+        }
+
+        // פונקציה להמרת hex ל-rgba
+        function hexToRgba(hex, opacity) {
+            if (!hex) return `rgba(255, 255, 255, ${opacity / 100})`;
+            // אם זה כבר rgba, נחליף רק את הערך האחרון (השקיפות)
+            if (hex.includes('rgba')) {
+                const match = hex.match(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/);
+                if (match) {
+                    return `rgba(${match[1]}, ${match[2]}, ${match[3]}, ${opacity / 100})`;
+                }
+                return hex;
+            }
+            if (hex === '#ffffff' || hex === '#FFFFFF') {
+                return `rgba(255, 255, 255, ${opacity / 100})`;
+            }
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r}, ${g}, ${b}, ${opacity / 100})`;
+        }
+
+        function applyLiveViewSettings() {
+            const liveSection = document.getElementById('liveviewSection');
+            if (!liveSection) return;
+
+            // יישום צבעי רקע
+            liveSection.style.background = `linear-gradient(135deg, ${liveViewSettings.bgColor} 0%, ${liveViewSettings.bgColor2} 100%)`;
+
+            // חישוב rgba עם שקיפות
+            const donorCardBgRgba = hexToRgba(liveViewSettings.donorCardBg, liveViewSettings.donorCardOpacity || 92);
+            const groupHeaderBgRgba = hexToRgba(liveViewSettings.groupHeaderBg, liveViewSettings.groupHeaderOpacity || 92);
+
+            // יישום גדלי פונטים
+            const style = document.createElement('style');
+            style.id = 'liveViewCustomStyles';
+            const existingStyle = document.getElementById('liveViewCustomStyles');
+            if (existingStyle) existingStyle.remove();
+
+            style.textContent = `
+                .live-view-section {
+                    background: linear-gradient(135deg, ${liveViewSettings.bgColor} 0%, ${liveViewSettings.bgColor2} 100%) !important;
+                }
+                .leaders-title {
+                    font-size: ${liveViewSettings.titleSize}px !important;
+                    color: ${liveViewSettings.leadersTitleColor} !important;
+                }
+                .live-donor-name {
+                    font-size: ${liveViewSettings.donorNameSize}px !important;
+                    color: ${liveViewSettings.donorNameColor} !important;
+                }
+                .live-donor-amount {
+                    font-size: ${liveViewSettings.amountSize}px !important;
+                    color: ${liveViewSettings.amountColor} !important;
+                }
+                .leader-total {
+                    font-size: ${liveViewSettings.amountSize}px !important;
+                    color: ${liveViewSettings.amountColor === '#3d2f1f' ? '#B8941F' : liveViewSettings.amountColor} !important;
+                }
+                .group-header-title {
+                    font-size: ${liveViewSettings.groupNameSize}px !important;
+                    color: ${liveViewSettings.groupNameColor} !important;
+                }
+                .live-donor-group {
+                    font-size: ${liveViewSettings.donorGroupSize}px !important;
+                }
+                .live-leaders-sidebar {
+                    display: ${liveViewSettings.hideLeadersColumn ? 'none' : (liveViewSettings.showLeaders ? 'block' : 'none')} !important;
+                    width: ${liveViewSettings.hideLeadersColumn ? '0%' : (liveViewSettings.leadersWidth + '%')} !important;
+                }
+                .live-donors-area {
+                    display: ${liveViewSettings.showDonors ? 'block' : 'none'} !important;
+                    width: ${liveViewSettings.hideLeadersColumn ? '100%' : (liveViewSettings.donorsWidth + '%')} !important;
+                }
+                .live-donors-scroll {
+                    grid-template-columns: ${liveViewSettings.hideLeadersColumn ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)'} !important;
+                }
+                .leader-target-card {
+                    display: ${liveViewSettings.showSummary ? 'block' : 'none'} !important;
+                    background: ${liveViewSettings.summaryCardBg} !important;
+                    border: 2px solid rgba(212, 175, 55, 0.3) !important;
+                    border-radius: 12px !important;
+                    box-shadow: 0 3px 12px rgba(212, 175, 55, 0.18) !important;
+                    padding: 18px !important;
+                }
+                .live-donor-card {
+                    background: ${donorCardBgRgba} !important;
+                    border: ${liveViewSettings.cardBorderWidth}px solid ${liveViewSettings.cardBorderColor} !important;
+                    border-radius: ${liveViewSettings.cardBorderRadius}px !important;
+                    box-shadow: 0 ${liveViewSettings.cardShadow}px ${liveViewSettings.cardShadow * 2}px rgba(0,0,0,0.1) !important;
+                    padding: ${liveViewSettings.donorCardPadding}px 18px !important;
+                }
+                .leader-item:not(.rank-1):not(.rank-2):not(.rank-3):not(.rank-4):not(.rank-5) {
+                    background: ${liveViewSettings.leaderCardBg} !important;
+                    border: ${liveViewSettings.cardBorderWidth}px solid ${liveViewSettings.cardBorderColor} !important;
+                    border-radius: ${liveViewSettings.cardBorderRadius}px !important;
+                    box-shadow: 0 ${liveViewSettings.cardShadow}px ${liveViewSettings.cardShadow * 2}px rgba(0,0,0,0.1) !important;
+                    padding: ${liveViewSettings.leaderCardPadding}px 16px !important;
+                }
+                .leader-item.rank-1,
+                .leader-item.rank-2,
+                .leader-item.rank-3,
+                .leader-item.rank-4,
+                .leader-item.rank-5 {
+                    border-radius: ${liveViewSettings.cardBorderRadius}px !important;
+                    padding: ${liveViewSettings.leaderCardPadding}px 16px !important;
+                }
+                .live-leaders-scroll {
+                    gap: ${liveViewSettings.leadersGap || 14}px !important;
+                }
+                .live-leaders-scroll .leader-item {
+                    margin-bottom: ${liveViewSettings.leadersGap || 14}px !important;
+                }
+                .live-leaders-scroll .leader-item:last-of-type:not(.leader-target-card) {
+                    margin-bottom: ${liveViewSettings.summaryCardGap || 28}px !important;
+                }
+                .live-leaders-scroll .leader-target-card {
+                    margin-bottom: 0 !important;
+                }
+                .live-donor-group-header {
+                    background: ${groupHeaderBgRgba} !important;
+                    margin-bottom: ${liveViewSettings.groupGap}px !important;
+                    box-shadow: 0 ${liveViewSettings.cardShadow}px ${liveViewSettings.cardShadow * 2}px rgba(0,0,0,0.1) !important;
+                }
+                .group-header-progress-bar {
+                    height: ${liveViewSettings.progressHeight}px !important;
+                    background: ${liveViewSettings.progressBgColor} !important;
+                }
+                .group-header-progress-fill {
+                    background: ${liveViewSettings.progressColor} !important;
+                }
+                .leader-target-progress-bar {
+                    height: ${liveViewSettings.progressHeight}px !important;
+                    background: ${liveViewSettings.progressBgColor} !important;
+                }
+                .leader-target-progress-fill {
+                    background: ${liveViewSettings.progressColor} !important;
+                }
+                .live-donor-progress-circle {
+                    width: ${liveViewSettings.progressCircleSize}px !important;
+                    height: ${liveViewSettings.progressCircleSize}px !important;
+                }
+                .live-donor-progress-circle svg circle:first-child {
+                    stroke: ${liveViewSettings.progressCircleBgColor} !important;
+                    stroke-width: ${liveViewSettings.progressCircleWidth} !important;
+                }
+                .live-donor-progress-circle svg circle:last-child {
+                    stroke-width: ${liveViewSettings.progressCircleWidth} !important;
+                }
+                ${!liveViewSettings.enableHoverEffects ? `
+                    .live-donor-card:hover,
+                    .leader-item:hover {
+                        transform: none !important;
+                        box-shadow: 0 ${liveViewSettings.cardShadow}px ${liveViewSettings.cardShadow * 2}px rgba(0,0,0,0.1) !important;
+                    }
+                ` : ''}
+                .live-leaders-scroll {
+                    gap: ${liveViewSettings.donorGap || 0}px !important;
+                }
+                .live-donors-scroll {
+                    gap: ${liveViewSettings.groupGap || 0}px !important;
+                }
+                .leader-item {
+                    margin-bottom: ${liveViewSettings.donorGap || 0}px !important;
+                }
+                .live-donor-card {
+                    margin-bottom: ${liveViewSettings.donorGap || 0}px !important;
+                }
+                .live-donor-group-header {
+                    margin-bottom: ${liveViewSettings.groupGap || 0}px !important;
+                }
+                ${!liveViewSettings.enableTransitions ? `
+                    * {
+                        transition: none !important;
+                    }
+                ` : ''}
+            `;
+            document.head.appendChild(style);
+
+            // עדכון מהירות גלילה - יישום יבוצע בעת הפעלת הגלילה
+            // המהירות תשמר ב-liveViewSettings ותיושם בעת restart
+
+            // עדכון אנימציות
+            if (!liveViewSettings.enableAnimations) {
+                liveSection.style.setProperty('--animation-duration', '0s');
+            } else {
+                const speed = liveViewSettings.animationSpeed || 1;
+                liveSection.style.setProperty('--animation-duration', `${1 / speed}s`);
+            }
+
+            // עדכון גלילה אוטומטית
+            if (!liveViewSettings.enableAutoScroll) {
+                if (typeof stopAutoScroll === 'function') {
+                    stopAutoScroll('donors');
+                    stopAutoScroll('leaders');
+                }
+            } else {
+                if (typeof restartDonorsAutoScroll === 'function') {
+                    restartDonorsAutoScroll();
+                }
+                // הפעלת גלילה אוטומטית למובילים
+                if (typeof restartLeadersAutoScroll === 'function' && isLiveViewActive()) {
+                    setTimeout(() => {
+                        restartLeadersAutoScroll({ immediate: true });
+                    }, 100);
+                }
+            }
+
+            // עדכון התצוגה אם היא פעילה
+            if (liveSection.classList.contains('active')) {
+                updateLiveView();
+                updateLeadersList();
+            }
+        }
+
+        function normalizeCampaignPlanning(data) {
+            const defaults = {
+                campaignName: '',
+                year: new Date().getFullYear() + 1,
+                campaignGoal: matchingGoal,
+                perDonorGoal: defaultDonorGoal || INITIAL_DEFAULT_DONOR_GOAL,
+                groupGoal: defaultGroupGoal,
+                volunteersCount: donors.length || totalRecruiters,
+                notes: ''
+            };
+            if (!data || typeof data !== 'object') {
+                return defaults;
+            }
+            const normalized = { ...defaults, ...data };
+            normalized.year = Math.max(2024, parseInt(normalized.year, 10) || defaults.year);
+            normalized.campaignGoal = Math.max(0, Math.round(parseFloat(normalized.campaignGoal) || defaults.campaignGoal));
+            normalized.perDonorGoal = Math.max(0, Math.round(parseFloat(normalized.perDonorGoal) || defaults.perDonorGoal));
+            normalized.groupGoal = Math.max(0, Math.round(parseFloat(normalized.groupGoal) || defaults.groupGoal));
+            normalized.volunteersCount = Math.max(0, Math.round(parseFloat(normalized.volunteersCount) || defaults.volunteersCount));
+            normalized.campaignName = (normalized.campaignName || '').toString();
+            normalized.notes = (normalized.notes || '').toString();
+            return normalized;
+        }
+
+        function loadCampaignPlanning() {
+            try {
+                storageGetItem('campaignPlanning', (saved) => {
+                if (saved) {
+                        campaignPlanning = normalizeCampaignPlanning(saved);
+                } else {
+                    campaignPlanning = normalizeCampaignPlanning();
+                }
+                    initCampaignPlanningForm();
+                });
+            } catch (error) {
+                console.warn('שגיאה בטעינת תכנית קמפיין:', error);
+                campaignPlanning = normalizeCampaignPlanning();
+            initCampaignPlanningForm();
+            }
+        }
+
+        function saveCampaignPlanningToStorage() {
+            try {
+                storageSetItem('campaignPlanning', campaignPlanning);
+            } catch (error) {
+                console.error('שגיאה בשמירת תכנית קמפיין:', error);
+            }
+        }
+
+        function initCampaignPlanningForm() {
+            const campaignNameInput = document.getElementById('planningCampaignName');
+            const yearInput = document.getElementById('planningYear');
+            const campaignGoalInput = document.getElementById('planningCampaignGoal');
+            const perDonorGoalInput = document.getElementById('planningPerDonorGoal');
+            const groupGoalInput = document.getElementById('planningGroupGoal');
+            const volunteersInput = document.getElementById('planningVolunteersCount');
+            const notesInput = document.getElementById('planningNotes');
+
+            if (campaignNameInput) campaignNameInput.value = campaignPlanning.campaignName || '';
+            if (yearInput) yearInput.value = campaignPlanning.year || '';
+            if (campaignGoalInput) campaignGoalInput.value = campaignPlanning.campaignGoal || '';
+            if (perDonorGoalInput) perDonorGoalInput.value = campaignPlanning.perDonorGoal || '';
+            if (groupGoalInput) groupGoalInput.value = campaignPlanning.groupGoal || '';
+            if (volunteersInput) volunteersInput.value = campaignPlanning.volunteersCount || '';
+            if (notesInput) notesInput.value = campaignPlanning.notes || '';
+
+            updateCampaignPlanningSummary();
+        }
+
+        function updateCampaignPlanningSummary() {
+            const summaryEl = document.getElementById('campaignPlanningSummary');
+            if (!summaryEl) return;
+            const volunteers = campaignPlanning.volunteersCount ? campaignPlanning.volunteersCount.toLocaleString() : 'לא הוגדר';
+            const perDonor = campaignPlanning.perDonorGoal ? campaignPlanning.perDonorGoal.toLocaleString() : 'לא הוגדר';
+            const groupGoal = campaignPlanning.groupGoal ? campaignPlanning.groupGoal.toLocaleString() : 'לא הוגדר';
+            const totalGoal = campaignPlanning.campaignGoal ? campaignPlanning.campaignGoal.toLocaleString() : 'לא הוגדר';
+            const name = campaignPlanning.campaignName ? campaignPlanning.campaignName : `קמפיין ${campaignPlanning.year}`;
+            const notes = campaignPlanning.notes
+                ? `<br><strong>הערות:</strong> ${escapeHtml(campaignPlanning.notes).replace(/\n/g, '<br>')}`
+                : '';
+            const automationNote = '<br><strong>עדכון מערכת:</strong> בעת לחיצה על "הפעל על המערכת" כל היעדים, המתרימים והקבוצות יותאמו לשנה והערכים שהוגדרו לעיל.';
+
+            summaryEl.innerHTML = `
+                <strong>שם הקמפיין:</strong> ${escapeHtml(name)}<br>
+                <strong>שנת יעד:</strong> ${campaignPlanning.year}<br>
+                <strong>יעד כללי:</strong> ₪${totalGoal}<br>
+                <strong>יעד אישי לכל בחור:</strong> ₪${perDonor}<br>
+                <strong>יעד לכל קבוצה:</strong> ₪${groupGoal}<br>
+                <strong>מספר מגייסים:</strong> ${volunteers}${automationNote}${notes}
+            `;
+        }
+
+        function collectCampaignPlanningFormValues() {
+            const campaignNameInput = document.getElementById('planningCampaignName');
+            const yearInput = document.getElementById('planningYear');
+            const campaignGoalInput = document.getElementById('planningCampaignGoal');
+            const perDonorGoalInput = document.getElementById('planningPerDonorGoal');
+            const groupGoalInput = document.getElementById('planningGroupGoal');
+            const volunteersInput = document.getElementById('planningVolunteersCount');
+            const notesInput = document.getElementById('planningNotes');
+
+            return {
+                campaignName: campaignNameInput ? campaignNameInput.value.trim() : '',
+                year: yearInput ? parseInt(yearInput.value, 10) : campaignPlanning.year,
+                campaignGoal: campaignGoalInput ? parseFloat(campaignGoalInput.value) : campaignPlanning.campaignGoal,
+                perDonorGoal: perDonorGoalInput ? parseFloat(perDonorGoalInput.value) : campaignPlanning.perDonorGoal,
+                groupGoal: groupGoalInput ? parseFloat(groupGoalInput.value) : campaignPlanning.groupGoal,
+                volunteersCount: volunteersInput ? parseFloat(volunteersInput.value) : campaignPlanning.volunteersCount,
+                notes: notesInput ? notesInput.value.trim() : ''
+            };
+        }
+
+        function saveCampaignPlanning() {
+            const updated = collectCampaignPlanningFormValues();
+
+            campaignPlanning = normalizeCampaignPlanning(updated);
+            saveCampaignPlanningToStorage();
+            updateCampaignPlanningSummary();
+            notifyDataChanged();
+            showNotification('תכנית הקמפיין נשמרה בהצלחה');
+        }
+
+        function resetCampaignPlanning() {
+            if (!confirm('האם לאפס את הערכים לברירות המחדל?')) {
+                return;
+            }
+            campaignPlanning = normalizeCampaignPlanning();
+            initCampaignPlanningForm();
+            saveCampaignPlanningToStorage();
+            notifyDataChanged();
+            showNotification('תכנית הקמפיין אופסה לערכי ברירת המחדל');
+        }
+        function applyCampaignPlanning() {
+            const updated = collectCampaignPlanningFormValues();
+            campaignPlanning = normalizeCampaignPlanning(updated);
+            saveCampaignPlanningToStorage();
+            campaignPlanning = normalizeCampaignPlanning(campaignPlanning);
+            const confirmationMessage = [
+                'החלת תכנית הקמפיין תאפס את הנתונים הקיימים (מתרימים, קבוצות, מאזני שנה)',
+                'ותעדכן את יעדי המערכת לערכים שהוגדרו. האם להמשיך?'
+            ].join(' ');
+            if (!confirm(confirmationMessage)) {
+                return;
+            }
+
+            const appliedMatchingGoal = campaignPlanning.campaignGoal || MATCHING_GOAL_DEFAULT;
+            const appliedPerDonorGoal = campaignPlanning.perDonorGoal || INITIAL_DEFAULT_DONOR_GOAL;
+            const appliedGroupGoal = campaignPlanning.groupGoal || DEFAULT_GROUP_GOAL_DEFAULT;
+            const appliedVolunteers = campaignPlanning.volunteersCount || TOTAL_DONORS_DEFAULT;
+
+            matchingGoal = appliedMatchingGoal;
+            defaultDonorGoal = appliedPerDonorGoal;
+            defaultGroupGoal = appliedGroupGoal;
+            totalRecruiters = appliedVolunteers;
+
+            donors = [];
+            financeState = { currentBalance: 0, entries: [] };
+
+            if (!Array.isArray(groups) || groups.length === 0) {
+                groups = Array.from({ length: 6 }).map((_, index) => ({
+                    id: `group${index + 1}`,
+                    name: `קבוצה ${index + 1}`,
+                    goal: defaultGroupGoal
+                }));
+            } else {
+                groups = groups.map((group, index) => ({
+                    ...group,
+                    id: group.id || `group${index + 1}`,
+                    name: group.name || `קבוצה ${index + 1}`,
+                    goal: defaultGroupGoal
+                }));
+            }
+
+            saveCampaignPlanningToStorage();
+            saveAppSettings();
+            syncDefaultDonorGoalInput();
+            saveData();
+
+            initCampaignPlanningForm();
+            updateCampaignPlanningSummary();
+            updateGroupsDisplay();
+            updateGroupSelect();
+            updateDonorsList();
+            updateHomeStats();
+            updateLiveView();
+            updateLeadersList();
+            updateLiveTargets();
+            updateFinanceUI();
+            notifyDataChanged();
+            showNotification('תכנית הקמפיין הוחלה על המערכת בהצלחה');
+        }
+        // טעינת נתונים
+            async function loadData() {
+                try {
+                    // טעינה אסינכרונית של כל הנתונים
+                    const [savedDonors, savedGroups, savedDefaultGoal, savedFinance, savedToolkitTips, savedScouts, savedGroomGrants, savedAddresses, savedLiveViewSettings] = await Promise.all([
+                        storageGetItemSync('donors'),
+                        storageGetItemSync('groups'),
+                        storageGetItemSync('defaultDonorGoal'),
+                        storageGetItemSync('financeState'),
+                        storageGetItemSync('toolkitTips'),
+                        storageGetItemSync('scoutsSchedule'),
+                        storageGetItemSync('groomGrants'),
+                        storageGetItemSync('addresses'),
+                        storageGetItemSync('liveViewSettings')
+                    ]);
+                    
+                    if (savedDonors) donors = savedDonors;
+                    if (savedGroups) groups = savedGroups;
+                if (savedDefaultGoal) {
+                        const parsedGoal = typeof savedDefaultGoal === 'string' ? parseFloat(savedDefaultGoal) : savedDefaultGoal;
+                    if (!isNaN(parsedGoal) && parsedGoal > 0) {
+                        defaultDonorGoal = parsedGoal;
+                    }
+                }
+                if (savedFinance) {
+                    try {
+                            financeState = savedFinance || financeState;
+                    } catch (err) {
+                        console.warn('שגיאה בטעינת חישובי שנה:', err);
+                    }
+                }
+                if (savedToolkitTips) {
+                    try {
+                            toolkitTips = normalizeToolkitTips(savedToolkitTips);
+                    } catch (err) {
+                        console.warn('שגיאה בטעינת טיפים:', err);
+                        toolkitTips = [];
+                    }
+                } else {
+                    toolkitTips = [];
+                }
+                if (savedScouts) {
+                    try {
+                            scoutsSchedule = normalizeScoutsSchedule(savedScouts);
+                    } catch (err) {
+                        console.warn('שגיאה בטעינת נתוני סיירות:', err);
+                        scoutsSchedule = getDefaultScoutsSchedule();
+                    }
+                } else {
+                    scoutsSchedule = getDefaultScoutsSchedule();
+                }
+                if (savedGroomGrants) {
+                    try {
+                            groomGrants = normalizeGroomGrants(savedGroomGrants);
+                    } catch (err) {
+                        console.warn('שגיאה בטעינת נתוני מענק חתנים:', err);
+                        groomGrants = [];
+                    }
+                } else {
+                    groomGrants = [];
+                }
+                    if (savedAddresses) {
+                        try {
+                            addresses = savedAddresses;
+                        } catch (err) {
+                            console.warn('שגיאה בטעינת כתובות:', err);
+                            addresses = [];
+                        }
+                    } else {
+                        addresses = [];
+                    }
+                ensureFinanceDefaults();
+                ensureDonorsNormalized();
+                syncDefaultDonorGoalInput();
+                loadAppSettings();
+                loadAccessControl();
+                loadCampaignPlanning();
+                renderToolkitTips();
+                updateScoutsStats();
+                renderGroomGrantList();
+                
+                // טעינת הגדרות תצוגת לייב
+                if (savedLiveViewSettings) {
+                    try {
+                            liveViewSettings = { ...liveViewSettings, ...savedLiveViewSettings };
+                    } catch (e) {
+                        console.warn('שגיאה בטעינת הגדרות תצוגת לייב:', e);
+                    }
+                }
+                applyLiveViewSettings(); // יישום ההגדרות מיד
+                } catch (e) {
+                    console.error('שגיאה בטעינת נתונים:', e);
+                }
+            }
+
+        // שמירת נתונים
+            function saveData() {
+                try {
+                    storageSetItem('donors', donors);
+                    storageSetItem('groups', groups);
+                    storageSetItem('defaultDonorGoal', defaultDonorGoal);
+                    storageSetItem('financeState', financeState);
+                    storageSetItem('scoutsSchedule', scoutsSchedule);
+                    storageSetItem('groomGrants', groomGrants);
+                    storageSetItem('addresses', addresses);
+                    saveToolkitTipsToStorage();
+                    saveAppSettings();
+                    saveAccessControl();
+                } catch (e) {
+                    console.error('שגיאה בשמירת נתונים:', e);
+                }
+            }
+
+        function normalizeForSearch(text) {
+            if (text === null || text === undefined) return '';
+            return text
+                .toString()
+                .toLowerCase()
+                .replace(/[\u200f\u200e]/g, '')
+                .replace(/[^\p{L}\p{N}]/gu, '');
+        }
+
+        function tokenizeSearchInput(text) {
+            if (!text) return [];
+            return text
+                .toString()
+                .toLowerCase()
+                .replace(/[\u200f\u200e]/g, '')
+                .replace(/[-_,.\\/]+/g, ' ')
+                .split(/\s+/)
+                .map(token => normalizeForSearch(token))
+                .filter(Boolean);
+        }
+
+        function donorMatchesSearch(donor, tokens) {
+            if (!tokens.length) return true;
+            const group = groups.find(g => g.id === donor.groupId);
+            const groupName = group ? group.name : '';
+            const fields = [
+                donor.name || '',
+                groupName,
+                donor.amount || 0,
+                donor.personalGoal || 0,
+                donor.amount ? donor.amount.toLocaleString() : '',
+                donor.personalGoal ? donor.personalGoal.toLocaleString() : ''
+            ];
+            const normalizedFields = fields.map(normalizeForSearch).filter(Boolean);
+            const combined = normalizeForSearch(
+                `${donor.name || ''} ${groupName || ''} ${donor.amount || ''} ${donor.personalGoal || ''}`
+            );
+            if (combined) {
+                normalizedFields.push(combined);
+            }
+            return tokens.every(token => normalizedFields.some(field => field.includes(token)));
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>"']/g, match => {
+                switch (match) {
+                    case '&': return '&amp;';
+                    case '<': return '&lt;';
+                    case '>': return '&gt;';
+                    case '"': return '&quot;';
+                    case "'": return '&#39;';
+                    default: return match;
+                }
+            });
+        }
+
+        const autoScrollStates = {
+            donors: { handle: null, offset: 0, distance: 0 },
+            leaders: { handle: null, offset: 0, distance: 0, cooldownHandle: null, isInCooldown: false }
+        };
+
+        const AUTO_SCROLL_SPEEDS = {
+            donors: 35,
+            leaders: 25
+        };
+
+        function stopAutoScroll(key) {
+            const state = autoScrollStates[key];
+            if (!state) return;
+            if (state.handle) {
+                cancelAnimationFrame(state.handle);
+                state.handle = null;
+            }
+            if (state.cooldownHandle) {
+                clearTimeout(state.cooldownHandle);
+                state.cooldownHandle = null;
+            }
+            state.isInCooldown = false;
+
+            if (key === 'donors') {
+                const container = document.getElementById('liveDonorsScroll');
+                if (container) {
+                    // השארת המיקום הנוכחי כדי לא ליצור קפיצה
+                    const currentTransform = container.style.transform;
+                    if (currentTransform) {
+                        const match = /translate3d\(0px,\s*(-?\d+(?:\.\d+)?)px/i.exec(currentTransform);
+                        if (match) {
+                            state.offset = Math.abs(parseFloat(match[1]) || 0);
+                        }
+                    }
+                }
+            } else if (key === 'leaders') {
+                const wrapper = document.getElementById('leadersScrollWrapper');
+                if (wrapper) {
+                    wrapper.scrollTop = 0;
+                    wrapper.classList.remove('fade-bright');
+                }
+                const primaryContent = document.querySelector('#leadersScrollPrimary .live-leaders-content');
+                const cloneContent = document.querySelector('#leadersScrollClone .live-leaders-content');
+                if (primaryContent) primaryContent.classList.remove('hidden');
+                if (cloneContent) cloneContent.classList.remove('hidden');
+            }
+        }
+
+        function restartDonorsAutoScroll() {
+            const container = document.getElementById('liveDonorsScroll');
+            const state = autoScrollStates.donors;
+            if (!container || !state) {
+                stopAutoScroll('donors');
+                return;
+            }
+
+            if (state.handle) {
+                cancelAnimationFrame(state.handle);
+                state.handle = null;
+            }
+
+            const halfHeight = container.scrollHeight / 2;
+            if (!halfHeight || !isFinite(halfHeight)) {
+                stopAutoScroll('donors');
+                return;
+            }
+
+            const startOffset = Math.min(state.offset || 0, halfHeight);
+            let offset = startOffset;
+            state.distance = halfHeight;
+
+            let last = performance.now();
+
+            function step(timestamp) {
+                const delta = (timestamp - last) / 1000;
+                last = timestamp;
+                // מיפוי המהירות: 10 = 5 פיקסלים/שנייה (איטי מאוד), 50 = 35 פיקסלים/שנייה (ברירת מחדל), 100 = 70 פיקסלים/שנייה (מהיר מאוד)
+                const speedValue = liveViewSettings.donorsScrollSpeed || 50;
+                // נוסחה לינארית: speed = 5 + (value - 10) * (70 - 5) / (100 - 10)
+                const speed = 5 + (speedValue - 10) * 65 / 90;
+                offset += speed * delta;
+                if (offset >= halfHeight) {
+                    offset -= halfHeight;
+                }
+                state.offset = offset;
+                container.style.transform = `translate3d(0, ${-offset}px, 0)`;
+                state.handle = requestAnimationFrame(step);
+            }
+
+            container.style.willChange = 'transform';
+            state.handle = requestAnimationFrame(step);
+        }
+        function restartLeadersAutoScroll({ immediate = false } = {}) {
+            const wrapper = document.getElementById('leadersScrollWrapper');
+            const primary = document.getElementById('leadersScrollPrimary');
+            const clone = document.getElementById('leadersScrollClone');
+            const state = autoScrollStates.leaders;
+
+            if (!wrapper || !primary || !clone || !state) {
+                stopAutoScroll('leaders');
+                return;
+            }
+
+            if (state.cooldownHandle) {
+                clearTimeout(state.cooldownHandle);
+                state.cooldownHandle = null;
+            }
+            state.isInCooldown = false;
+
+            if (state.handle) {
+                cancelAnimationFrame(state.handle);
+                state.handle = null;
+            }
+
+            // יצירת קלון לגלילה אינסופית
+            const primaryContent = primary.querySelector('.live-leaders-content');
+            if (!primaryContent) {
+            clone.innerHTML = '';
+            clone.style.display = 'none';
+                stopAutoScroll('leaders');
+                return;
+            }
+            
+            // העתקת התוכן לקלון
+            clone.innerHTML = primaryContent.outerHTML;
+            clone.style.display = 'block';
+
+            const contentHeight = primary.scrollHeight;
+            if (!contentHeight || !isFinite(contentHeight) || contentHeight === 0) {
+                wrapper.scrollTop = 0;
+                stopAutoScroll('leaders');
+                return;
+            }
+
+            const cloneContent = clone.querySelector('.live-leaders-content');
+            const totalHeight = contentHeight * 2; // primary + clone
+
+            const showContent = () => {
+                wrapper.style.opacity = '1';
+                wrapper.style.filter = 'brightness(1) saturate(1)';
+                if (primaryContent) primaryContent.classList.remove('hidden');
+                if (cloneContent) cloneContent.classList.remove('hidden');
+            };
+            
+            let offset = immediate ? 0 : 0;
+            state.distance = contentHeight;
+            state.offset = offset;
+
+            const startScroll = ({ fromTop = false } = {}) => {
+                showContent();
+                if (fromTop) {
+                    offset = 0;
+                    state.offset = 0;
+                    wrapper.scrollTop = 0;
+                } else {
+                    wrapper.scrollTop = offset;
+                }
+
+                let last = performance.now();
+
+                function step(timestamp) {
+                    const delta = (timestamp - last) / 1000;
+                    last = timestamp;
+                    // מהירות קבועה למובילים
+                    const speed = 25;
+                    offset += speed * delta;
+                    
+                    // כשמגיעים לסוף התוכן המקורי, מתחילים מההתחלה (הקלון)
+                    if (offset >= contentHeight) {
+                        offset = 0;
+                        initiateTransition();
+                        return;
+                    }
+                    
+                    state.offset = offset;
+                    wrapper.scrollTop = offset;
+                    state.handle = requestAnimationFrame(step);
+                }
+
+                state.handle = requestAnimationFrame(step);
+            };
+
+            const initiateTransition = () => {
+                if (state.isInCooldown) return;
+                if (state.handle) {
+                    cancelAnimationFrame(state.handle);
+                    state.handle = null;
+                }
+                state.isInCooldown = true;
+                
+                // אפקט הורדת בהירות ואז עליית בהירות
+                let opacity = 1;
+                let brightness = 1;
+                const fadeOutDuration = 600;
+                const fadeInDuration = 600;
+                const startTime = performance.now();
+                
+                function fadeStep(timestamp) {
+                    const elapsed = timestamp - startTime;
+                    
+                    if (elapsed < fadeOutDuration) {
+                        // הורדת בהירות
+                        const progress = elapsed / fadeOutDuration;
+                        opacity = 1 - progress;
+                        brightness = 1 - (progress * 0.5);
+                        wrapper.style.opacity = opacity;
+                        wrapper.style.filter = `brightness(${brightness}) saturate(${brightness})`;
+                        state.handle = requestAnimationFrame(fadeStep);
+                    } else if (elapsed < fadeOutDuration + fadeInDuration) {
+                        // עליית בהירות - חזרה להתחלה
+                        wrapper.scrollTop = 0;
+                        state.offset = 0;
+                        const progress = (elapsed - fadeOutDuration) / fadeInDuration;
+                        opacity = progress;
+                        brightness = 0.5 + (progress * 0.5);
+                        wrapper.style.opacity = opacity;
+                        wrapper.style.filter = `brightness(${brightness}) saturate(${brightness})`;
+                        state.handle = requestAnimationFrame(fadeStep);
+                    } else {
+                        // סיום - חזרה לרמה רגילה והתחלת גלילה חדשה
+                        wrapper.style.opacity = '1';
+                        wrapper.style.filter = 'brightness(1) saturate(1)';
+                        state.isInCooldown = false;
+                        state.offset = 0;
+                        state.distance = contentHeight;
+                        showContent();
+                        startScroll({ fromTop: true });
+                    }
+                }
+                
+                state.handle = requestAnimationFrame(fadeStep);
+            };
+
+            if (immediate) {
+                showContent();
+                startScroll();
+            } else {
+                // התחלה עם אפקט מעבר
+                initiateTransition();
+            }
+        }
+
+        const donorSearchInput = document.getElementById('donorSearchInput');
+        const donorSearchClearButton = document.getElementById('donorSearchClear');
+
+        if (donorSearchInput) {
+            donorSearchInput.addEventListener('input', (event) => {
+                donorSearchTerm = event.target.value;
+                updateDonorsList();
+            });
+
+            donorSearchInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    donorSearchTerm = '';
+                    donorSearchInput.value = '';
+                    updateDonorsList();
+                }
+            });
+        }
+        if (donorSearchClearButton) {
+            donorSearchClearButton.addEventListener('click', () => {
+                if (!donorSearchTerm) {
+                    if (donorSearchInput) donorSearchInput.focus();
+                    return;
+                }
+                donorSearchTerm = '';
+                if (donorSearchInput) {
+                    donorSearchInput.value = '';
+                    donorSearchInput.focus();
+                }
+                updateDonorsList();
+            });
+        }
+
+        function syncDefaultDonorGoalInput() {
+            const input = document.getElementById('defaultDonorGoalInput');
+            if (input) {
+                input.value = defaultDonorGoal;
+            }
+        }
+
+        function updateDefaultDonorGoal() {
+            const input = document.getElementById('defaultDonorGoalInput');
+            if (!input) return;
+
+            const newGoal = parseFloat(input.value);
+            if (isNaN(newGoal) || newGoal <= 0) {
+                showNotification('אנא הזן יעד תקין הגבוה מאפס');
+                syncDefaultDonorGoalInput();
+                return;
+            }
+
+            const previousGoal = defaultDonorGoal;
+            defaultDonorGoal = Math.round(newGoal);
+            input.value = defaultDonorGoal;
+
+            let updatedDonors = 0;
+            donors.forEach(donor => {
+                if (!donor.personalGoal || donor.personalGoal === previousGoal) {
+                    donor.personalGoal = defaultDonorGoal;
+                    updatedDonors++;
+                }
+            });
+
+            saveData();
+
+            updateDonorsList();
+            updateGroupsDisplay();
+            updateHomeStats();
+            updateLiveView();
+            updateLeadersList();
+            updateLiveTargets();
+
+            const message = updatedDonors > 0
+                ? `יעד ברירת המחדל עודכן. ${updatedDonors} מתרימים עודכנו ליעד החדש`
+                : 'יעד ברירת המחדל עודכן';
+            showNotification(message);
+        }
+
+            // הצגת הודעה
+            function showNotification(message) {
+            const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 2000);
+            }
+
+        // ניווט בין מדורים
+        function activateSection(section, navItem = null) {
+            if (navItem) {
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                navItem.classList.add('active');
+            } else {
+                document.querySelectorAll('.nav-item').forEach(nav => {
+                    if (nav.dataset.section === section) {
+                        nav.classList.add('active');
+                    } else {
+                        nav.classList.remove('active');
+                    }
+                });
+            }
+
+                document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+                const targetSection = document.getElementById(section + 'Section');
+                if (targetSection) {
+                    requestAnimationFrame(() => targetSection.classList.add('active'));
+                }
+
+                const appContainer = document.querySelector('.app-container');
+                if (section === 'liveview') {
+                    appContainer.classList.add('live-mode');
+                    applyLiveViewSettings(); // יישום הגדרות תצוגת לייב
+                    updateLiveView();
+                    updateLeadersList();
+                    updateLiveTargets();
+                    attachLiveViewInteractionHandlers();
+                    hideLiveViewBackButton();
+                    // הפעלת גלילה אוטומטית למובילים
+                    if (liveViewSettings.enableAutoScroll) {
+                        setTimeout(() => {
+                            restartLeadersAutoScroll({ immediate: true });
+                        }, 300);
+                    }
+                } else {
+                    appContainer.classList.remove('live-mode');
+                    detachLiveViewInteractionHandlers();
+                    hideLiveViewBackButton();
+                }
+
+                if (section === 'home') {
+                    updateHomeStats();
+                    setTimeout(() => {
+                        initLandingCards();
+                    }, 100);
+                } else if (section === 'management') {
+                    updateGroupsDisplay();
+                    updateDonorsList();
+                    setTimeout(() => {
+                        initLandingCards();
+                    }, 100);
+                } else if (section === 'addresses') {
+                    renderAddresses();
+                    setTimeout(() => {
+                        initLandingCards();
+                    }, 100);
+                } else if (section === 'finance') {
+                    updateFinanceUI();
+                    setTimeout(() => {
+                        initLandingCards();
+                    }, 100);
+                } else if (section === 'planning') {
+                    initCampaignPlanningForm();
+                    setTimeout(() => {
+                        initLandingCards();
+                    }, 100);
+                } else if (section === 'breakdown') {
+                    initHomeDonorFilters();
+                    updateHomeDonorBreakdown();
+                    setTimeout(() => {
+                        initLandingCards();
+                    }, 100);
+                } else if (section === 'scouts') {
+                    initScoutsSection();
+                    setTimeout(() => {
+                        initLandingCards();
+                    }, 100);
+                } else if (section === 'groomGrant') {
+                    initGroomGrantSection();
+                    renderGroomGrantList();
+                    setTimeout(() => {
+                        initLandingCards();
+                    }, 100);
+                } else if (section === 'raffle') {
+                    // אתחול מערכת ההגרלות כשהסקציה מופעלת
+                    setTimeout(() => {
+                        initLandingCards();
+                    }, 100);
+                } else {
+                    // לכל המדורים האחרים
+                    setTimeout(() => {
+                        initLandingCards();
+                    }, 100);
+                }
+        }
+
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const section = item.dataset.section;
+                if (!requestSectionAccess(section)) {
+                    return;
+                }
+                activateSection(section, item);
+            });
+        });
+
+        // יציאה מתצוגת לייב
+        function exitLiveView() {
+            const appContainer = document.querySelector('.app-container');
+            appContainer.classList.remove('live-mode');
+            detachLiveViewInteractionHandlers();
+            hideLiveViewBackButton();
+            
+            // חזרה לדף הבית
+            const homeNav = document.querySelector('.nav-item[data-section="home"]');
+            activateSection('home', homeNav);
+        }
+        // ניהול טאבים במדור ניהול
+        document.querySelectorAll('.management-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+                
+                document.querySelectorAll('.management-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                document.querySelectorAll('.management-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(tabName + 'Content').classList.add('active');
+                
+                // סגירת מחשבון אם היה פתוח בעת מעבר בין טאבים
+                const calcPanel = document.getElementById('managementCalculatorPanel');
+                if (calcPanel && calcPanel.classList.contains('active')) {
+                    calcPanel.classList.remove('active');
+                }
+                
+                if (tabName === 'groups') {
+                    updateGroupsDisplay();
+                } else if (tabName === 'donors') {
+                    updateDonorsList();
+                    updateGroupSelect();
+                } else if (tabName === 'liveview') {
+                    loadLiveViewSettings();
+        } else if (tabName === 'password') {
+            initPasswordSettingsUI();
+                }
+            });
+        });
+        // (בוטל) קוד וילון ניהול - הוסר לבקשת המשתמש
+
+        // עדכון תצוגת דף הבית
+        function animateValue(element, start, end, { prefix = '', suffix = '', duration = 800, steps = 100 } = {}) {
+            if (!element) return;
+            const difference = end - start;
+            if (difference === 0) {
+                element.textContent = `${prefix}${end.toLocaleString('he-IL')}${suffix}`;
+                return;
+            }
+            const increment = Math.max(Math.ceil(Math.abs(difference) / steps), 1);
+            const stepTime = Math.max(Math.floor(duration / steps), 16);
+            let current = start;
+            const step = () => {
+                if (difference > 0) {
+                    current = Math.min(current + increment, end);
+                } else {
+                    current = Math.max(current - increment, end);
+                }
+                element.textContent = `${prefix}${current.toLocaleString('he-IL')}${suffix}`;
+                if (current !== end) {
+                    setTimeout(step, stepTime);
+                }
+            };
+            step();
+        }
+        function updateHomeStats() {
+            const totalCollected = donors.reduce((sum, d) => sum + d.amount, 0);
+            const matchingPercentage = matchingGoal > 0 ? (totalCollected / matchingGoal) * 100 : 0;
+            const totalDonors = donors.length;
+            const avgDonation = totalDonors > 0 ? totalCollected / totalDonors : 0;
+            
+            const statsGrid = document.getElementById('homeStats');
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-label">יעד המצינג'</div>
+                    <div class="stat-value" data-stat-key="matchingGoal">₪0</div>
+                    <div class="stat-subvalue" data-stat-key="matchingProgress">0% הושג</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">סכום שנאסף</div>
+                    <div class="stat-value" data-stat-key="totalCollected">₪0</div>
+                    <div class="stat-subvalue">מתוך ${matchingGoal.toLocaleString()}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">מספר מתרימים</div>
+                    <div class="stat-value" data-stat-key="totalDonors">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">ממוצע תרומה</div>
+                    <div class="stat-value" data-stat-key="avgDonation">₪0</div>
+                    <div class="stat-subvalue">לכל מתרים</div>
+                </div>
+            `;
+
+            const statsCache = updateHomeStats._cache || {
+                matchingGoal: 0,
+                matchingProgress: 0,
+                totalCollected: 0,
+                totalDonors: 0,
+                avgDonation: 0
+            };
+            const matchingGoalValue = matchingGoal;
+            animateValue(
+                statsGrid.querySelector('[data-stat-key="matchingGoal"]'),
+                statsCache.matchingGoal ?? 0,
+                matchingGoalValue,
+                { prefix: '₪' }
+            );
+            animateValue(
+                statsGrid.querySelector('[data-stat-key="matchingProgress"]'),
+                statsCache.matchingProgress ?? 0,
+                Math.round(matchingPercentage),
+                { suffix: '% הושג' }
+            );
+            animateValue(
+                statsGrid.querySelector('[data-stat-key="totalCollected"]'),
+                statsCache.totalCollected ?? 0,
+                totalCollected,
+                { prefix: '₪' }
+            );
+            animateValue(
+                statsGrid.querySelector('[data-stat-key="totalDonors"]'),
+                statsCache.totalDonors ?? 0,
+                totalDonors
+            );
+            animateValue(
+                statsGrid.querySelector('[data-stat-key="avgDonation"]'),
+                statsCache.avgDonation ?? 0,
+                Math.round(avgDonation),
+                { prefix: '₪' }
+            );
+
+            updateHomeStats._cache = {
+                matchingGoal: matchingGoalValue,
+                matchingProgress: Math.round(matchingPercentage),
+                totalCollected,
+                totalDonors,
+                avgDonation: Math.round(avgDonation)
+            };
+            
+            // הפעלת אפקט נחיתה לכרטיסיות הסטטיסטיקה
+            setTimeout(() => {
+                initLandingCards();
+            }, 100);
+            }
+        // מחשבון ניהול
+        let managementCalculatorState = {
+            expression: '',
+            shouldReset: false
+        };
+
+        function openManagementCalculator() {
+            const panel = document.getElementById('managementCalculatorPanel');
+            if (panel) panel.classList.add('active');
+        }
+        function closeManagementCalculator() {
+            const panel = document.getElementById('managementCalculatorPanel');
+            if (panel) panel.classList.remove('active');
+        }
+        function toggleManagementCalculator() {
+            const panel = document.getElementById('managementCalculatorPanel');
+            if (!panel) return;
+            const willOpen = !panel.classList.contains('active');
+            if (willOpen) {
+                // לפני פתיחה - לוודא שכל תוכן אחר מוצג רגיל, אבל המחשבון יופיע לבדו
+                panel.classList.add('active');
+            } else {
+                panel.classList.remove('active');
+            }
+        }
+
+        function updateManagementCalculatorDisplay(value) {
+            const display = document.getElementById('managementCalculatorDisplay');
+            if (display) {
+                display.textContent = value;
+            }
+        }
+
+        function managementCalcInput(value) {
+            if (!managementCalculatorState.expression || managementCalculatorState.shouldReset) {
+                if (/[0-9.]/.test(value)) {
+                    managementCalculatorState.expression = value;
+                    managementCalculatorState.shouldReset = false;
+                } else {
+                    managementCalculatorState.expression = managementCalculatorState.expression || '0';
+                    managementCalculatorState.shouldReset = false;
+                    managementCalculatorState.expression += value;
+                }
+            } else {
+                managementCalculatorState.expression += value;
+            }
+            updateManagementCalculatorDisplay(managementCalculatorState.expression);
+        }
+
+        function managementCalcClear() {
+            managementCalculatorState.expression = '';
+            managementCalculatorState.shouldReset = false;
+            updateManagementCalculatorDisplay('0');
+        }
+
+        function managementCalcCalculate() {
+            try {
+                const sanitized = managementCalculatorState.expression.replace(/[^0-9+\-*/.]/g, '');
+                if (!sanitized) {
+                    updateManagementCalculatorDisplay('0');
+                    return;
+                }
+                const result = Function(`"use strict"; return (${sanitized})`)();
+                const fixedResult = Number.isFinite(result) ? parseFloat(result.toFixed(6)) : 'שגיאה';
+                updateManagementCalculatorDisplay(String(fixedResult));
+                managementCalculatorState.expression = String(fixedResult);
+                managementCalculatorState.shouldReset = true;
+            } catch (error) {
+                updateManagementCalculatorDisplay('שגיאה');
+                managementCalculatorState.expression = '';
+                managementCalculatorState.shouldReset = true;
+            }
+        }
+
+        // עדכון תצוגת קבוצות
+            function updateGroupsDisplay() {
+            const groupsGrid = document.getElementById('groupsGrid');
+            groupsGrid.innerHTML = '';
+            ensureGroupsGridDragSupport();
+                
+            groups.forEach(group => {
+                    const groupDonors = donors.filter(d => d.groupId === group.id);
+                    const groupTotal = groupDonors.reduce((sum, d) => sum + d.amount, 0);
+                    const groupProgress = group.goal > 0 ? (groupTotal / group.goal) * 100 : 0;
+                    
+                    const card = document.createElement('div');
+                card.className = 'group-card';
+                    card.innerHTML = `
+                    <div class="group-header">
+                        <input type="text" class="group-name-input" value="${group.name}" 
+                               onchange="updateGroupName('${group.id}', this.value)">
+                        <button class="btn btn-danger btn-small" onclick="deleteGroup('${group.id}')">מחק</button>
+                        </div>
+                        <div class="group-stats">
+                        <div class="group-stat">
+                            <div class="group-stat-label">נאסף</div>
+                            <div class="group-stat-value">₪${groupTotal.toLocaleString()}</div>
+                            </div>
+                        <div class="group-stat">
+                            <div class="group-stat-label">יעד</div>
+                            <div class="group-stat-value">₪${group.goal.toLocaleString()}</div>
+                            </div>
+                        <div class="group-stat">
+                            <div class="group-stat-label">התקדמות</div>
+                            <div class="group-stat-value">${Math.round(groupProgress)}%</div>
+                            </div>
+                        <div class="group-stat">
+                            <div class="group-stat-label">מתרימים</div>
+                            <div class="group-stat-value">${groupDonors.length}</div>
+                        </div>
+                    </div>
+                    <div class="group-progress">
+                            <div class="group-progress-fill" style="width: ${Math.min(groupProgress, 100)}%"></div>
+                        </div>
+                        <div>
+                        <label style="display: block; margin-bottom: 5px; color: var(--muted); font-size: 12px;">יעד קבוצה:</label>
+                        <input type="number" class="group-goal-input" value="${group.goal}" 
+                               onchange="updateGroupGoal('${group.id}', this.value)" min="0" step="1">
+                        </div>
+                        <div class="group-donors-list">
+                        ${groupDonors.length > 0 ? groupDonors.map(d => `
+                            <div class="group-donor-item">
+                                <div class="group-donor-details">
+                                    <span class="group-donor-name">${d.name}</span>
+                                    <span class="group-donor-amount">₪${d.amount.toLocaleString()}</span>
+                                </div>
+                                <div class="group-donor-actions">
+                                    <button class="group-donor-payment" onclick="addDonorPayment(${d.id})">הוסף תשלום</button>
+                                    <button class="group-donor-delete" onclick="removeDonor(${d.id})">מחק</button>
+                                </div>
+                            </div>
+                        `).join('') : '<div style="text-align: center; color: var(--muted); padding: 10px;">אין מתרימים</div>'}
+                    </div>
+                        <div class="group-excel-upload">
+                            <input type="file" id="excelFileInput_${group.id}" class="group-excel-input" accept=".xlsx,.xls" style="display:none;">
+                            <button class="group-excel-button" onclick="triggerGroupExcelUpload('${group.id}')">טעינת רשימה מקובץ אקסל</button>
+                        </div>
+                    <div class="add-donor-form">
+                        <input type="text" id="donorName_${group.id}" placeholder="שם המתרים">
+                        <input type="number" id="donorAmount_${group.id}" placeholder="סכום תרומה" min="0" step="1">
+                        <button class="btn" onclick="addDonorToGroup('${group.id}')">הוסף מתרים</button>
+                        </div>
+                    `;
+                card.dataset.groupId = group.id;
+                card.setAttribute('draggable', 'true');
+                attachGroupCardDragHandlers(card);
+                groupsGrid.appendChild(card);
+            });
+        }
+
+        // עדכון שם קבוצה
+        function updateGroupName(groupId, newName) {
+            const group = groups.find(g => g.id === groupId);
+            if (group && newName.trim()) {
+                group.name = newName.trim();
+                saveData();
+                // עדכון כל המדורים - מדור ניהול הוא המקור האמתי
+                updateGroupsDisplay();
+                updateDonorsList();
+                updateGroupSelect();
+                updateLiveTargets();
+                updateLiveView();
+                updateHomeDonorBreakdown();
+                updateHomeStats();
+                showNotification('שם הקבוצה עודכן');
+            }
+        }
+            // עדכון יעד קבוצה
+        function updateGroupGoal(groupId, goal) {
+                const group = groups.find(g => g.id === groupId);
+                if (group) {
+                    group.goal = parseFloat(goal) || 0;
+                    saveData();
+                    // עדכון כל המדורים - מדור ניהול הוא המקור האמתי
+                    updateGroupsDisplay();
+                updateLiveTargets();
+                    updateLiveView();
+                    updateHomeStats();
+                showNotification('יעד הקבוצה עודכן');
+            }
+        }
+
+        // מחיקת קבוצה
+        function deleteGroup(groupId) {
+            if (confirm('האם אתה בטוח שברצונך למחוק את הקבוצה? כל המתרימים בקבוצה יימחקו יחד עם הקבוצה.')) {
+                // מחיקת כל המתרימים של הקבוצה
+                const groupDonors = donors.filter(d => d.groupId === groupId);
+                groupDonors.forEach(donor => {
+                    const index = donors.findIndex(d => d.id === donor.id);
+                    if (index !== -1) {
+                        donors.splice(index, 1);
+                    }
+                });
+                
+                // מחיקת הקבוצה
+                groups = groups.filter(g => g.id !== groupId);
+                saveData();
+                
+                // עדכון כל המדורים - מדור ניהול הוא המקור האמתי
+                updateGroupsDisplay();
+                updateDonorsList();
+                updateGroupSelect();
+                updateLiveTargets();
+                updateLiveView();
+                updateLeadersList();
+                updateHomeDonorBreakdown(); // עדכון מדור פילוח נתונים
+                updateHomeStats(); // עדכון סטטיסטיקות בית
+                updateFinanceUI(); // עדכון מדור כספים
+                showNotification('הקבוצה וכל המתרימים שלה נמחקו');
+            }
+        }
+        // הוספת קבוצה חדשה
+        function addNewGroup() {
+            const newId = 'group_' + Date.now();
+            groups.push({
+                id: newId,
+                name: `קבוצה ${groups.length + 1}`,
+                goal: defaultGroupGoal
+            });
+            saveData();
+            // עדכון כל המדורים - מדור ניהול הוא המקור האמתי
+            updateGroupsDisplay();
+            updateGroupSelect();
+            updateLiveTargets();
+            updateLiveView();
+            updateHomeStats();
+            showNotification('קבוצה חדשה נוספה');
+        }
+
+        // עדכון select של קבוצות
+        function updateGroupSelect() {
+            const select = document.getElementById('donorGroupSelect');
+            if (select) {
+                select.innerHTML = groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+            }
+        }
+
+        // הוספת מתרים
+        function addDonor() {
+            const name = document.getElementById('donorNameInput').value.trim();
+            const amountInput = parseFloat(document.getElementById('donorAmountInput').value) || 0;
+            const groupId = document.getElementById('donorGroupSelect').value;
+            const goalInput = parseFloat(document.getElementById('donorGoalInput').value) || defaultDonorGoal;
+            
+            if (!name) {
+                showNotification('אנא הזן שם מתרים');
+                return;
+            }
+
+            const donor = {
+                id: Date.now(),
+                name: name,
+                amount: Math.max(0, Math.round(amountInput)),
+                groupId: groupId,
+                personalGoal: Math.max(0, Math.round(goalInput)) || defaultDonorGoal,
+                createdAt: new Date().toISOString(),
+                history: [],
+                dailyBreakdown: Array(dayLabels.length).fill(0)
+            };
+
+            if (donor.amount > 0) {
+                recordDonorHistory(donor, donor.amount, donor.amount, 'manual-add', 'הוספת מתרים');
+                addAmountToDailyBreakdown(donor, donor.amount, new Date());
+            }
+            donors.push(normalizeDonor(donor));
+            saveData();
+            
+            document.getElementById('donorNameInput').value = '';
+            document.getElementById('donorAmountInput').value = '';
+            document.getElementById('donorGoalInput').value = '';
+            
+            updateDonorsList();
+            updateGroupsDisplay();
+            updateHomeStats();
+            updateLiveView();
+            updateLeadersList();
+            updateLiveTargets();
+            showNotification(`מתרים ${name} נוסף בהצלחה`);
+        }
+        // הוספת מתרים לקבוצה
+        function addDonorToGroup(groupId) {
+            const nameInput = document.getElementById(`donorName_${groupId}`);
+            const amountInput = document.getElementById(`donorAmount_${groupId}`);
+            
+            const name = nameInput.value.trim();
+            const amountValue = parseFloat(amountInput.value) || 0;
+            
+            if (!name) {
+                showNotification('אנא הזן שם מתרים');
+                return;
+            }
+            
+            const donor = {
+                id: Date.now(),
+                name: name,
+                amount: Math.max(0, Math.round(amountValue)),
+                groupId: groupId,
+                personalGoal: defaultDonorGoal,
+                createdAt: new Date().toISOString(),
+                history: [],
+                dailyBreakdown: Array(dayLabels.length).fill(0)
+            };
+            if (donor.amount > 0) {
+                recordDonorHistory(donor, donor.amount, donor.amount, 'group-add', 'הוספת מתרים לקבוצה');
+                addAmountToDailyBreakdown(donor, donor.amount, new Date());
+            }
+            donors.push(normalizeDonor(donor));
+            saveData();
+            
+            nameInput.value = '';
+            amountInput.value = '';
+            
+            updateDonorsList();
+            updateGroupsDisplay();
+            updateHomeStats();
+            updateLiveView();
+            updateLeadersList();
+            updateLiveTargets();
+            showNotification(`מתרים ${name} נוסף בהצלחה`);
+        }
+
+        function updateDonorName(donorId, rawName) {
+            ensureDonorsNormalized();
+            const donor = donors.find(d => d.id === donorId);
+            const input = document.querySelector(`input[data-donor-name-input="${donorId}"]`);
+            if (!donor) {
+                if (input) input.value = '';
+                return;
+            }
+            const trimmed = (rawName || '').toString().trim();
+            if (!trimmed) {
+                showNotification('אנא הזן שם מתרים תקין');
+                if (input) input.value = donor.name || '';
+                if (input) input.focus();
+                return;
+            }
+            if (trimmed === donor.name) {
+                return;
+            }
+            donor.name = trimmed;
+            saveData();
+            updateDonorsList();
+            updateGroupsDisplay();
+            updateHomeStats();
+            updateLiveView();
+            updateLeadersList();
+            updateLiveTargets();
+            showNotification('שם המתרים עודכן');
+        }
+
+        function handleDonorNameKey(event, donorId) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                updateDonorName(donorId, event.target.value);
+            }
+        }
+
+        // עדכון רשימת מתרימים
+        function updateDonorsList() {
+            const container = document.getElementById('donorsListContainer');
+            if (!container) return;
+            ensureDonorsNormalized();
+            updateDonorsSummary();
+            const meta = document.getElementById('donorsSearchMeta');
+            const searchTerm = donorSearchTerm.trim();
+            const tokens = tokenizeSearchInput(searchTerm);
+
+            let filteredDonors = donors;
+            if (tokens.length) {
+                filteredDonors = donors.filter(donor => donorMatchesSearch(donor, tokens));
+            }
+
+            if (meta) {
+                if (searchTerm) {
+                    const message = filteredDonors.length
+                        ? `נמצאו ${filteredDonors.length} מתרימים מתאימים לחיפוש "${searchTerm}"`
+                        : `לא נמצאו מתרימים מתאימים לחיפוש "${searchTerm}"`;
+                    meta.textContent = message;
+                } else {
+                    meta.textContent = donors.length
+                        ? `סה"כ ${donors.length} מתרימים במערכת`
+                        : 'אין מתרימים במערכת';
+                }
+            }
+            
+            if (filteredDonors.length === 0) {
+                const message = searchTerm
+                    ? `לא נמצאו מתרימים שעונים לחיפוש "${escapeHtml(searchTerm)}"`
+                    : 'אין מתרימים עדיין';
+                container.innerHTML = `<div style="text-align: center; color: var(--muted); padding: 20px;">${message}</div>`;
+                return;
+            }
+
+            if (editingDonorId && !filteredDonors.some(d => d.id === editingDonorId)) {
+                editingDonorId = null;
+                editingShouldFocus = false;
+            }
+            
+            container.innerHTML = filteredDonors.map(donor => {
+                const group = groups.find(g => g.id === donor.groupId) || groups[0];
+                const progress = donor.personalGoal > 0 ? (donor.amount / donor.personalGoal) * 100 : 0;
+                const historyHtml = renderDonorHistory(donor);
+                const groupOptions = groups.map(g => `
+                    <option value="${g.id}" ${g.id === donor.groupId ? 'selected' : ''}>${escapeHtml(g.name)}</option>
+                `).join('');
+                const isEditing = editingDonorId === donor.id;
+                return `
+                    <div class="donor-item${isEditing ? ' editing' : ''}">
+                        <div class="donor-info">
+                            <div class="donor-name">
+                                <input type="text"
+                                       class="donor-name-input"
+                                       value="${escapeHtml(donor.name)}"
+                                       data-donor-name-input="${donor.id}"
+                                       onchange="updateDonorName(${donor.id}, this.value)"
+                                       onkeydown="handleDonorNameKey(event, ${donor.id})"
+                                       placeholder="שם המתרים">
+                            </div>
+                            <div class="donor-details">
+                                קבוצה: ${group ? escapeHtml(group.name) : 'ללא קבוצה'} | 
+                                תרומה: ₪${donor.amount.toLocaleString()} | 
+                                יעד: ₪${donor.personalGoal.toLocaleString()} (${Math.round(progress)}%)
+                            </div>
+                        </div>
+                        <div class="donor-actions">
+                            <button class="btn btn-secondary btn-small" onclick="addDonorPayment(${donor.id})">הוסף תשלום</button>
+                            <button class="btn btn-secondary btn-small" onclick="toggleDonorHistory(${donor.id})">היסטוריה</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteDonor(${donor.id})">מחק</button>
+                        </div>
+                        <div class="donor-edit-panel${isEditing ? ' active' : ''}" id="donorEdit_${donor.id}">
+                            <div class="donor-edit-grid">
+                                <div class="donor-edit-field">
+                                    <label for="editName_${donor.id}">שם המתרים</label>
+                                    <input type="text" id="editName_${donor.id}" value="${escapeHtml(donor.name)}" placeholder="שם מלא">
+                                </div>
+                                <div class="donor-edit-field">
+                                    <label for="editAmount_${donor.id}">סה"כ נאסף</label>
+                                    <input type="number" id="editAmount_${donor.id}" value="${donor.amount}" min="0" step="1">
+                                </div>
+                                <div class="donor-edit-field">
+                                    <label for="editGoal_${donor.id}">יעד אישי</label>
+                                    <input type="number" id="editGoal_${donor.id}" value="${donor.personalGoal || defaultDonorGoal}" min="0" step="1">
+                                </div>
+                                <div class="donor-edit-field">
+                                    <label for="editGroup_${donor.id}">קבוצה</label>
+                                    <select id="editGroup_${donor.id}">
+                                        ${groupOptions}
+                                    </select>
+                                </div>
+                                <div class="donor-edit-field">
+                                    <label for="editDelta_${donor.id}">שינוי סכום (אפשר להוסיף או להפחית)</label>
+                                    <input type="number" id="editDelta_${donor.id}" placeholder="+250 או -500">
+                                </div>
+                            </div>
+                            <div class="donor-edit-actions">
+                                <button class="btn btn-secondary btn-small" onclick="saveDonorEdits(${donor.id})">שמור</button>
+                                <button class="btn btn-secondary btn-small" onclick="cancelDonorEdits(${donor.id})">בטל</button>
+                            </div>
+                        </div>
+                        <div class="donor-history" id="donorHistory_${donor.id}">
+                            ${historyHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            if (editingDonorId && editingShouldFocus) {
+                setTimeout(() => {
+                    const input = document.getElementById(`editName_${editingDonorId}`);
+                    if (input) {
+                        input.focus();
+                        editingShouldFocus = false;
+                    }
+                }, 40);
+            }
+            updateScoutsDatalist();
+        }
+
+        // מחיקת מתרים
+        function deleteDonor(donorId) {
+            if (confirm('האם אתה בטוח שברצונך למחוק את המתרים?')) {
+                // השוואה גמישה - גם מספר וגם מחרוזת
+                const idToDelete = donorId;
+                donors = donors.filter(d => {
+                    // השוואה גמישה - אם שניהם מספרים, השווה כמספרים
+                    // אחרת השווה כמחרוזות
+                    if (typeof d.id === 'number' && typeof idToDelete === 'number') {
+                        return d.id !== idToDelete;
+                    }
+                    if (typeof d.id === 'string' && typeof idToDelete === 'string') {
+                        return d.id !== idToDelete;
+                    }
+                    // אם אחד מספר ואחד מחרוזת, נסה להמיר
+                    const donorIdNum = typeof d.id === 'string' ? parseInt(d.id, 10) : d.id;
+                    const deleteIdNum = typeof idToDelete === 'string' ? parseInt(idToDelete, 10) : idToDelete;
+                    if (!isNaN(donorIdNum) && !isNaN(deleteIdNum)) {
+                        return donorIdNum !== deleteIdNum;
+                    }
+                    // אחרת השווה כמחרוזות
+                    return String(d.id) !== String(idToDelete);
+                });
+                saveData();
+                updateDonorsList();
+                updateGroupsDisplay();
+                updateHomeStats();
+                updateLiveView();
+                updateLeadersList();
+                updateLiveTargets();
+                showNotification('מתרים נמחק');
+            }
+        }
+
+        // מחיקת מתרים מתוך רשימת קבוצה
+        function removeDonor(donorId) {
+            deleteDonor(donorId);
+        }
+
+        // עריכת מתרים
+        function editDonor(donorId) {
+            const donorsTabButton = document.querySelector('.management-tab[data-tab="donors"]');
+            const shouldSwitchTab = donorsTabButton && !donorsTabButton.classList.contains('active');
+            if (shouldSwitchTab) {
+                donorsTabButton.click();
+                editingDonorId = donorId;
+                editingShouldFocus = true;
+                setTimeout(() => {
+                    updateDonorsList();
+                }, 120);
+            } else {
+                toggleDonorEditor(donorId, true);
+            }
+        }
+
+        const syncChannel = new BroadcastChannel('matching_sync');
+
+        function notifyDataChanged() {
+            try {
+                syncChannel.postMessage({ type: 'data-updated', timestamp: Date.now() });
+            } catch (err) {
+                console.warn('שגיאה בשליחת עדכון סנכרון', err);
+            }
+        }
+        syncChannel.addEventListener('message', (event) => {
+            if (event?.data?.type === 'data-updated') {
+                loadData();
+                updateDonorsList();
+                updateGroupsDisplay();
+                updateHomeStats();
+                updateLiveView();
+                updateLeadersList();
+                updateLiveTargets();
+                renderScoutsTeams();
+                updateScoutsStats();
+                renderGroomGrantList();
+            }
+        });
+
+        window.addEventListener('storage', (event) => {
+            if (!event || event.storageArea !== localStorage) return;
+            if (['donors', 'groups', 'defaultDonorGoal', 'financeState', 'toolkitTips', 'scoutsSchedule', 'groomGrants'].includes(event.key)) {
+                loadData();
+                updateDonorsList();
+                updateGroupsDisplay();
+                updateHomeStats();
+                updateLiveView();
+                updateLeadersList();
+                updateLiveTargets();
+                renderScoutsTeams();
+                updateScoutsStats();
+                renderGroomGrantList();
+            }
+        });
+
+        function toggleDonorEditor(donorId, focusName = false) {
+            ensureDonorsNormalized();
+            if (editingDonorId === donorId && !focusName) {
+                editingDonorId = null;
+                editingShouldFocus = false;
+            } else {
+                editingDonorId = donorId;
+                editingShouldFocus = focusName;
+            }
+            updateDonorsList();
+            if (editingDonorId && editingShouldFocus) {
+                setTimeout(() => {
+                    const input = document.getElementById(`editName_${editingDonorId}`);
+                    if (input) input.focus();
+                    editingShouldFocus = false;
+                }, 60);
+            }
+            if (editingDonorId) {
+                setTimeout(() => setupDonorEditKeyHandlers(editingDonorId), 80);
+            }
+        }
+        function donorEditHandleKey(event, donorId) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                saveDonorEdits(donorId);
+            } else if (event.key === 'Escape') {
+                event.preventDefault();
+                cancelDonorEdits(donorId);
+            }
+        }
+
+        function setupDonorEditKeyHandlers(donorId) {
+            const panel = document.getElementById(`donorEdit_${donorId}`);
+            if (!panel) return;
+            if (panel.dataset.keyListenerAttached === 'true') return;
+            panel.addEventListener('keydown', (event) => donorEditHandleKey(event, donorId));
+            panel.dataset.keyListenerAttached = 'true';
+        }
+
+        function cancelDonorEdits(donorId) {
+            if (editingDonorId === donorId) {
+                editingDonorId = null;
+                editingShouldFocus = false;
+                updateDonorsList();
+            }
+        }
+        function saveDonorEdits(donorId) {
+            ensureDonorsNormalized();
+            const donor = donors.find(d => d.id === donorId);
+            if (!donor) return;
+
+            const nameInput = document.getElementById(`editName_${donorId}`);
+            const amountInput = document.getElementById(`editAmount_${donorId}`);
+            const goalInput = document.getElementById(`editGoal_${donorId}`);
+            const groupSelect = document.getElementById(`editGroup_${donorId}`);
+            const deltaInput = document.getElementById(`editDelta_${donorId}`);
+
+            const newName = nameInput ? nameInput.value.trim() : donor.name;
+            if (!newName) {
+                showNotification('אנא הזן שם מתרים תקין');
+                if (nameInput) nameInput.focus();
+                return;
+            }
+
+            const parsedAmount = amountInput ? Math.max(0, Math.round(parseFloat(amountInput.value) || 0)) : (donor.amount || 0);
+            const parsedGoal = goalInput ? Math.max(0, Math.round(parseFloat(goalInput.value) || 0)) : (donor.personalGoal || defaultDonorGoal);
+            let selectedGroup = groupSelect ? groupSelect.value : donor.groupId;
+            if (!selectedGroup && groups.length) {
+                selectedGroup = groups[0].id;
+            }
+
+            const deltaRaw = deltaInput ? deltaInput.value.trim() : '';
+            const manualDelta = deltaRaw ? Math.round(parseFloat(deltaRaw) || 0) : 0;
+
+            let finalAmount = parsedAmount;
+            if (manualDelta) {
+                finalAmount = Math.max(0, parsedAmount + manualDelta);
+            }
+            const oldAmount = donor.amount || 0;
+            const amountDelta = finalAmount - oldAmount;
+
+            let changed = false;
+            if (donor.name !== newName) {
+                donor.name = newName;
+                changed = true;
+            }
+            if (donor.personalGoal !== parsedGoal) {
+                donor.personalGoal = parsedGoal;
+                changed = true;
+            }
+            if (donor.groupId !== selectedGroup) {
+                donor.groupId = selectedGroup;
+                changed = true;
+            }
+            const previousBreakdown = getDonorDailyBreakdown(donor).slice();
+            donor.amount = finalAmount;
+            alignBreakdownToAmount(donor, donor.amount);
+            const afterBreakdown = donor.dailyBreakdown;
+            const breakdownChanged = afterBreakdown.some((val, index) => val !== previousBreakdown[index]);
+            if (breakdownChanged) changed = true;
+            if (amountDelta !== 0) {
+                const note = amountDelta > 0 ? 'תוספת ידנית' : 'הפחתה ידנית';
+                recordDonorHistory(donor, amountDelta, donor.amount, 'manual-edit', note);
+                changed = true;
+            }
+
+            if (!changed) {
+                showNotification('לא בוצעו שינויים');
+                editingDonorId = null;
+                editingShouldFocus = false;
+                updateDonorsList();
+                return;
+            }
+
+            ensureDonorsNormalized();
+            saveData();
+            if (deltaInput) deltaInput.value = '';
+            editingDonorId = null;
+            editingShouldFocus = false;
+            updateDonorsList();
+            updateGroupsDisplay();
+            updateHomeStats();
+            updateLiveView();
+            updateLeadersList();
+            updateLiveTargets();
+            notifyDataChanged();
+            showNotification('פרטי המתרים עודכנו');
+        }
+
+        function getProgressColor(percentage) {
+            const percent = Math.max(0, percentage || 0);
+            if (percent >= 140) return '#1aff6c'; // מעל היעד בהרבה
+            if (percent === 100) return '#1abc3f'; // יעד הושג בדיוק
+            if (percent > 100) return '#1abc3f';
+            if (percent >= 85) return '#3ed45b';  // ירוק בינוני
+            if (percent >= 70) return '#7de680';  // ירוק בהיר
+            if (percent >= 50) return '#ffb347';  // כתום בהיר
+            if (percent >= 30) return '#ff8a33';  // כתום כהה
+            if (percent >= 10) return '#ff5a3c';  // אדום בינוני
+            if (percent > 0) return '#d62828';    // אדום כהה
+            return '#b91c1c';                     // 0% או פחות
+        }
+
+        function hexToRgb(hex) {
+            const normalized = hex.replace('#', '');
+            const bigint = parseInt(normalized.length === 3
+                ? normalized.split('').map(ch => ch + ch).join('')
+                : normalized, 16);
+            return {
+                r: (bigint >> 16) & 255,
+                g: (bigint >> 8) & 255,
+                b: bigint & 255
+            };
+        }
+
+        function rgbToHex({ r, g, b }) {
+            const clamp = (value) => Math.max(0, Math.min(255, Math.round(value)));
+            return `#${[clamp(r), clamp(g), clamp(b)]
+                .map(value => value.toString(16).padStart(2, '0'))
+                .join('')}`;
+        }
+
+        function mixColors(colorA, colorB, ratio) {
+            const t = Math.max(0, Math.min(1, ratio));
+            const rgbA = hexToRgb(colorA);
+            const rgbB = hexToRgb(colorB);
+            return rgbToHex({
+                r: rgbA.r + (rgbB.r - rgbA.r) * t,
+                g: rgbA.g + (rgbB.g - rgbA.g) * t,
+                b: rgbA.b + (rgbB.b - rgbA.b) * t
+            });
+        }
+
+        function easeOutCubic(t) {
+            return 1 - Math.pow(1 - t, 3);
+        }
+
+        function animateNumber(element, fromValue, toValue, duration = 300) {
+            if (!element) return;
+            const from = Number.isFinite(fromValue) ? fromValue : 0;
+            const to = Number.isFinite(toValue) ? toValue : 0;
+            if (element._numberAnimationFrame) {
+                cancelAnimationFrame(element._numberAnimationFrame);
+            }
+            const start = performance.now();
+
+            const step = (now) => {
+                const progress = Math.min((now - start) / duration, 1);
+                const eased = easeOutCubic(progress);
+                const value = from + (to - from) * eased;
+                element.textContent = Math.round(value).toLocaleString();
+                if (progress < 1) {
+                    element._numberAnimationFrame = requestAnimationFrame(step);
+                } else {
+                    element._numberAnimationFrame = null;
+                    element.textContent = Math.round(to).toLocaleString();
+                }
+            };
+
+            element._numberAnimationFrame = requestAnimationFrame(step);
+        }
+        function animateProgress(wrapper, fromPercent, toPercent, duration = 300) {
+            if (!wrapper) return;
+            const circle = wrapper.querySelector('.live-donor-progress-fill');
+            const percentLabel = wrapper.querySelector('.live-donor-percentage');
+            if (!circle || !percentLabel) return;
+
+            const circumference = parseFloat(circle.dataset.circumference) || 0;
+            if (!circumference) return;
+
+            if (circle._progressAnimationFrame) {
+                cancelAnimationFrame(circle._progressAnimationFrame);
+            }
+
+            const start = performance.now();
+            const from = Number.isFinite(fromPercent) ? fromPercent : 0;
+            const to = Number.isFinite(toPercent) ? toPercent : 0;
+            const baseColor = '#d62828';
+            const targetColor = getProgressColor(to);
+
+            const step = (now) => {
+                const progress = Math.min((now - start) / duration, 1);
+                const eased = easeOutCubic(progress);
+                const value = from + (to - from) * eased;
+                const clamped = Math.max(0, Math.min(150, value));
+                const display = Math.max(0, Math.min(100, value));
+
+                const offset = circumference - (display / 100) * circumference;
+                circle.style.strokeDashoffset = offset;
+
+                const mixedColor = mixColors(baseColor, targetColor, Math.min(display / 100, 1));
+                circle.style.stroke = mixedColor;
+
+                percentLabel.textContent = `${Math.round(display)}%`;
+
+                if (progress < 1) {
+                    circle._progressAnimationFrame = requestAnimationFrame(step);
+                } else {
+                    circle._progressAnimationFrame = null;
+                    percentLabel.textContent = `${Math.round(Math.max(0, Math.min(100, to)))}%`;
+                }
+            };
+
+            circle._progressAnimationFrame = requestAnimationFrame(step);
+        }
+
+
+        // יצירת עיגול התקדמות
+        function createProgressCircle(percentage, uniqueId, originalPercentage) {
+            // גודל קטן יותר לכרטיסיות קטנות
+            const size = 80;
+            const strokeWidth = 6;
+            const radius = (size - strokeWidth) / 2;
+            const circumference = 2 * Math.PI * radius;
+            // העיגול מוגבל ל-100% אבל הצבע נקבע לפי האחוז המקורי
+            const displayPercentage = Math.min(percentage, 100);
+            const offset = circumference - (displayPercentage / 100) * circumference;
+            
+            // קביעת צבע לפי אחוז מקורי (יכול להיות יותר מ-100%)
+            const percentForColor = originalPercentage !== undefined ? originalPercentage : percentage;
+            const strokeColor = getProgressColor(percentForColor);
+            
+            return `
+                <div class="live-donor-progress-circle">
+                    <svg width="100%" height="100%" viewBox="0 0 ${size} ${size}" preserveAspectRatio="xMidYMid meet">
+                        <circle class="live-donor-progress-bg" cx="${size/2}" cy="${size/2}" r="${radius}"></circle>
+                        <circle class="live-donor-progress-fill" 
+                                cx="${size/2}" cy="${size/2}" r="${radius}"
+                                stroke="${strokeColor}"
+                                stroke-dasharray="${circumference}" 
+                                stroke-dashoffset="${offset}"
+                                data-circumference="${circumference}"
+                                data-percentage="${Math.round(percentForColor)}"></circle>
+                    </svg>
+                    <div class="live-donor-percentage">${Math.round(percentForColor)}%</div>
+                </div>
+            `;
+
+            updateHomeDonorBreakdown();
+        }
+        // עדכון תצוגה בלייב עם debouncing
+        let updateLiveViewTimeout = null;
+        let isUpdatingLiveView = false;
+        function updateLiveView(immediate = false) {
+            // Debouncing - מניעת עדכונים תכופים מדי
+            if (updateLiveViewTimeout && !immediate) {
+                clearTimeout(updateLiveViewTimeout);
+            }
+            
+            if (isUpdatingLiveView && !immediate) {
+                updateLiveViewTimeout = setTimeout(() => updateLiveView(true), 100);
+                return;
+            }
+            
+            if (!immediate && updateLiveViewTimeout === null) {
+                updateLiveViewTimeout = setTimeout(() => updateLiveView(true), 50);
+                return;
+            }
+            
+            isUpdatingLiveView = true;
+            updateLiveViewTimeout = null;
+            
+            const scrollContainer = document.getElementById('liveDonorsScroll');
+            if (!scrollContainer) {
+                isUpdatingLiveView = false;
+                return;
+            }
+            
+            // יצירת רשימה כפולה לגלילה אינסופית
+            const donorsWithNames = donors.filter(d => d.name && d.name.trim());
+            
+            if (donorsWithNames.length === 0) {
+                stopAutoScroll('donors');
+                scrollContainer.innerHTML = `
+                    <div class="live-donor-card">
+                        <div class="live-donor-info">
+                            <div class="live-donor-name">אין מתרימים עדיין</div>
+                        </div>
+                    </div>
+                `;
+                lastLiveViewStructure = 'empty';
+                lastLiveViewData = new Map();
+                return;
+            }
+
+            // סינון מתרימים לפי ההגדרות
+            let filteredDonors = donorsWithNames;
+            if (liveViewSettings.donorsFilter === 'with-amount') {
+                filteredDonors = filteredDonors.filter(d => d.amount > 0);
+            } else if (liveViewSettings.donorsFilter === 'met-goal') {
+                filteredDonors = filteredDonors.filter(d => d.personalGoal > 0 && d.amount >= d.personalGoal);
+            } else if (liveViewSettings.donorsFilter === 'not-met-goal') {
+                filteredDonors = filteredDonors.filter(d => d.personalGoal > 0 && d.amount < d.personalGoal);
+            }
+
+            // קיבוץ מתרימים לפי קבוצה
+            const donorsByGroup = new Map();
+            filteredDonors.forEach(donor => {
+                const groupId = donor.groupId || 'no-group';
+                if (!donorsByGroup.has(groupId)) {
+                    donorsByGroup.set(groupId, []);
+                }
+                donorsByGroup.get(groupId).push(donor);
+            });
+
+            // מיון קבוצות לפי ההגדרות
+            let sortedGroups = [...groups];
+            const sortBy = liveViewSettings.groupsSortBy || 'name';
+            
+            if (sortBy === 'name') {
+                sortedGroups.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'he'));
+            } else if (sortBy === 'collected') {
+                sortedGroups.sort((a, b) => {
+                    const aCollected = (donorsByGroup.get(a.id) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+                    const bCollected = (donorsByGroup.get(b.id) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+                    return bCollected - aCollected;
+                });
+            } else if (sortBy === 'collected-asc') {
+                sortedGroups.sort((a, b) => {
+                    const aCollected = (donorsByGroup.get(a.id) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+                    const bCollected = (donorsByGroup.get(b.id) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+                    return aCollected - bCollected;
+                });
+            } else if (sortBy === 'percentage') {
+                sortedGroups.sort((a, b) => {
+                    const aCollected = (donorsByGroup.get(a.id) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+                    const bCollected = (donorsByGroup.get(b.id) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+                    const aPercentage = a.goal > 0 ? (aCollected / a.goal) * 100 : 0;
+                    const bPercentage = b.goal > 0 ? (bCollected / b.goal) * 100 : 0;
+                    return bPercentage - aPercentage;
+                });
+            } else if (sortBy === 'percentage-asc') {
+                sortedGroups.sort((a, b) => {
+                    const aCollected = (donorsByGroup.get(a.id) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+                    const bCollected = (donorsByGroup.get(b.id) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+                    const aPercentage = a.goal > 0 ? (aCollected / a.goal) * 100 : 0;
+                    const bPercentage = b.goal > 0 ? (bCollected / b.goal) * 100 : 0;
+                    return aPercentage - bPercentage;
+                });
+            } else if (sortBy === 'goal') {
+                sortedGroups.sort((a, b) => (b.goal || 0) - (a.goal || 0));
+            } else if (sortBy === 'goal-asc') {
+                sortedGroups.sort((a, b) => (a.goal || 0) - (b.goal || 0));
+            }
+
+            // סינון קבוצות לפי ההגדרות
+            if (liveViewSettings.groupsFilter === 'with-donors') {
+                sortedGroups = sortedGroups.filter(g => donorsByGroup.has(g.id) && donorsByGroup.get(g.id).length > 0);
+            } else if (liveViewSettings.groupsFilter === 'met-goal') {
+                sortedGroups = sortedGroups.filter(g => {
+                    const collected = (donorsByGroup.get(g.id) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+                    return g.goal > 0 && collected >= g.goal;
+                });
+            } else if (liveViewSettings.groupsFilter === 'not-met-goal') {
+                sortedGroups = sortedGroups.filter(g => {
+                    const collected = (donorsByGroup.get(g.id) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+                    return g.goal > 0 && collected < g.goal;
+                });
+            }
+
+            const orderedGroups = sortedGroups
+                .map(group => group.id)
+                .filter(id => donorsByGroup.has(id));
+            const unorderedGroups = Array.from(donorsByGroup.keys())
+                .filter(id => !orderedGroups.includes(id));
+            const groupRenderOrder = [...orderedGroups, ...unorderedGroups];
+
+            const htmlParts = [];
+            let itemCounter = 0;
+            const structureEntries = [];
+
+            groupRenderOrder.forEach(groupId => {
+                const group = groups.find(g => g.id === groupId);
+                const groupName = group ? group.name : 'ללא קבוצה';
+                let donorsInGroup = donorsByGroup.get(groupId) || [];
+                if (!donorsInGroup.length) return;
+
+                // מיון מתרימים לפי ההגדרות
+                const donorsSortBy = liveViewSettings.donorsSortBy || 'name';
+                if (donorsSortBy === 'name') {
+                    donorsInGroup.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'he'));
+                } else if (donorsSortBy === 'amount') {
+                    donorsInGroup.sort((a, b) => (b.amount || 0) - (a.amount || 0));
+                } else if (donorsSortBy === 'amount-asc') {
+                    donorsInGroup.sort((a, b) => (a.amount || 0) - (b.amount || 0));
+                } else if (donorsSortBy === 'percentage') {
+                    donorsInGroup.sort((a, b) => {
+                        const aPct = a.personalGoal > 0 ? (a.amount / a.personalGoal) * 100 : 0;
+                        const bPct = b.personalGoal > 0 ? (b.amount / b.personalGoal) * 100 : 0;
+                        return bPct - aPct;
+                    });
+                } else if (donorsSortBy === 'percentage-asc') {
+                    donorsInGroup.sort((a, b) => {
+                        const aPct = a.personalGoal > 0 ? (a.amount / a.personalGoal) * 100 : 0;
+                        const bPct = b.personalGoal > 0 ? (b.amount / b.personalGoal) * 100 : 0;
+                        return aPct - bPct;
+                    });
+                }
+
+                // הגבלת מספר מתרימים אם הוגדר
+                if (liveViewSettings.maxDonorsPerGroup > 0) {
+                    donorsInGroup = donorsInGroup.slice(0, liveViewSettings.maxDonorsPerGroup);
+                }
+
+                // חישוב סכום כולל שנאסף בקבוצה
+                const groupCollected = donorsInGroup.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0);
+                const groupGoal = group ? (group.goal || 0) : 0;
+                const groupPercentage = groupGoal > 0 ? (groupCollected / groupGoal) * 100 : 0;
+                const groupPercentDisplay = groupPercentage >= 100 ? Math.round(groupPercentage) : Math.max(0, groupPercentage).toFixed(1);
+                const progressWidth = Math.min(groupPercentage, 100);
+
+                const amountsText = groupGoal > 0 
+                    ? `₪${groupCollected.toLocaleString()} מתוך ₪${groupGoal.toLocaleString()}`
+                    : `₪${groupCollected.toLocaleString()} | ללא יעד מוגדר`;
+
+                htmlParts.push(`
+                    <div class="live-donor-group-header" data-entry-type="header" data-group-id="${groupId}">
+                        <div class="group-header-title">${escapeHtml(groupName)}</div>
+                        <div class="group-header-progress-container">
+                            <div class="group-header-progress-bar">
+                                <div class="group-header-progress-fill" style="width: ${progressWidth}%"></div>
+                            </div>
+                            <div class="group-header-info">
+                                <span class="group-header-percentage">${groupGoal > 0 ? `${groupPercentDisplay}%` : '—'}</span>
+                                <span class="group-header-amounts">${amountsText}</span>
+                            </div>
+                        </div>
+                    </div>
+                `);
+                structureEntries.push(`header:${groupId}`);
+
+                donorsInGroup.forEach(donor => {
+                    const percentage = donor.personalGoal > 0 ? (donor.amount / donor.personalGoal) * 100 : 0;
+                    const uniqueId = `donor_${donor.id}_${itemCounter++}`;
+                    const groupLabel = group ? group.name : 'ללא קבוצה';
+                    structureEntries.push(`card:${donor.id}`);
+
+                    htmlParts.push(`
+                        <div class="live-donor-card" data-entry-type="card" data-donor-id="${donor.id}">
+                            <div class="live-donor-progress-circle-wrapper">
+                                ${createProgressCircle(Math.min(percentage, 100), uniqueId, percentage)}
+                            </div>
+                            <div class="live-donor-info">
+                                <div class="live-donor-name">${donor.name}</div>
+                                <div class="live-donor-group">${groupLabel}</div>
+                                <div class="live-donor-amount">
+                                    <span class="amount-value" data-amount="${donor.amount}">${donor.amount.toLocaleString()}</span>
+                                    מתוך
+                                    <span class="goal-value" data-goal="${donor.personalGoal}">${donor.personalGoal.toLocaleString()}</span>
+                                    ש"ח
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                });
+            });
+
+            const structureSignature = structureEntries.join('|');
+            const needsFullRender = structureSignature !== lastLiveViewStructure;
+            let previousOffset = 0;
+            const state = autoScrollStates.donors;
+            if (state) previousOffset = state.offset || 0;
+
+            if (needsFullRender) {
+                // שמירת מיקום הגלילה הנוכחי
+                const wasScrolling = state && state.handle;
+                const savedOffset = state ? state.offset : 0;
+                
+                const html = htmlParts.join('');
+                scrollContainer.innerHTML = html + html; // כפול לגלילה אינסופית
+                lastLiveViewStructure = structureSignature;
+                
+                // שחזור מיקום הגלילה
+                if (state) {
+                    const halfHeight = scrollContainer.scrollHeight / 2;
+                    state.offset = Math.min(savedOffset, halfHeight);
+                    scrollContainer.style.transform = `translate3d(0, ${-state.offset}px, 0)`;
+                }
+                
+                // הפעלת גלילה רק אם היא הייתה פעילה לפני
+                if (wasScrolling) {
+                    requestAnimationFrame(() => {
+                restartDonorsAutoScroll();
+                    });
+                }
+            } else {
+                // אם הגלילה לא רצה, נפעיל אותה
+                if (state && !state.handle && liveViewSettings.enableAutoScroll) {
+                    requestAnimationFrame(() => {
+                    restartDonorsAutoScroll();
+                    });
+                }
+            }
+
+            const donorDataMap = new Map();
+            donorsWithNames.forEach(donor => {
+                const groupObj = groups.find(g => g.id === donor.groupId) || null;
+                const percentage = donor.personalGoal > 0 ? (donor.amount / donor.personalGoal) * 100 : 0;
+                donorDataMap.set(String(donor.id), {
+                    name: donor.name,
+                    groupName: groupObj ? groupObj.name : 'ללא קבוצה',
+                    amount: donor.amount,
+                    goal: donor.personalGoal,
+                    percentage
+                });
+            });
+            const updateCardElement = (card, data) => {
+                if (!card || !data) return;
+                const donorId = card.dataset.donorId;
+                const prev = lastLiveViewData.get(donorId) || {
+                    name: '',
+                    groupName: '',
+                    amount: 0,
+                    goal: data.goal,
+                    percentage: 0
+                };
+
+                const nameEl = card.querySelector('.live-donor-name');
+                if (nameEl && nameEl.textContent !== data.name) nameEl.textContent = data.name;
+
+                const groupEl = card.querySelector('.live-donor-group');
+                if (groupEl && groupEl.textContent !== data.groupName) groupEl.textContent = data.groupName;
+
+                const amountValueEl = card.querySelector('.amount-value');
+                if (amountValueEl) {
+                    const fromAmount = prev.amount ?? parseInt(amountValueEl.dataset.amount || '0', 10);
+                    amountValueEl.textContent = data.amount.toLocaleString();
+                    amountValueEl.dataset.amount = data.amount;
+                }
+
+                const goalValueEl = card.querySelector('.goal-value');
+                if (goalValueEl && (prev.goal !== data.goal || goalValueEl.textContent !== data.goal.toLocaleString())) {
+                    goalValueEl.textContent = data.goal.toLocaleString();
+                    goalValueEl.dataset.goal = data.goal;
+                }
+
+                const progressWrapper = card.querySelector('.live-donor-progress-circle-wrapper');
+                if (progressWrapper && Math.abs(prev.percentage - data.percentage) > 0.1) {
+                    // עדכון חלק של עיגול ההתקדמות רק אם יש שינוי משמעותי
+                    requestAnimationFrame(() => {
+                    progressWrapper.innerHTML = createProgressCircle(Math.min(data.percentage, 100), `donor_${donorId}`, data.percentage);
+                    });
+                }
+
+            };
+
+            scrollContainer.querySelectorAll('.live-donor-card[data-entry-type="card"]').forEach(card => {
+                const donorId = card.dataset.donorId;
+                const data = donorDataMap.get(donorId);
+                if (data) updateCardElement(card, data);
+            });
+
+            // עדכון כותרות קבוצות
+            scrollContainer.querySelectorAll('.live-donor-group-header[data-entry-type="header"]').forEach(header => {
+                const groupId = header.dataset.groupId;
+                const group = groups.find(g => g.id === groupId);
+                if (!group) return;
+
+                // חישוב נתונים מעודכנים
+                const groupDonors = donors.filter(d => d.groupId === groupId);
+                const groupCollected = groupDonors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0);
+                const groupGoal = group.goal || 0;
+                const groupPercentage = groupGoal > 0 ? (groupCollected / groupGoal) * 100 : 0;
+                const groupPercentDisplay = groupPercentage >= 100 ? Math.round(groupPercentage) : Math.max(0, groupPercentage).toFixed(1);
+                const progressWidth = Math.min(groupPercentage, 100);
+
+                // עדכון פס ההתקדמות
+                const progressFill = header.querySelector('.group-header-progress-fill');
+                if (progressFill) {
+                    progressFill.style.width = `${progressWidth}%`;
+                }
+
+                // עדכון אחוזים
+                const percentageEl = header.querySelector('.group-header-percentage');
+                if (percentageEl) {
+                    percentageEl.textContent = groupGoal > 0 ? `${groupPercentDisplay}%` : '—';
+                }
+
+                // עדכון סכומים
+                const amountsEl = header.querySelector('.group-header-amounts');
+                if (amountsEl) {
+                    const amountsText = groupGoal > 0 
+                        ? `₪${groupCollected.toLocaleString()} מתוך ₪${groupGoal.toLocaleString()}`
+                        : `₪${groupCollected.toLocaleString()} | ללא יעד מוגדר`;
+                    amountsEl.textContent = amountsText;
+                }
+            });
+
+            lastLiveViewData = donorDataMap;
+
+            // סיום עדכון
+            isUpdatingLiveView = false;
+        }
+        // עדכון רשימת מובילים
+        function updateLeadersList() {
+            const leadersList = document.getElementById('leadersList');
+            if (!leadersList) return;
+            
+            // מיון מתרימים לפי סכום
+            const sortedDonors = [...donors]
+                .filter(d => d.name && d.name.trim() && d.amount > 0)
+                .sort((a, b) => b.amount - a.amount)
+                .slice(0, 5);
+            
+            // חישוב סכום כולל
+            const totalCollected = donors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0);
+            const goal = Math.max(0, Math.round(parseFloat(matchingGoal) || 0));
+            const percentage = goal > 0 ? (totalCollected / goal) * 100 : 0;
+            const percentDisplay = percentage >= 100 ? Math.round(percentage) : Math.max(0, percentage).toFixed(1);
+            
+            // חישוב נתונים לסיכום
+            const progressWidth = goal > 0 ? Math.min(percentage, 100) : 0;
+            const progressClass = goal > 0 && percentage >= 100 ? 'leader-target-progress-fill complete' : 'leader-target-progress-fill';
+            const summaryText = goal > 0
+                ? `₪${totalCollected.toLocaleString()} מתוך ₪${goal.toLocaleString()} | ${percentDisplay}%`
+                : `₪${totalCollected.toLocaleString()} | ללא יעד מוגדר`;
+            const totalDonorsCount = donors.filter(d => d.name && d.name.trim()).length;
+            
+            // יצירת כרטיסיות לכל קבוצה
+            const groupsCardsHtml = groups.map(group => {
+                const groupDonors = donors.filter(d => d.groupId === group.id);
+                const collected = groupDonors.reduce((sum, donor) => sum + (donor.amount || 0), 0);
+                const groupGoal = group.goal || 0;
+                const groupPercentage = groupGoal > 0 ? (collected / groupGoal) * 100 : 0;
+                const groupPercentDisplay = groupPercentage >= 100 ? Math.round(groupPercentage) : Math.max(0, groupPercentage).toFixed(1);
+                const groupProgressWidth = groupGoal > 0 ? Math.max(0, Math.min(groupPercentage, 100)) : 100;
+                const groupProgressClass = groupGoal > 0 && groupPercentage >= 100 ? 'leader-target-progress-fill complete' : 'leader-target-progress-fill';
+                
+                const groupSummaryText = groupGoal > 0
+                    ? `₪${collected.toLocaleString()} מתוך ₪${groupGoal.toLocaleString()} | ${Math.max(0, groupPercentDisplay)}%`
+                    : `₪${collected.toLocaleString()} | ללא יעד מוגדר`;
+                
+                return `
+                    <div class="leader-target-card">
+                        <div class="leader-target-title">${escapeHtml(group.name)}</div>
+                        <div class="leader-target-meta">מספר מתרימים: ${groupDonors.length}</div>
+                        <div class="leader-target-progress-bar">
+                            <div class="${groupProgressClass}" style="width: ${groupProgressWidth}%;"></div>
+                            <div class="leader-target-progress-text">${groupSummaryText}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            if (sortedDonors.length === 0) {
+                // גם אם אין מובילים, נציג את הסיכום הכללי ואת כרטיסיות הקבוצות
+                const summaryHtml = `
+                    <div class="leader-target-card">
+                        <div class="leader-target-title">סה"כ נאסף</div>
+                        <div class="leader-target-meta">מספר מתרימים: ${totalDonorsCount}</div>
+                        <div class="leader-target-progress-bar">
+                            <div class="${progressClass}" style="width: ${progressWidth}%;"></div>
+                            <div class="leader-target-progress-text">${summaryText}</div>
+                        </div>
+                    </div>
+                `;
+                leadersList.innerHTML = groupsCardsHtml + summaryHtml;
+                return;
+            }
+            
+            const listHtml = sortedDonors.map((donor, index) => {
+                const rank = index + 1;
+                let rankClass = '';
+                if (rank === 1) rankClass = 'rank-1';
+                else if (rank === 2) rankClass = 'rank-2';
+                else if (rank === 3) rankClass = 'rank-3';
+                else if (rank === 4) rankClass = 'rank-4';
+                else if (rank === 5) rankClass = 'rank-5';
+                
+                return `
+                    <div class="leader-item ${rankClass}">
+                        <div class="leader-rank">${rank}</div>
+                        <div class="leader-info">
+                            <div class="leader-name">${donor.name}</div>
+                        </div>
+                        <div class="leader-total">₪${donor.amount.toLocaleString()}</div>
+                    </div>
+                `;
+            }).join('');
+
+            // הוספת כרטיסית סיכום כללי
+            const summaryHtml = `
+                <div class="leader-target-card">
+                    <div class="leader-target-title">סה"כ נאסף</div>
+                    <div class="leader-target-meta">מספר מתרימים: ${totalDonorsCount}</div>
+                    <div class="leader-target-progress-bar">
+                        <div class="${progressClass}" style="width: ${progressWidth}%;"></div>
+                        <div class="leader-target-progress-text">${summaryText}</div>
+                    </div>
+                </div>
+            `;
+
+            leadersList.innerHTML = listHtml + groupsCardsHtml + summaryHtml;
+            
+            // הפעלת גלילה אוטומטית אחרי עדכון הרשימה
+            if (isLiveViewActive() && liveViewSettings.enableAutoScroll) {
+                setTimeout(() => {
+                    restartLeadersAutoScroll({ immediate: true });
+                }, 100);
+            }
+        }
+
+        function updateLiveTargets() {
+            const container = document.getElementById('targetsList');
+            if (!container) {
+                stopAutoScroll('leaders');
+                return;
+            }
+
+            if (!groups.length) {
+                container.innerHTML = '<div style="text-align: center; color: var(--muted); padding: 12px;">אין קבוצות להצגה</div>';
+                stopAutoScroll('leaders');
+                return;
+            }
+
+            const overallContainer = document.getElementById('leadersOverallProgress');
+            if (overallContainer) {
+                const bar = overallContainer.querySelector('.leaders-overall-progress-bar');
+                const fill = overallContainer.querySelector('.leaders-overall-progress-fill');
+                const text = overallContainer.querySelector('.leaders-overall-progress-text');
+                const note = overallContainer.querySelector('.leaders-overall-progress-note');
+
+                const totalCollected = donors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0);
+                const goal = Math.max(0, Math.round(parseFloat(matchingGoal) || 0));
+
+                if (goal > 0) {
+                    const percentRaw = (totalCollected / goal) * 100;
+                    const percentDisplay = percentRaw >= 100 ? Math.round(percentRaw) : Math.max(0, percentRaw).toFixed(1);
+                    if (fill) fill.style.width = `${Math.min(percentRaw, 100)}%`;
+                    if (text) text.textContent = `${formatCurrency(totalCollected)} | ${percentDisplay}%`;
+                    if (note) note.textContent = `יעד כללי: ${formatCurrency(goal)}`;
+                    if (bar) bar.classList.remove('no-goal');
+                } else {
+                    if (fill) fill.style.width = '0%';
+                    if (text) text.textContent = `${formatCurrency(totalCollected)} | —`;
+                    if (note) note.textContent = 'יעד טרם הוגדר';
+                    if (bar) bar.classList.add('no-goal');
+                }
+            }
+
+            const cardsHtml = groups.map(group => {
+                const groupDonors = donors.filter(d => d.groupId === group.id);
+                const collected = groupDonors.reduce((sum, donor) => sum + (donor.amount || 0), 0);
+                const goal = group.goal || 0;
+                const percentage = goal > 0 ? (collected / goal) * 100 : 0;
+                const roundedPercentage = Math.round(percentage);
+                const progressWidth = goal > 0 ? Math.max(0, Math.min(percentage, 100)) : 100;
+                const progressClass = goal > 0 && percentage >= 100 ? 'leader-target-progress-fill complete' : 'leader-target-progress-fill';
+
+                const summaryText = goal > 0
+                    ? `₪${collected.toLocaleString()} מתוך ₪${goal.toLocaleString()} | ${Math.max(0, roundedPercentage)}%`
+                    : `₪${collected.toLocaleString()} | ללא יעד מוגדר`;
+
+                return `
+                    <div class="leader-target-card">
+                        <div class="leader-target-title">${escapeHtml(group.name)}</div>
+                        <div class="leader-target-meta">מספר מתרימים: ${groupDonors.length}</div>
+                        <div class="leader-target-progress-bar">
+                            <div class="${progressClass}" style="width: ${progressWidth}%;"></div>
+                            <div class="leader-target-progress-text">${summaryText}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = cardsHtml;
+            // לא מפעילים גלילה למובילים - עצירת גלילה והסרת קלון
+            if (typeof stopAutoScroll === 'function') {
+                stopAutoScroll('leaders');
+            }
+            const clone = document.getElementById('leadersScrollClone');
+            if (clone) {
+                clone.innerHTML = '';
+                clone.style.display = 'none';
+            }
+        }
+
+        function triggerGroupExcelUpload(groupId) {
+            const input = document.getElementById(`excelFileInput_${groupId}`);
+            if (input) {
+                input.click();
+            }
+        }
+        function loadExcelFile(file, targetGroupId = null) {
+            if (!file) {
+                showNotification('לא נבחר קובץ');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onerror = function(e) {
+                console.error('שגיאה בקריאת הקובץ:', e);
+                showNotification('שגיאה בקריאת הקובץ. אנא ודא שהקובץ תקין.');
+            };
+            
+            reader.onload = function(e) {
+                try {
+                    if (!e.target || !e.target.result) {
+                        showNotification('שגיאה: הקובץ ריק או פגום');
+                        return;
+                    }
+                    
+                    const data = new Uint8Array(e.target.result);
+                    if (!data || data.length === 0) {
+                        showNotification('שגיאה: הקובץ ריק');
+                        return;
+                    }
+                    
+                    let workbook;
+                    try {
+                        workbook = XLSX.read(data, { type: 'array', cellDates: false, cellNF: false, cellText: false });
+                    } catch (xlsError) {
+                        console.error('שגיאה בקריאת קובץ אקסל:', xlsError);
+                        showNotification('שגיאה בקריאת קובץ אקסל. אנא ודא שהקובץ בפורמט תקין (.xlsx או .xls)');
+                        return;
+                    }
+                    
+                    if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
+                        showNotification('שגיאה: הקובץ אינו מכיל גיליונות');
+                        return;
+                    }
+                    
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    if (!firstSheet) {
+                        showNotification('שגיאה: לא ניתן לקרוא את הגיליון הראשון');
+                        return;
+                    }
+                    
+                    let jsonData;
+                    try {
+                        jsonData = XLSX.utils.sheet_to_json(firstSheet, { defval: '', blankrows: false, raw: false });
+                    } catch (jsonError) {
+                        console.error('שגיאה בהמרת הגיליון ל-JSON:', jsonError);
+                        showNotification('שגיאה בקריאת הנתונים מהקובץ');
+                        return;
+                    }
+                    
+                    if (!jsonData || !Array.isArray(jsonData) || jsonData.length === 0) {
+                        showNotification('הקובץ ריק או אינו מכיל נתונים');
+                        return;
+                    }
+                    
+                    let loaded = 0;
+                    const possibleNameKeys = ['שם', 'שם מתרים', 'Name', 'name', 'שם פרטי', 'שם משפחה'];
+                    const possibleAmountKeys = ['סכום', 'תרומה', 'Amount', 'amount', 'סכום תרומה'];
+                    const possibleGroupKeys = ['קבוצה', 'Group', 'group', 'שם קבוצה'];
+                    const possibleGoalKeys = ['יעד אישי', 'יעד', 'goal', 'Goal', 'יעד מתרים'];
+                    const firstRowKeys = jsonData.length ? Object.keys(jsonData[0]).filter(key => key && key !== '__rowNum__') : [];
+                    const hasRecognizedHeaders = firstRowKeys.some(key => possibleNameKeys.includes(key));
+
+                    if (hasRecognizedHeaders) {
+                        jsonData.forEach((row, index) => {
+                            try {
+                                const name = possibleNameKeys.map(key => row[key]).find(value => value !== undefined && value !== null && value !== '') || '';
+                                const amountStr = possibleAmountKeys.map(key => row[key]).find(value => value !== undefined && value !== null && value !== '') || '0';
+                                const amount = parseFloat(String(amountStr).replace(/[^\d.-]/g, '')) || 0;
+                                const groupName = possibleGroupKeys.map(key => row[key]).find(value => value !== undefined && value !== null && value !== '') || '';
+                                const personalGoalValue = possibleGoalKeys.map(key => row[key]).find(value => value !== undefined && value !== null && value !== '');
+                                const personalGoal = parseFloat(String(personalGoalValue || defaultDonorGoal).replace(/[^\d.-]/g, '')) || defaultDonorGoal;
+                        
+                        if (name && name.trim()) {
+                            let groupId = targetGroupId || (groups[0] ? groups[0].id : null);
+                                    if (groupName && groupName.trim()) {
+                                        const foundGroup = groups.find(g => g.name === groupName.trim());
+                                if (foundGroup) groupId = foundGroup.id;
+                            }
+                            
+                                    if (!groupId) {
+                                        if (!groups.length) {
+                                            showNotification('אין קבוצות במערכת. אנא צור קבוצה תחילה.');
+                                            return;
+                                        }
+                                        groupId = groups[0].id;
+                                    }
+                            
+                            const donor = {
+                                        id: Date.now() + loaded + Math.random(),
+                                name: name.trim(),
+                                amount: Math.max(0, Math.round(amount || 0)),
+                                groupId: groupId,
+                                personalGoal: Math.max(0, Math.round(personalGoal || defaultDonorGoal)),
+                                createdAt: new Date().toISOString(),
+                                history: []
+                            };
+                            if (donor.amount > 0) {
+                                recordDonorHistory(donor, donor.amount, donor.amount, 'excel-import', 'ייבוא קובץ');
+                            }
+                            donors.push(normalizeDonor(donor));
+                            loaded++;
+                                }
+                            } catch (rowError) {
+                                console.warn(`שגיאה בעיבוד שורה ${index + 1}:`, rowError);
+                        }
+                    });
+                    } else {
+                        const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, blankrows: false, defval: '' });
+                        rows.forEach((rawRow, index) => {
+                            try {
+                            const row = Array.isArray(rawRow) ? rawRow : [rawRow];
+                            const name = (row[0] ?? '').toString().trim();
+                            
+                            if (name) {
+                                const groupId = targetGroupId || (groups[0] ? groups[0].id : null);
+                                    if (!groupId) {
+                                        if (!groups.length) {
+                                            showNotification('אין קבוצות במערכת. אנא צור קבוצה תחילה.');
+                                            return;
+                                        }
+                                    }
+                                
+                                const donor = {
+                                        id: Date.now() + loaded + Math.random(),
+                                    name: name,
+                                    amount: 0,
+                                        groupId: groupId || groups[0].id,
+                                    personalGoal: defaultDonorGoal,
+                                    createdAt: new Date().toISOString(),
+                                    history: []
+                                };
+                                donors.push(normalizeDonor(donor));
+                                loaded++;
+                                }
+                            } catch (rowError) {
+                                console.warn(`שגיאה בעיבוד שורה ${index + 1}:`, rowError);
+                            }
+                        });
+                    }
+                    
+                    if (loaded === 0) {
+                        showNotification('לא נמצאו מתרימים בקובץ. אנא ודא שהקובץ מכיל שמות במעמודה הראשונה.');
+                        return;
+                    }
+                    
+                    ensureDonorsNormalized();
+                    saveData();
+                    updateDonorsList();
+                    updateGroupsDisplay();
+                    updateHomeStats();
+                    updateLiveView();
+                    updateLeadersList();
+                    updateLiveTargets();
+                    updateGroupSelect();
+                    showNotification(`נטענו ${loaded} מתרימים מהקובץ בהצלחה`);
+                } catch (error) {
+                    console.error('שגיאה בטעינת קובץ:', error);
+                    showNotification('שגיאה בטעינת הקובץ: ' + (error.message || 'שגיאה לא ידועה'));
+                }
+            };
+            
+            try {
+            reader.readAsArrayBuffer(file);
+            } catch (readError) {
+                console.error('שגיאה בקריאת הקובץ:', readError);
+                showNotification('שגיאה בקריאת הקובץ. אנא נסה שוב.');
+            }
+        }
+
+        document.addEventListener('change', function(e) {
+            if (e.target && e.target.classList.contains('group-excel-input')) {
+                const groupId = e.target.id.replace('excelFileInput_', '');
+                const file = e.target.files[0];
+                if (file) {
+                    loadExcelFile(file, groupId);
+                    e.target.value = '';
+                }
+            }
+        });
+
+        // תמיכה ב-Enter בשדות
+            document.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                if (e.target.id === 'donorNameInput' || e.target.id === 'donorAmountInput' || e.target.id === 'donorGoalInput') {
+                    addDonor();
+                } else if (e.target.id && e.target.id.startsWith('donorName_')) {
+                    const groupId = e.target.id.replace('donorName_', '');
+                    addDonorToGroup(groupId);
+                } else if (e.target.id && e.target.id.startsWith('donorAmount_')) {
+                    const groupId = e.target.id.replace('donorAmount_', '');
+                    addDonorToGroup(groupId);
+                    }
+                }
+            });
+
+        // הוסר - אפקט חלקיקים ללוגו הת"ת
+        /* function initLogoParticleAnimation() {
+            const canvas = document.getElementById('logoAnimationCanvas');
+            const homeSection = document.getElementById('homeSection');
+            
+            if (!canvas || !homeSection) {
+                console.warn('Canvas או homeSection לא נמצאו');
+                return;
+            }
+            
+            const ctx = canvas.getContext('2d');
+            let animationId = null;
+            let particles = [];
+            let logoImage = null;
+            let logoData = null;
+            let isAnimationActive = false;
+            let imageLoaded = false;
+            
+            // הגדרת גודל הקנבס
+            function resizeCanvas() {
+                const rect = homeSection.getBoundingClientRect();
+                canvas.width = rect.width || window.innerWidth;
+                canvas.height = rect.height || window.innerHeight;
+            }
+            
+            // יצירת חלקיקים בסיסיים - תמיד יעבד - מתאים ללוגו הגדול
+            function createBasicParticles() {
+                particles = [];
+                resizeCanvas();
+                const canvasRect = canvas.getBoundingClientRect();
+                const centerX = canvasRect.width / 2;
+                const centerY = canvasRect.height / 2;
+                
+                // גודל הלוגו הגדול - מתאים ל-background-size
+                const logoWidth = Math.min(window.innerWidth * 0.74, 1500);
+                const logoHeight = logoWidth * 0.65; // יחס גובה-רוחב משוער
+                const logoX = centerX - logoWidth / 2;
+                const logoY = centerY - logoHeight / 2;
+                
+                const step = 10; // מרווח בין חלקיקים
+                
+                // יצירת חלקיקים בצורה מלבנית שמתאימה בדיוק ללוגו הגדול
+                for (let y = 0; y < logoHeight; y += step) {
+                    for (let x = 0; x < logoWidth; x += step) {
+                        // יצירת חלקיקים בצורה שמתאימה ללוגו (יותר חלקיקים במרכז)
+                        const distFromCenterX = Math.abs(x - logoWidth / 2) / (logoWidth / 2);
+                        const distFromCenterY = Math.abs(y - logoHeight / 2) / (logoHeight / 2);
+                        const distFromCenter = Math.sqrt(distFromCenterX * distFromCenterX + distFromCenterY * distFromCenterY);
+                        
+                        // יצירת חלקיקים בעיקר באזור המרכז (הלוגו)
+                        if (distFromCenter < 0.85) {
+                            const targetX = logoX + x;
+                            const targetY = logoY + y;
+                            
+                            // נקודת התחלה אקראית מסביב המסך
+                            const angle = Math.random() * Math.PI * 2;
+                            const distance = 500 + Math.random() * 600;
+                            const startX = centerX + Math.cos(angle) * distance;
+                            const startY = centerY + Math.sin(angle) * distance;
+                            
+                            particles.push({
+                                x: startX,
+                                y: startY,
+                                targetX: targetX,
+                                targetY: targetY,
+                                originalX: startX,
+                                originalY: startY,
+                                size: 3.5 + Math.random() * 5.5,
+                                speed: 0.015 + Math.random() * 0.025,
+                                progress: 0,
+                                delay: Math.random() * 150,
+                                color: `rgba(212, 175, 55, ${0.75 + Math.random() * 0.25})`,
+                                trail: []
+                            });
+                        }
+                    }
+                }
+                
+                console.log(`נוצרו ${particles.length} חלקיקים ללוגו הגדול`);
+            }
+            
+            // טעינת תמונת הלוגו (נסיון ראשון)
+            const logoUrl = 'http://i.postimg.cc/ZRMCLxgW/wgw-t-t-dhws.png';
+            const img = new Image();
+            
+            img.onerror = function() {
+                console.log('נסיון טעינת תמונה נכשל, משתמש בחלקיקים בסיסיים');
+                createBasicParticles();
+                if (!imageLoaded) {
+                    setTimeout(startAnimation, 100);
+                }
+            };
+            
+            img.onload = function() {
+                try {
+                    logoImage = img;
+                    resizeCanvas();
+                    
+                    // יצירת imageData מהלוגו
+                    const tempCanvas = document.createElement('canvas');
+                    const tempCtx = tempCanvas.getContext('2d');
+                    const logoSize = Math.min(window.innerWidth * 0.74, 1500);
+                    tempCanvas.width = logoSize;
+                    tempCanvas.height = (img.height / img.width) * logoSize;
+                    tempCtx.drawImage(img, 0, 0, tempCanvas.width, tempCanvas.height);
+                    logoData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+                    
+                    // יצירת חלקיקים מנתוני הלוגו
+                    createParticles();
+                    imageLoaded = true;
+                    if (!isAnimationActive) {
+                        setTimeout(startAnimation, 100);
+                    }
+                } catch (e) {
+                    console.warn('שגיאה בעיבוד הלוגו:', e);
+                    createBasicParticles();
+                    if (!imageLoaded) {
+                        setTimeout(startAnimation, 100);
+                    }
+                }
+            };
+            
+            // נסיון טעינה עם CORS
+            img.crossOrigin = 'anonymous';
+            img.src = logoUrl;
+            
+            // התחלה מיידית עם חלקיקים בסיסיים - לא מחכים לתמונה
+            setTimeout(() => {
+                if (particles.length === 0) {
+                    console.log('יוצר חלקיקים בסיסיים ללוגו הגדול');
+                    createBasicParticles();
+                    if (!isAnimationActive) {
+                        setTimeout(startAnimation, 200);
+                    }
+                }
+            }, 300);
+            
+            // timeout - אם התמונה נטענה, נשתמש בה
+            setTimeout(() => {
+                if (imageLoaded && logoData && particles.length > 0) {
+                    console.log('מעדכן חלקיקים לפי הלוגו האמיתי');
+                    createParticles();
+                    if (isAnimationActive) {
+                        // איפוס האנימציה עם החלקיקים החדשים
+                        isAnimationActive = false;
+                        setTimeout(startAnimation, 100);
+                    }
+                }
+            }, 3000);
+            
+            // יצירת חלקיקים מהלוגו
+            function createParticles() {
+                particles = [];
+                if (!logoData) return;
+                
+                const data = logoData.data;
+                const width = logoData.width;
+                const height = logoData.height;
+                const step = 8; // מרווח בין חלקיקים
+                
+                const canvasRect = canvas.getBoundingClientRect();
+                const centerX = canvasRect.width / 2;
+                const centerY = canvasRect.height / 2;
+                const logoX = centerX - width / 2;
+                const logoY = centerY - height / 2;
+                
+                for (let y = 0; y < height; y += step) {
+                    for (let x = 0; x < width; x += step) {
+                        const index = (y * width + x) * 4;
+                        const alpha = data[index + 3];
+                        
+                        if (alpha > 128) { // רק פיקסלים שהם חלק מהלוגו
+                            const targetX = logoX + x;
+                            const targetY = logoY + y;
+                            
+                            // נקודת התחלה אקראית מסביב
+                            const angle = Math.random() * Math.PI * 2;
+                            const distance = 300 + Math.random() * 400;
+                            const startX = centerX + Math.cos(angle) * distance;
+                            const startY = centerY + Math.sin(angle) * distance;
+                            
+                            particles.push({
+                                x: startX,
+                                y: startY,
+                                targetX: targetX,
+                                targetY: targetY,
+                                originalX: startX,
+                                originalY: startY,
+                                size: 2 + Math.random() * 3,
+                                speed: 0.02 + Math.random() * 0.03,
+                                progress: 0,
+                                delay: Math.random() * 60,
+                                color: `rgba(${data[index]}, ${data[index + 1]}, ${data[index + 2]}, 0.8)`,
+                                trail: []
+                            });
+                        }
+                    }
+                }
+            }
+            
+            // אנימציה
+            function animate() {
+                if (!isAnimationActive) return;
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                let activeParticles = 0;
+                
+                particles.forEach((particle, index) => {
+                    if (particle.delay > 0) {
+                        particle.delay--;
+                        return;
+                    }
+                    
+                    if (particle.progress < 1) {
+                        activeParticles++;
+                        
+                        // Easing function לתנועה חלקה
+                        const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+                        const eased = easeOutCubic(particle.progress);
+                        
+                        particle.x = particle.originalX + (particle.targetX - particle.originalX) * eased;
+                        particle.y = particle.originalY + (particle.targetY - particle.originalY) * eased;
+                        
+                        // הוספה לשביל
+                        particle.trail.push({ x: particle.x, y: particle.y });
+                        if (particle.trail.length > 8) {
+                            particle.trail.shift();
+                        }
+                        
+                        particle.progress += particle.speed;
+                    }
+                    
+                    // ציור שביל
+                    if (particle.trail.length > 1) {
+                        ctx.strokeStyle = particle.color;
+                        ctx.lineWidth = particle.size * 0.5;
+                        ctx.lineCap = 'round';
+                        ctx.beginPath();
+                        for (let i = 0; i < particle.trail.length - 1; i++) {
+                            const alpha = i / particle.trail.length;
+                            ctx.strokeStyle = particle.color.replace('0.8', (alpha * 0.3).toFixed(2));
+                            ctx.lineWidth = particle.size * 0.5 * alpha;
+                            if (i === 0) {
+                                ctx.moveTo(particle.trail[i].x, particle.trail[i].y);
+                            } else {
+                                ctx.lineTo(particle.trail[i].x, particle.trail[i].y);
+                            }
+                            ctx.stroke();
+                        }
+                    }
+                    
+                    // ציור החלקיק עם זוהר
+                    const glowGradient = ctx.createRadialGradient(
+                        particle.x, particle.y, 0,
+                        particle.x, particle.y, particle.size * 2
+                    );
+                    glowGradient.addColorStop(0, particle.color);
+                    glowGradient.addColorStop(0.5, particle.color.replace(/[\d\.]+\)$/g, '0.6)'));
+                    glowGradient.addColorStop(1, particle.color.replace(/[\d\.]+\)$/g, '0)'));
+                    
+                    ctx.fillStyle = glowGradient;
+                    ctx.beginPath();
+                    ctx.arc(particle.x, particle.y, particle.size * 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // החלקיק עצמו
+                    ctx.fillStyle = particle.color;
+                    ctx.beginPath();
+                    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // חיבור בין חלקיקים קרובים
+                    particles.slice(index + 1).forEach(other => {
+                        if (other.delay > 0 || other.progress < 0.3) return;
+                        
+                        const dx = particle.x - other.x;
+                        const dy = particle.y - other.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < 80) {
+                            const opacity = (1 - distance / 80) * 0.3;
+                            ctx.strokeStyle = `rgba(212, 175, 55, ${opacity})`;
+                            ctx.lineWidth = 1.5;
+                            ctx.beginPath();
+                            ctx.moveTo(particle.x, particle.y);
+                            ctx.lineTo(other.x, other.y);
+                            ctx.stroke();
+                        }
+                    });
+                });
+                
+                if (activeParticles > 0) {
+                    animationId = requestAnimationFrame(animate);
+                } else {
+                    // סיום האנימציה
+                    setTimeout(() => {
+                        canvas.classList.remove('active');
+                        isAnimationActive = false;
+                    }, 500);
+                }
+            }
+            
+            function startAnimation() {
+                if (isAnimationActive || particles.length === 0) {
+                    // אם אין חלקיקים, יצור חלקיקים בסיסיים ונסה שוב
+                    if (particles.length === 0) {
+                        createBasicParticles();
+                        setTimeout(startAnimation, 50);
+                    }
+                    return;
+                }
+                
+                isAnimationActive = true;
+                particles.forEach(p => {
+                    p.progress = 0;
+                    p.delay = Math.random() * 100;
+                    p.originalX = p.x;
+                    p.originalY = p.y;
+                });
+                canvas.classList.add('active');
+                animate();
+            }
+            
+            // התחלה אוטומטית - נבדוק אם דף הבית פעיל
+            function checkAndStart() {
+                if (homeSection.classList.contains('active')) {
+                    if (particles.length > 0) {
+                        setTimeout(startAnimation, 500);
+                    } else {
+                        // אם אין חלקיקים עדיין, יצור חלקיקים בסיסיים
+                        createBasicParticles();
+                        setTimeout(startAnimation, 100);
+                    }
+                }
+            }
+            
+            // נבדוק מיד
+            setTimeout(checkAndStart, 100);
+            
+            // הפעלה בעת מעבר לדף הבית
+            const observer = new MutationObserver(() => {
+                if (homeSection.classList.contains('active') && !isAnimationActive) {
+                    if (particles.length > 0) {
+                        setTimeout(startAnimation, 300);
+                    } else {
+                        createBasicParticles();
+                        setTimeout(startAnimation, 100);
+                    }
+                } else if (!homeSection.classList.contains('active')) {
+                    isAnimationActive = false;
+                    canvas.classList.remove('active');
+                    if (animationId) {
+                        cancelAnimationFrame(animationId);
+                        animationId = null;
+                    }
+                }
+            });
+            
+            observer.observe(homeSection, { attributes: true, attributeFilter: ['class'] });
+            
+            // טיפול בשינוי גודל חלון
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    resizeCanvas();
+                    if (logoData) {
+                        createParticles();
+                    } else if (particles.length === 0) {
+                        createBasicParticles();
+                    }
+                    // אם האנימציה רצה, תמשיך עם החלקיקים החדשים
+                    if (isAnimationActive && particles.length > 0) {
+                        particles.forEach(p => {
+                            p.originalX = p.x;
+                            p.originalY = p.y;
+                        });
+                    }
+                }, 250);
+            });
+            
+            // איפוס ראשוני של הקנבס
+            resizeCanvas();
+        } */
+
+        // הוסר - אפקט scroll לכרטיסיות נחיתה
+        /* function initLandingCards() {
+            // כל הכרטיסיות שצריכות אפקט נחיתה
+            const selectors = [
+                '.stat-card',
+                '.home-donor-breakdown',
+                '.groom-grant-card',
+                '.instructions-card',
+                '.groom-summary-card',
+                '.finance-summary-card',
+                '.scouts-hero-card',
+                '.external-action-card'
+            ];
+            
+            const cards = document.querySelectorAll(selectors.join(', '));
+            if (cards.length === 0) return;
+
+            // איפוס כל הכרטיסיות
+            cards.forEach(card => {
+                card.classList.remove('visible');
+            });
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px 0px -80px 0px',
+                threshold: 0.15
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        const cardIndex = Array.from(cards).indexOf(entry.target);
+                        setTimeout(() => {
+                            entry.target.classList.add('visible');
+                        }, cardIndex * 150); // עיכוב הדרגתי בין כרטיסיות
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            cards.forEach(card => {
+                observer.observe(card);
+            });
+
+            // אם דף הבית/מדור אחר כבר פעיל, נבדוק מיד לכרטיסיות שנמצאות בחלק העליון
+            setTimeout(() => {
+                cards.forEach((card, index) => {
+                    const rect = card.getBoundingClientRect();
+                    const isVisible = rect.top < window.innerHeight + 100 && rect.bottom > -100;
+                    if (isVisible && !card.classList.contains('visible')) {
+                        setTimeout(() => {
+                            card.classList.add('visible');
+                        }, index * 150);
+                    }
+                });
+            }, 100);
+        } */
+
+
+            // טעינה ראשונית
+        loadData().then(() => {
+        updateHomeStats();
+        updateGroupsDisplay();
+        updateDonorsList();
+        updateLiveView();
+        updateLeadersList();
+        updateLiveTargets();
+        updateFinanceUI();
+        updateGroupSelect();
+        initToolkitTipsUI();
+        initHomeDonorFilters();
+        initScoutsSection();
+        initGroomGrantSection();
+        renderGroomGrantList();
+        hideLiveViewBackButton();
+        initLandingCards();
+        }).catch((error) => {
+            console.error('שגיאה בטעינת נתונים:', error);
+            // בכל זאת נפעיל את הפונקציות גם אם יש שגיאה
+            updateHomeStats();
+            updateGroupsDisplay();
+            updateDonorsList();
+            updateLiveView();
+            updateLeadersList();
+            updateLiveTargets();
+            updateFinanceUI();
+            updateGroupSelect();
+            initToolkitTipsUI();
+            initHomeDonorFilters();
+            initScoutsSection();
+            initGroomGrantSection();
+            renderGroomGrantList();
+            hideLiveViewBackButton();
+            initLandingCards();
+        });
+        initLogoParticleAnimation();
+        
+        // עדכון אוטומטי כל 5 שניות
+        setInterval(() => {
+            updateHomeStats();
+            updateLiveView();
+            updateLeadersList();
+            updateLiveTargets();
+        }, 5000);
+
+        function clearAllDonors() {
+            donors = [];
+            saveData();
+            updateDonorsList();
+            updateGroupsDisplay();
+            updateHomeStats();
+            updateLiveView();
+            updateLeadersList();
+            updateLiveTargets();
+            showNotification('כל המתרימים נמחקו');
+        }
+
+        function resetApplication() {
+            donors = [];
+            groups = [
+                { id: 'group1', name: 'קבוצה 1', goal: defaultGroupGoal },
+                { id: 'group2', name: 'קבוצה 2', goal: defaultGroupGoal },
+                { id: 'group3', name: 'קבוצה 3', goal: defaultGroupGoal },
+                { id: 'group4', name: 'קבוצה 4', goal: defaultGroupGoal },
+                { id: 'group5', name: 'קבוצה 5', goal: defaultGroupGoal },
+                { id: 'group6', name: 'קבוצה 6', goal: defaultGroupGoal }
+            ];
+            financeState = { currentBalance: 0, entries: [] };
+            saveData();
+            updateDonorsList();
+            updateGroupsDisplay();
+            updateHomeStats();
+            updateLiveView();
+            updateLeadersList();
+            updateLiveTargets();
+            updateFinanceUI();
+            updateGroupSelect();
+            syncDefaultDonorGoalInput();
+            showNotification('המערכת אופסה למצב התחלתי');
+        }
+
+        function confirmClearDonors() {
+            if (confirm('האם אתה בטוח שברצונך למחוק את כל המתרימים? הפעולה אינה ניתנת לשחזור.')) {
+                clearAllDonors();
+            }
+        }
+
+        function confirmResetApp() {
+            if (confirm('איפוס מלא ימחק מתרימים, קבוצות ושינויים ביעד. להמשיך?')) {
+                resetApplication();
+            }
+        }
+        function resetDonationSums() {
+            ensureDonorsNormalized();
+            if (!donors.length) {
+                showNotification('אין מתרימים לאיפוס סכומים');
+                return;
+            }
+            donors.forEach(donor => {
+                donor.amount = 0;
+                donor.history = [];
+                donor.dailyBreakdown = Array(dayLabels.length).fill(0);
+            });
+            saveData();
+            updateDonorsList();
+            updateGroupsDisplay();
+            updateHomeStats();
+            updateLiveView();
+            updateLeadersList();
+            updateLiveTargets();
+            showNotification('כל סכומי התרומות אופסו');
+        }
+
+        function confirmResetDonationSums() {
+            if (confirm('איפוס סכומי התרומות יאפס את כל הסכומים לכל המתרימים (הנתונים הקודמים ימחקו). להמשיך?')) {
+                resetDonationSums();
+            }
+        }
+
+        function formatCurrency(amount) {
+            return `₪${Math.round(amount).toLocaleString()}`;
+        }
+
+        function getEntryYear(entry) {
+            if (!entry || !entry.date) return '';
+            try {
+                return new Date(entry.date).getFullYear().toString();
+            } catch (e) {
+                return '';
+            }
+        }
+
+        function applyFinanceFilters(entries) {
+            return entries.filter(entry => {
+                if (!entry) return false;
+                if (financeFilters.type !== 'all' && entry.type !== financeFilters.type) {
+                    return false;
+                }
+                if (financeFilters.year !== 'all') {
+                    const year = getEntryYear(entry);
+                    if (year !== financeFilters.year) return false;
+                }
+                return true;
+            });
+        }
+        function buildCategoryTable(entries) {
+            const containerTitle = '<h4>פירוט לפי קטגוריה</h4>';
+            if (!entries.length) {
+                return `${containerTitle}<div class="finance-entry-empty">אין נתונים להצגה</div>`;
+            }
+            const totals = {};
+            entries.forEach(entry => {
+                const key = entry.category || 'ללא קטגוריה';
+                if (!totals[key]) {
+                    totals[key] = { income: 0, expense: 0, count: 0 };
+                }
+                if (entry.type === 'income') {
+                    totals[key].income += entry.amount || 0;
+                } else {
+                    totals[key].expense += entry.amount || 0;
+                }
+                totals[key].count += 1;
+            });
+            const rows = Object.entries(totals)
+                .sort((a, b) => (b[1].income + b[1].expense) - (a[1].income + a[1].expense))
+                .map(([category, data]) => {
+                    const net = data.income - data.expense;
+                    return `
+                        <tr>
+                            <td>${escapeHtml(category)}</td>
+                            <td>${formatCurrency(data.income)}</td>
+                            <td>${formatCurrency(data.expense)}</td>
+                            <td>${formatCurrency(net)}</td>
+                            <td>${data.count}</td>
+                        </tr>
+                    `;
+                }).join('');
+            return `
+                ${containerTitle}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>קטגוריה</th>
+                            <th>סה"כ הכנסות</th>
+                            <th>סה"כ הוצאות</th>
+                            <th>יתרה</th>
+                            <th>מספר רשומות</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
+        }
+
+        function buildMonthlyTable(entries) {
+            const containerTitle = '<h4>פירוט חודשי</h4>';
+            if (!entries.length) {
+                return `${containerTitle}<div class="finance-entry-empty">אין נתונים להצגה</div>`;
+            }
+            const monthsMap = {};
+            entries.forEach(entry => {
+                if (!entry.date) return;
+                const date = new Date(entry.date);
+                if (Number.isNaN(date.getTime())) return;
+                const year = date.getFullYear();
+                const month = date.getMonth();
+                const key = `${year}-${month}`;
+                if (!monthsMap[key]) {
+                    monthsMap[key] = { income: 0, expense: 0 };
+                }
+                if (entry.type === 'income') {
+                    monthsMap[key].income += entry.amount || 0;
+                } else {
+                    monthsMap[key].expense += entry.amount || 0;
+                }
+            });
+            const formatter = new Intl.DateTimeFormat('he-IL', { month: 'long', year: 'numeric' });
+            const rows = Object.entries(monthsMap)
+                .sort(([a], [b]) => new Date(a.split('-')[0], a.split('-')[1]) - new Date(b.split('-')[0], b.split('-')[1]))
+                .map(([key, data]) => {
+                    const [yearStr, monthStr] = key.split('-');
+                    const date = new Date(parseInt(yearStr, 10), parseInt(monthStr, 10));
+                    const label = formatter.format(date);
+                    const net = data.income - data.expense;
+                    return `
+                        <tr>
+                            <td>${label}</td>
+                            <td>${formatCurrency(data.income)}</td>
+                            <td>${formatCurrency(data.expense)}</td>
+                            <td>${formatCurrency(net)}</td>
+                        </tr>
+                    `;
+                }).join('');
+            return `
+                ${containerTitle}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>חודש</th>
+                            <th>סה"כ הכנסות</th>
+                            <th>סה"כ הוצאות</th>
+                            <th>יתרה</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
+        }
+        function populateFinanceFilterYearOptions(yearSelect, years) {
+            if (!yearSelect) return;
+            const previous = financeFilters.year;
+            yearSelect.innerHTML = '<option value="all">כל השנים</option>' + years.map(year => `<option value="${year}">${year}</option>`).join('');
+            if (years.includes(previous)) {
+                yearSelect.value = previous;
+            } else {
+                financeFilters.year = 'all';
+                yearSelect.value = 'all';
+            }
+        }
+
+        function updateFinanceUI() {
+            ensureFinanceDefaults();
+            const balanceInput = document.getElementById('financeCurrentBalanceInput');
+            if (balanceInput) {
+                balanceInput.value = financeState.currentBalance || 0;
+            }
+
+            const totalIncome = financeState.entries
+                .filter(entry => entry.type === 'income')
+                .reduce((sum, entry) => sum + (entry.amount || 0), 0);
+
+            const totalExpenses = financeState.entries
+                .filter(entry => entry.type === 'expense')
+                .reduce((sum, entry) => sum + (entry.amount || 0), 0);
+
+            const netBalance = financeState.currentBalance + totalIncome - totalExpenses;
+
+            const summary = document.getElementById('financeSummary');
+            if (summary) {
+                summary.innerHTML = `
+                    <div class="finance-summary-card">
+                        <h4>סכום נוכחי בקופה</h4>
+                        <span>${formatCurrency(financeState.currentBalance)}</span>
+                    </div>
+                    <div class="finance-summary-card">
+                        <h4>סה"כ הכנסות השנה</h4>
+                        <span>${formatCurrency(totalIncome)}</span>
+                    </div>
+                    <div class="finance-summary-card">
+                        <h4>סה"כ הוצאות השנה</h4>
+                        <span>${formatCurrency(totalExpenses)}</span>
+                    </div>
+                    <div class="finance-summary-card">
+                        <h4>יתרה צפויה</h4>
+                        <span>${formatCurrency(netBalance)}</span>
+                    </div>
+                `;
+            }
+
+            const filterTypeSelect = document.getElementById('financeFilterType');
+            if (filterTypeSelect) {
+                filterTypeSelect.value = financeFilters.type;
+            }
+
+            const yearSelect = document.getElementById('financeFilterYear');
+            if (yearSelect) {
+                const years = Array.from(new Set(financeState.entries
+                    .map(entry => getEntryYear(entry))
+                    .filter(Boolean)))
+                    .sort((a, b) => parseInt(b, 10) - parseInt(a, 10));
+                populateFinanceFilterYearOptions(yearSelect, years);
+            }
+
+            const filteredEntries = applyFinanceFilters(financeState.entries);
+
+            const list = document.getElementById('financeEntriesList');
+            if (list) {
+                if (!filteredEntries.length) {
+                    list.innerHTML = '<div class="finance-entry-empty">אין רשומות תחת הסינון הנוכחי.</div>';
+                } else {
+                    list.innerHTML = filteredEntries
+                        .map(entry => {
+                            const typeLabel = entry.type === 'income' ? 'הכנסה' : 'הוצאה';
+                            const typeClass = entry.type === 'income' ? 'income' : 'expense';
+                            const category = entry.category ? escapeHtml(entry.category) : 'ללא קטגוריה';
+                            const note = entry.note ? escapeHtml(entry.note) : '';
+                            const dateObj = entry.date ? new Date(entry.date) : null;
+                            const dateStr = dateObj && !Number.isNaN(dateObj.getTime())
+                                ? dateObj.toLocaleDateString('he-IL', { weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit' })
+                                : '';
+                            const timeStr = dateObj && !Number.isNaN(dateObj.getTime())
+                                ? dateObj.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })
+                                : '';
+                            return `
+                                <div class="finance-entry-item">
+                                    <div class="finance-entry-type ${typeClass}">${typeLabel}</div>
+                                    <div>${category}${note ? ` – ${note}` : ''}</div>
+                                    <div>${formatCurrency(entry.amount || 0)}</div>
+                                    <div class="finance-entry-meta">
+                                        <small>${dateStr}${timeStr ? ` • ${timeStr}` : ''}</small>
+                                        <button onclick="removeFinanceEntry(${entry.id})">מחק</button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                }
+            }
+
+            const categoryContainer = document.getElementById('financeCategoryBreakdown');
+            if (categoryContainer) {
+                categoryContainer.innerHTML = buildCategoryTable(filteredEntries);
+            }
+
+            const monthlyContainer = document.getElementById('financeMonthlyBreakdown');
+            if (monthlyContainer) {
+                monthlyContainer.innerHTML = buildMonthlyTable(filteredEntries);
+            }
+        }
+
+        function updateFinanceBalance() {
+            ensureFinanceDefaults();
+            const input = document.getElementById('financeCurrentBalanceInput');
+            if (!input) return;
+            const value = parseFloat(input.value);
+            if (isNaN(value) || value < 0) {
+                showNotification('אנא הזן סכום תקין לקופה');
+                return;
+            }
+            financeState.currentBalance = Math.round(value);
+            saveData();
+            updateFinanceUI();
+            showNotification('סכום הקופה עודכן');
+        }
+        function addFinanceEntry() {
+            ensureFinanceDefaults();
+            const typeSelect = document.getElementById('financeEntryType');
+            const categoryInput = document.getElementById('financeEntryCategory');
+            const amountInput = document.getElementById('financeEntryAmount');
+            const noteInput = document.getElementById('financeEntryNote');
+            if (!typeSelect || !categoryInput || !amountInput) return;
+
+            const amount = Math.abs(parseFloat(amountInput.value));
+            if (isNaN(amount) || amount <= 0) {
+                showNotification('אנא הזן סכום חיובי לרשומה');
+                return;
+            }
+
+            const entry = {
+                id: Date.now(),
+                type: typeSelect.value === 'expense' ? 'expense' : 'income',
+                category: categoryInput.value.trim() || 'ללא קטגוריה',
+                amount: Math.round(amount),
+                note: noteInput.value.trim(),
+                date: new Date().toISOString()
+            };
+
+            financeState.entries.unshift(entry);
+            categoryInput.value = '';
+            amountInput.value = '';
+            noteInput.value = '';
+            saveData();
+            updateFinanceUI();
+            showNotification('רשומה נוספה');
+        }
+
+        function removeFinanceEntry(entryId) {
+            ensureFinanceDefaults();
+            financeState.entries = financeState.entries.filter(entry => entry.id !== entryId);
+            saveData();
+            updateFinanceUI();
+            showNotification('רשומה נמחקה');
+        }
+
+        function clearFinanceEntries() {
+            ensureFinanceDefaults();
+            if (!financeState.entries.length) {
+                showNotification('אין רשומות למחיקה');
+                return;
+            }
+            if (confirm('האם למחוק את כל רשומות השנה?')) {
+                financeState.entries = [];
+                saveData();
+                updateFinanceUI();
+                showNotification('כל רשומות השנה נמחקו');
+            }
+        }
+
+        function onFinanceFilterChange() {
+            const typeSelect = document.getElementById('financeFilterType');
+            const yearSelect = document.getElementById('financeFilterYear');
+            if (typeSelect) {
+                financeFilters.type = typeSelect.value;
+            }
+            if (yearSelect) {
+                financeFilters.year = yearSelect.value;
+            }
+            updateFinanceUI();
+        }
+        function exportFinanceToExcel() {
+            ensureFinanceDefaults();
+            const filtered = applyFinanceFilters(financeState.entries);
+            if (!filtered.length) {
+                showNotification('אין נתונים מתאימים לייצוא');
+                return;
+            }
+            const rows = filtered.map(entry => {
+                const dateObj = entry.date ? new Date(entry.date) : null;
+                const isValidDate = dateObj && !Number.isNaN(dateObj.getTime());
+                const datePart = isValidDate ? dateObj.toLocaleDateString('he-IL') : '';
+                const weekdayPart = isValidDate ? dateObj.toLocaleDateString('he-IL', { weekday: 'long' }) : '';
+                const timePart = isValidDate ? dateObj.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }) : '';
+                return {
+                    'יום': weekdayPart,
+                    'תאריך': datePart,
+                    'שעה': timePart,
+                    'סוג': entry.type === 'income' ? 'הכנסה' : 'הוצאה',
+                    'קטגוריה': entry.category || 'ללא קטגוריה',
+                    'סכום': entry.amount || 0,
+                    'הערה': entry.note || ''
+                };
+            });
+            const workbook = XLSX.utils.book_new();
+            const worksheet = XLSX.utils.json_to_sheet(rows);
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Finance');
+            XLSX.writeFile(workbook, 'finance_export.xlsx');
+            showNotification('קובץ אקסל נוצר בהצלחה');
+        }
+        function addDonorPayment(donorId) {
+            ensureDonorsNormalized();
+            const donor = donors.find(d => d.id === donorId);
+            if (!donor) {
+                showNotification('המתרים לא נמצא');
+                return;
+            }
+
+            const amountInput = prompt('הזן סכום תשלום חדש (₪, אפשר להקיש ערך שלילי להפחתה):');
+            if (amountInput === null) {
+                return;
+            }
+
+            const sanitizedAmount = amountInput.toString().replace(/[^\d.,-]/g, '').replace(',', '.').trim();
+            const isNegative = sanitizedAmount.includes('-');
+            const normalizedNumeric = sanitizedAmount.replace(/-/g, '');
+            const parsedValue = parseFloat(normalizedNumeric);
+            if (!Number.isFinite(parsedValue)) {
+                showNotification('סכום לא תקין, אנא נסה שוב');
+                return;
+            }
+
+            const signedValue = isNegative ? -parsedValue : parsedValue;
+            const roundedDelta = Math.round(signedValue);
+            if (!roundedDelta) {
+                showNotification('סכום לא תקין, אנא נסה שוב');
+                return;
+            }
+
+            const oldAmount = donor.amount || 0;
+            const newAmount = Math.max(0, oldAmount + roundedDelta);
+            const actualDelta = newAmount - oldAmount;
+            if (!actualDelta) {
+                showNotification('לא בוצע שינוי בסכום');
+                return;
+            }
+
+            const noteInput = prompt('הזן הערה לעדכון (לא חובה):');
+            const note = noteInput && noteInput.trim() ? noteInput.trim() : '';
+            const paymentDate = new Date();
+
+            donor.amount = newAmount;
+            addAmountToDailyBreakdown(donor, actualDelta, paymentDate);
+            const historySource = actualDelta > 0 ? 'manual-payment' : 'manual-reduction';
+            recordDonorHistory(donor, actualDelta, donor.amount, historySource, note, paymentDate);
+            ensureDonorsNormalized();
+            saveData();
+            updateDonorsList();
+            updateGroupsDisplay();
+            updateHomeStats();
+            updateLiveView();
+            updateLeadersList();
+            updateLiveTargets();
+            const message = actualDelta > 0
+                ? `תשלום של ${Math.abs(actualDelta).toLocaleString()} ₪ נוסף ל-${donor.name} (${paymentDate.toLocaleDateString('he-IL')})`
+                : `הופחת סכום של ${Math.abs(actualDelta).toLocaleString()} ₪ מהמתרים ${donor.name} (${paymentDate.toLocaleDateString('he-IL')})`;
+            showNotification(message);
+        }
+
+        function adjustDonorAmount(donorId, delta) {
+            const donor = donors.find(d => d.id === donorId);
+            if (!donor) return;
+            const oldAmount = donor.amount || 0;
+            const newAmount = Math.max(0, oldAmount + delta);
+            const actualDelta = newAmount - oldAmount;
+            if (!actualDelta) {
+                showNotification('לא בוצע שינוי בסכום');
+                return;
+            }
+            donor.amount = newAmount;
+            if (actualDelta !== 0) {
+                addAmountToDailyBreakdown(donor, actualDelta, new Date());
+            }
+            recordDonorHistory(donor, actualDelta, donor.amount, 'quick-adjust', actualDelta > 0 ? 'עדכון מהיר (+)' : 'עדכון מהיר (-)');
+            ensureDonorsNormalized();
+            saveData();
+            updateDonorsList();
+            updateGroupsDisplay();
+            updateHomeStats();
+            updateLiveView();
+            updateLeadersList();
+            updateLiveTargets();
+            showNotification(`הסכום של ${donor.name} עודכן ל-${donor.amount.toLocaleString()} ₪`);
+        }
+
+        function getHistorySourceLabel(source) {
+            switch (source) {
+                case 'initial-import':
+                    return 'נתון ראשוני';
+                case 'manual-add':
+                    return 'הוספת מתרים';
+                case 'group-add':
+                    return 'הוספת מתרים לקבוצה';
+                case 'excel-import':
+                    return 'ייבוא אקסל';
+                case 'manual-edit':
+                    return 'עריכה ידנית';
+                case 'quick-adjust':
+                    return 'עדכון מהיר';
+                case 'manual-payment':
+                    return 'תשלום ידני';
+                case 'manual-reduction':
+                    return 'הפחתה ידנית';
+                default:
+                    return 'עדכון';
+            }
+        }
+
+        function recordDonorHistory(donor, delta, amountAfter, source, note = '', customDate = null) {
+            if (!donor) return;
+            ensureDonorsNormalized();
+            const cleanDelta = Math.round(delta || 0);
+            if (!cleanDelta) return;
+            let entryDate = new Date();
+            if (customDate) {
+                let candidate;
+                if (customDate instanceof Date) {
+                    candidate = customDate;
+                } else if (typeof customDate === 'string') {
+                    candidate = new Date(customDate.includes('T') ? customDate : `${customDate}T12:00:00`);
+                } else {
+                    candidate = new Date(customDate);
+                }
+                if (candidate && !Number.isNaN(candidate.getTime())) {
+                    entryDate = candidate;
+                }
+            }
+            const entry = {
+                id: Date.now() + Math.floor(Math.random() * 1000),
+                date: entryDate.toISOString(),
+                delta: cleanDelta,
+                amountAfter: Math.round(amountAfter || 0),
+                source: source || 'עדכון',
+                note: note || ''
+            };
+            donor.history = Array.isArray(donor.history) ? donor.history : [];
+            donor.history.unshift(entry);
+            if (donor.history.length > 600) {
+                donor.history.length = 600;
+            }
+        }
+
+        function renderDonorHistory(donor) {
+            if (!donor || !Array.isArray(donor.history) || donor.history.length === 0) {
+                return '<div class="donor-history-empty">אין היסטוריה להצגה עדיין.</div>';
+            }
+            const entries = donor.history.slice();
+            const sortedDesc = entries.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+            const sortedAsc = entries.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+            const actualChangeMap = new Map();
+
+            if (sortedAsc.length) {
+                let lastAmount = Math.round((sortedAsc[0].amountAfter || 0) - (sortedAsc[0].delta || 0));
+                if (!Number.isFinite(lastAmount)) lastAmount = 0;
+                sortedAsc.forEach((entry, index) => {
+                    const amountAfter = Math.round(entry.amountAfter || 0);
+                    let change = amountAfter - lastAmount;
+                    if (!Number.isFinite(change)) {
+                        change = Math.round(entry.delta || 0);
+                    }
+                    actualChangeMap.set(entry.id, change);
+                    lastAmount = amountAfter;
+                });
+            }
+
+            const rows = sortedDesc.map(entry => {
+                const dateObj = entry.date ? new Date(entry.date) : null;
+                const dateStr = dateObj && !Number.isNaN(dateObj.getTime())
+                    ? dateObj.toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' })
+                    : 'לא ידוע';
+                const actualDelta = actualChangeMap.has(entry.id)
+                    ? actualChangeMap.get(entry.id)
+                    : Math.round(entry.delta || 0);
+                const deltaStr = `${actualDelta >= 0 ? '+' : ''}${actualDelta.toLocaleString()} ₪`;
+                const sourceLabel = getHistorySourceLabel(entry.source);
+                const note = entry.note ? ` (${escapeHtml(entry.note)})` : '';
+                return `
+                    <tr>
+                        <td>${dateStr}</td>
+                        <td>${deltaStr}</td>
+                        <td>${formatCurrency(entry.amountAfter || 0)}</td>
+                        <td>${escapeHtml(sourceLabel)}${note}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            const dailyTotals = sortedAsc.reduce((acc, entry) => {
+                const dateObj = entry.date ? new Date(entry.date) : null;
+                const dayKey = dateObj && !Number.isNaN(dateObj.getTime())
+                    ? dateObj.toISOString().split('T')[0]
+                    : 'לא ידוע';
+                const actualDelta = actualChangeMap.has(entry.id)
+                    ? actualChangeMap.get(entry.id)
+                    : Math.round(entry.delta || 0);
+                acc[dayKey] = (acc[dayKey] || 0) + actualDelta;
+                return acc;
+            }, {});
+            const dailyRows = Object.entries(dailyTotals)
+                .sort((a, b) => new Date(b[0]) - new Date(a[0]))
+                .map(([day, total]) => `
+                    <tr>
+                        <td>${day === 'לא ידוע' ? 'לא ידוע' : new Date(day).toLocaleDateString('he-IL')}</td>
+                        <td>${total >= 0 ? '+' : ''}${total.toLocaleString()} ₪</td>
+                    </tr>
+                `).join('');
+
+            return `
+                <div class="donor-history-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>תאריך</th>
+                                <th>שינוי</th>
+                                <th>סכום אחרי</th>
+                                <th>סיבה</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+                <div class="donor-history-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>תאריך</th>
+                                <th>סה"כ שינוי באותו יום</th>
+                            </tr>
+                        </thead>
+                        <tbody>${dailyRows}</tbody>
+                    </table>
+                </div>
+                <div class="donor-history-footer">
+                    <button class="btn btn-secondary btn-small" onclick="exportSingleDonorHistoryToExcel(${donor.id})">
+                        ייצוא היסטוריה לאקסל
+                    </button>
+                </div>
+            `;
+        }
+
+        function toggleDonorHistory(donorId) {
+            const container = document.getElementById(`donorHistory_${donorId}`);
+            if (!container) return;
+            const donor = donors.find(d => d.id === donorId);
+            if (!donor) return;
+            if (container.classList.contains('active')) {
+                container.classList.remove('active');
+            } else {
+                container.innerHTML = renderDonorHistory(donor);
+                container.classList.add('active');
+            }
+        }
+        function updateDonorsSummary() {
+            ensureDonorsNormalized();
+            const summary = document.getElementById('donorsSummary');
+            if (!summary) return;
+            if (!donors.length) {
+                summary.innerHTML = '';
+                return;
+            }
+            const totalAmount = donors.reduce((sum, donor) => sum + (donor.amount || 0), 0);
+            const avgAmount = totalAmount / donors.length;
+            const overAchievers = donors.filter(d => (d.amount || 0) >= (d.personalGoal || defaultDonorGoal)).length;
+            summary.innerHTML = `
+                <div class="donors-summary-card">
+                    <h4>סה"כ תרומות</h4>
+                    <span>${formatCurrency(totalAmount)}</span>
+                </div>
+                <div class="donors-summary-card">
+                    <h4>מספר מתרימים</h4>
+                    <span>${donors.length.toLocaleString()}</span>
+                </div>
+                <div class="donors-summary-card">
+                    <h4>ממוצע לכל מתרים</h4>
+                    <span>${formatCurrency(avgAmount || 0)}</span>
+                </div>
+                <div class="donors-summary-card">
+                    <h4>עמדו ביעד</h4>
+                    <span>${overAchievers.toLocaleString()}</span>
+                </div>
+            `;
+        }
+        function exportDonorsHistoryToExcel() {
+            ensureDonorsNormalized();
+            if (typeof XLSX === 'undefined') {
+                showNotification('ספריית XLSX לא זמינה');
+                return;
+            }
+            const rows = [];
+            donors.forEach(donor => {
+                const group = groups.find(g => g.id === donor.groupId);
+                const groupName = group ? group.name : 'ללא קבוצה';
+                if (!Array.isArray(donor.history) || !donor.history.length) {
+                    rows.push({
+                        'שם מתרים': donor.name,
+                        'קבוצה': groupName,
+                        'תאריך': '',
+                        'שינוי': 0,
+                        'סכום לאחר שינוי': donor.amount || 0,
+                        'מקור': 'אין היסטוריה',
+                        'הערה': ''
+                    });
+                    return;
+                }
+                donor.history.forEach(entry => {
+                    const dateObj = entry.date ? new Date(entry.date) : null;
+                    rows.push({
+                        'שם מתרים': donor.name,
+                        'קבוצה': groupName,
+                        'תאריך': dateObj && !Number.isNaN(dateObj.getTime()) ? dateObj.toLocaleString('he-IL') : '',
+                        'שינוי': entry.delta || 0,
+                        'סכום לאחר שינוי': entry.amountAfter || 0,
+                        'מקור': getHistorySourceLabel(entry.source),
+                        'הערה': entry.note || ''
+                    });
+                });
+            });
+            if (!rows.length) {
+                showNotification('אין נתוני היסטוריה לייצוא');
+                return;
+            }
+            const workbook = XLSX.utils.book_new();
+            const worksheet = XLSX.utils.json_to_sheet(rows);
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'DonorsHistory');
+            XLSX.writeFile(workbook, 'donors_history.xlsx');
+            showNotification('קובץ היסטוריה נוצר בהצלחה');
+        }
+
+        function exportSingleDonorHistoryToExcel(donorId) {
+            ensureDonorsNormalized();
+            if (typeof XLSX === 'undefined') {
+                showNotification('ספריית XLSX לא זמינה');
+                return;
+            }
+            const donor = donors.find(d => d.id === donorId);
+            if (!donor) {
+                showNotification('המתרים לא נמצא');
+                return;
+            }
+            if (!Array.isArray(donor.history) || !donor.history.length) {
+                showNotification('אין היסטוריה למתרים זה');
+                return;
+            }
+            const group = groups.find(g => g.id === donor.groupId);
+            const groupName = group ? group.name : 'ללא קבוצה';
+            const rows = donor.history.map(entry => {
+                const dateObj = entry.date ? new Date(entry.date) : null;
+                const validDate = dateObj && !Number.isNaN(dateObj.getTime());
+                return {
+                    'יום': validDate ? dateObj.toLocaleDateString('he-IL', { weekday: 'long' }) : '',
+                    'תאריך': validDate ? dateObj.toLocaleDateString('he-IL') : '',
+                    'שעה': validDate ? dateObj.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }) : '',
+                    'שינוי': entry.delta || 0,
+                    'סכום לאחר שינוי': entry.amountAfter || 0,
+                    'מקור': getHistorySourceLabel(entry.source),
+                    'הערה': entry.note || '',
+                    'קבוצה': groupName
+                };
+            });
+            const workbook = XLSX.utils.book_new();
+            const worksheet = XLSX.utils.json_to_sheet(rows);
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'History');
+            const safeName = donor.name
+                ? donor.name.replace(/[\\/:*?"<>|]/g, '_').substring(0, 40)
+                : 'donor';
+            XLSX.writeFile(workbook, `history_${safeName || 'donor'}.xlsx`);
+            showNotification(`קובץ היסטוריה למתרים ${donor.name} נוצר בהצלחה`);
+        }
+
+    </script>
+</body>
+</html>
+</html>
