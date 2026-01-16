@@ -2130,10 +2130,50 @@
             gap: clamp(15px, 1.5vw, 24px);
         }
 
+        .donor-checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 30px;
+        }
+
+        .donor-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--primary-gold);
+        }
+
+        .donor-item {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .donor-item.selected {
+            background: rgba(212, 175, 55, 0.1);
+            border-left: 4px solid var(--primary-gold);
+        }
+
         .donors-list {
             background: rgba(255, 255, 255, 0.9);
             border-radius: 16px;
             padding: 25px;
+        }
+
+        .donor-checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 30px;
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+
+        .donor-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--primary-gold);
         }
 
         .donor-item {
@@ -2148,6 +2188,11 @@
             transition: all 0.3s ease;
             min-height: 70px;
             -webkit-tap-highlight-color: transparent;
+        }
+
+        .donor-item.selected {
+            background: rgba(212, 175, 55, 0.15);
+            border-left: 4px solid var(--primary-gold);
         }
 
         .donor-item:hover {
@@ -2288,11 +2333,11 @@
             padding: 0;
             box-sizing: border-box;
         }
-        /* כפתור חזרה */
-        .back-home-btn {
+        /* כפתור חזרה וכפתור מסך מלא */
+        .back-home-btn,
+        .fullscreen-btn {
             position: fixed;
             top: 20px;
-            right: 20px;
             z-index: 10006;
             width: 48px;
             height: 48px;
@@ -2313,17 +2358,32 @@
             transform: translateY(-10px) scale(0.95);
         }
 
-        .back-home-btn.visible {
+        .back-home-btn {
+            right: 20px;
+        }
+
+        .fullscreen-btn {
+            right: 80px;
+        }
+
+        .back-home-btn.visible,
+        .fullscreen-btn.visible {
             opacity: 1;
             pointer-events: auto;
             transform: translateY(0) scale(1);
         }
 
-        .back-home-btn:hover {
+        .back-home-btn:hover,
+        .fullscreen-btn:hover {
             background: var(--primary-gold);
             color: white;
             transform: translateY(-2px);
             box-shadow: 0 9px 28px rgba(212, 175, 55, 0.45);
+        }
+
+        .fullscreen-btn.active {
+            background: var(--primary-gold);
+            color: white;
         }
 
         /* אזור מתרימים במרכז */
@@ -3895,6 +3955,175 @@
             }
         }
 
+        /* מסכים גדולים מאוד - 4000px */
+        @media (min-width: 4000px) {
+            .live-donors-scroll {
+                grid-template-columns: repeat(6, minmax(380px, 1fr));
+                gap: 28px;
+                padding: 24px;
+            }
+
+            .live-donor-card {
+                padding: 32px 40px;
+                min-height: 200px;
+                gap: 32px;
+            }
+
+            .live-donor-progress-circle-wrapper {
+                width: 160px;
+                height: 160px;
+                margin-left: 36px;
+            }
+
+            .live-donor-percentage {
+                font-size: 36px;
+            }
+
+            .live-donor-name {
+                font-size: 38px;
+            }
+
+            .live-donor-group,
+            .live-donor-amount {
+                font-size: 28px;
+            }
+
+            .live-leaders-sidebar {
+                width: 540px;
+                padding: 60px 48px;
+            }
+
+            .leaders-title {
+                font-size: 54px;
+            }
+
+            .leader-name {
+                font-size: 28px;
+            }
+
+            .leader-total {
+                font-size: 36px;
+            }
+
+            .back-home-btn,
+            .fullscreen-btn {
+                width: 64px;
+                height: 64px;
+                font-size: 28px;
+                top: 30px;
+            }
+
+            .back-home-btn {
+                right: 30px;
+            }
+
+            .fullscreen-btn {
+                right: 110px;
+            }
+        }
+
+        /* מסכים גדולים מאוד - 5000px */
+        @media (min-width: 5000px) {
+            .live-donors-scroll {
+                grid-template-columns: repeat(7, minmax(420px, 1fr));
+                gap: 32px;
+                padding: 28px;
+            }
+
+            .live-donor-card {
+                padding: 38px 46px;
+                min-height: 230px;
+                gap: 38px;
+            }
+
+            .live-donor-progress-circle-wrapper {
+                width: 180px;
+                height: 180px;
+                margin-left: 42px;
+            }
+
+            .live-donor-percentage {
+                font-size: 42px;
+            }
+
+            .live-donor-name {
+                font-size: 44px;
+            }
+
+            .live-donor-group,
+            .live-donor-amount {
+                font-size: 32px;
+            }
+
+            .live-leaders-sidebar {
+                width: 600px;
+                padding: 70px 56px;
+            }
+
+            .leaders-title {
+                font-size: 60px;
+            }
+
+            .leader-name {
+                font-size: 32px;
+            }
+
+            .leader-total {
+                font-size: 42px;
+            }
+        }
+
+        /* מסכים גדולים מאוד - 6000px ומעלה */
+        @media (min-width: 6000px) {
+            .live-donors-scroll {
+                grid-template-columns: repeat(8, minmax(460px, 1fr));
+                gap: 36px;
+                padding: 32px;
+            }
+
+            .live-donor-card {
+                padding: 44px 52px;
+                min-height: 260px;
+                gap: 44px;
+            }
+
+            .live-donor-progress-circle-wrapper {
+                width: 200px;
+                height: 200px;
+                margin-left: 48px;
+            }
+
+            .live-donor-percentage {
+                font-size: 48px;
+            }
+
+            .live-donor-name {
+                font-size: 50px;
+            }
+
+            .live-donor-group,
+            .live-donor-amount {
+                font-size: 36px;
+            }
+
+            .live-leaders-sidebar {
+                width: 660px;
+                padding: 80px 64px;
+            }
+
+            .leaders-title {
+                font-size: 66px;
+            }
+
+            .leader-name {
+                font-size: 36px;
+            }
+
+            .leader-total {
+                font-size: 48px;
+            }
+        }
+
         /* רספונסיבי */
         @media (max-width: 1024px) {
             .sidebar-nav {
@@ -4495,6 +4724,65 @@
             min-width: 100px;
         }
 
+        /* סנכרון נדרים פלוס */
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        }
+
+        .btn-success:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .nedarim-sync-status {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .nedarim-sync-status.show {
+            display: block;
+        }
+
+        .nedarim-sync-status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+
+        .nedarim-sync-status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+
+        .nedarim-sync-status.loading {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #3b82f6;
+        }
+
         /* מערכת הגרלות מפוארת */
         .raffle-section {
             background: linear-gradient(135deg, rgba(245, 230, 211, 0.95) 0%, rgba(255, 248, 220, 0.95) 100%);
@@ -4835,8 +5123,15 @@
                     <div class="default-goal-controls">
                         <input type="number" id="defaultDonorGoalInput" min="1" step="1" placeholder="לדוגמה: 2100">
                         <button class="btn" onclick="updateDefaultDonorGoal()">עדכן יעד כללי</button>
+                        <button class="btn btn-success" onclick="syncWithNedarimPlus()" id="nedarimSyncBtn">
+                            🔄 סנכרון תרומות
+                        </button>
+                        <button class="btn btn-primary" onclick="loadMatrimFromNedarim()" id="nedarimLoadMatrimBtn">
+                            📥 טען מתרימים מנדרים פלוס
+                        </button>
                     </div>
                     <div class="default-goal-note">השינוי ישפיע על מתרימים חדשים ויעדכן מתרימים קיימים שמשתמשים ביעד ברירת המחדל.</div>
+                    <div class="nedarim-sync-status" id="nedarimSyncStatus"></div>
                 </div>
                 
                 <div class="management-tabs">
@@ -4895,6 +5190,14 @@
                             <div class="donors-summary" id="donorsSummary"></div>
                             <div class="donors-summary-actions">
                                 <button class="btn btn-secondary btn-small" onclick="exportDonorsHistoryToExcel()">ייצוא היסטוריה לאקסל</button>
+                            </div>
+                            <div class="donors-bulk-actions" id="donorsBulkActions" style="margin-top: 15px; padding: 15px; background: rgba(212, 175, 55, 0.1); border-radius: 8px; border: 2px solid var(--primary-gold);">
+                                <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                                    <span id="selectedDonorsCount" style="font-weight: 600; color: var(--brown-dark);">0 מתרימים נבחרו</span>
+                                    <button class="btn btn-secondary btn-small" onclick="selectAllDonors()">בחר הכל</button>
+                                    <button class="btn btn-secondary btn-small" onclick="deselectAllDonors()">בטל הכל</button>
+                                    <button class="btn btn-primary btn-small" onclick="moveSelectedDonorsToGroup()" id="moveToGroupBtn" style="display: none;">העבר לקבוצה</button>
+                                </div>
                             </div>
                             <div class="donors-search-meta" id="donorsSearchMeta"></div>
                         </div>
@@ -5312,6 +5615,11 @@
             </section>
             <!-- תצוגה בלייב -->
             <section class="content-section live-view-section" id="liveviewSection">
+                <button class="fullscreen-btn" onclick="toggleFullscreen()" aria-label="מסך מלא" id="fullscreenBtn">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" id="fullscreenIcon">
+                        <path d="M8 3H5C3.89543 3 3 3.89543 3 5V8M21 8V5C21 3.89543 20.1046 3 19 3H16M16 21H19C20.1046 21 21 20.1046 21 19V16M3 16V19C3 20.1046 3.89543 21 5 21H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
                 <button class="back-home-btn" onclick="exitLiveView()" aria-label="חזרה לדף הבית">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M3 10.5L12 3L21 10.5V20C21 20.55 20.55 21 20 21H15C14.45 21 14 20.55 14 20V15C14 14.45 13.55 14 13 14H11C10.45 14 10 14.45 10 15V20C10 20.55 9.55 21 9 21H4C3.45 21 3 20.55 3 20V10.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -5691,6 +5999,24 @@
         let authorizedSections = new Set();
         let appLockResolved = false;
         const AUTHORIZED_ALL_SECTION_KEY = '__all__';
+        
+        // ===== הגדרות נדרים פלוס =====
+        const NEDARIM_CONFIG = {
+            mosadId: '1000642',
+            matchingId: '1000642', // מזהה מצינג - אם שונה מ-mosadId, עדכן כאן
+            apiPassword: 'ep348',
+            apiUrl: 'https://matara.pro/nedarimplus/Reports/Manage3.aspx', // API ניהול
+            onlineApiUrl: 'https://www.matara.pro/nedarimplus/online/Files/Manage.aspx', // API דף אונליין
+            matchPlusApiUrl: 'https://www.matara.pro/nedarimplus/V6/MatchPlus.aspx', // API MatchPlus (כמו בקוד של המשתמש השני)
+            autoSyncInterval: 15 * 1000, // 15 שניות במילישניות (עדכון אוטומטי מהיר)
+            dataCheckInterval: 10 * 1000, // 10 שניות - בדיקת שינויים בנתונים מקומיים
+            lastTransactionId: 0, // נשמור את מזהה העסקה האחרונה
+            totalDonatedFromAPI: 0, // הסכום הכולל מ-ShowGoal API
+            goalFromAPI: 0 // היעד מ-ShowGoal API
+        };
+        let nedarimSyncTimer = null;
+        // ===== סוף הגדרות נדרים פלוס =====
+        
         const SECTION_OPTIONS = [
             { id: 'addresses', label: 'כתובות' },
             { id: 'home', label: 'דף הבית' },
@@ -5723,10 +6049,13 @@
         let homeDonorHighlights = new Set();
         let homeDonorSortHighlightedFirst = false;
         let liveViewBackButtonTimer = null;
+        let liveViewFullscreenButtonTimer = null;
         let liveViewInteractionBound = false;
         const LIVE_VIEW_BACK_BUTTON_TIMEOUT = 4000;
+        const LIVE_VIEW_FULLSCREEN_BUTTON_TIMEOUT = 4000; // אותו זמן כמו כפתור הבית
         const LIVE_VIEW_INTERACTION_EVENTS = ['mousemove', 'keydown', 'touchstart', 'touchmove'];
         let homeDonorFiltersInitialized = false;
+        let selectedDonorIds = new Set(); // שמירת המתרימים הנבחרים
         let groupDragState = {
             draggingId: null
         };
@@ -8032,23 +8361,48 @@
             if (btn) {
                 btn.classList.remove('visible');
             }
+            // כפתור המסך המלא נשאר גלוי - הוא ייעלם רק אחרי זמן ללא תזוזה
         }
 
         function showLiveViewBackButton() {
             if (!isLiveViewActive()) return;
             const btn = document.querySelector('.back-home-btn');
-            if (!btn) return;
-            btn.classList.add('visible');
+            const fullscreenBtn = document.querySelector('.fullscreen-btn');
+            if (btn) btn.classList.add('visible');
+            if (fullscreenBtn) fullscreenBtn.classList.add('visible');
+            
+            // טיימר לכפתור הבית
             if (liveViewBackButtonTimer) {
                 clearTimeout(liveViewBackButtonTimer);
             }
             liveViewBackButtonTimer = setTimeout(() => {
                 hideLiveViewBackButton();
             }, LIVE_VIEW_BACK_BUTTON_TIMEOUT);
+            
+            // טיימר לכפתור המסך המלא (נעלם אחרי זמן ללא תזוזה)
+            if (liveViewFullscreenButtonTimer) {
+                clearTimeout(liveViewFullscreenButtonTimer);
+            }
+            liveViewFullscreenButtonTimer = setTimeout(() => {
+                hideLiveViewFullscreenButton();
+            }, LIVE_VIEW_FULLSCREEN_BUTTON_TIMEOUT);
+        }
+        
+        function hideLiveViewFullscreenButton() {
+            if (liveViewFullscreenButtonTimer) {
+                clearTimeout(liveViewFullscreenButtonTimer);
+                liveViewFullscreenButtonTimer = null;
+            }
+            const fullscreenBtn = document.querySelector('.fullscreen-btn');
+            // תמיד מסתירים את הכפתור אחרי זמן ללא תזוזה, גם במסך מלא
+            if (fullscreenBtn) {
+                fullscreenBtn.classList.remove('visible');
+            }
         }
 
         function handleLiveViewInteraction() {
             showLiveViewBackButton();
+            // showLiveViewBackButton כבר מטפל גם בכפתור המסך המלא
         }
 
         function attachLiveViewInteractionHandlers() {
@@ -9215,6 +9569,14 @@
                     saveToolkitTipsToStorage();
                     saveAppSettings();
                     saveAccessControl();
+                    
+                    // מעדכן את ה-hash אחרי שמירה (לזיהוי שינויים)
+                    if (typeof calculateDataHash === 'function') {
+                        lastDataHash = calculateDataHash();
+                    }
+                    
+                    // שולח הודעה דרך BroadcastChannel לעדכון כל המסכים
+                    notifyDataChanged();
                 } catch (e) {
                     console.error('שגיאה בשמירת נתונים:', e);
                 }
@@ -9720,6 +10082,12 @@
             appContainer.classList.remove('live-mode');
             detachLiveViewInteractionHandlers();
             hideLiveViewBackButton();
+            hideLiveViewButtons();
+            
+            // יוצא ממסך מלא אם פעיל
+            if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
+                toggleFullscreen();
+            }
             
             // חזרה לדף הבית
             const homeNav = document.querySelector('.nav-item[data-section="home"]');
@@ -9781,8 +10149,19 @@
             step();
         }
         function updateHomeStats() {
-            const totalCollected = donors.reduce((sum, d) => sum + d.amount, 0);
-            const matchingPercentage = matchingGoal > 0 ? (totalCollected / matchingGoal) * 100 : 0;
+            // משתמש בסכום הכולל מ-ShowGoal API (כולל כל התרומות - ידניות ואשראי)
+            // אם אין עדיין נתונים מ-API, משתמש בסכום המחושב מהתרימים
+            const totalCollectedFromDonors = donors.reduce((sum, d) => sum + d.amount, 0);
+            const totalCollected = NEDARIM_CONFIG.totalDonatedFromAPI > 0 
+                ? NEDARIM_CONFIG.totalDonatedFromAPI 
+                : totalCollectedFromDonors;
+            
+            // משתמש ביעד מ-ShowGoal API אם יש, אחרת ביעד המקומי
+            const currentGoal = NEDARIM_CONFIG.goalFromAPI > 0 
+                ? NEDARIM_CONFIG.goalFromAPI 
+                : matchingGoal;
+            
+            const matchingPercentage = currentGoal > 0 ? (totalCollected / currentGoal) * 100 : 0;
             const totalDonors = donors.length;
             const avgDonation = totalDonors > 0 ? totalCollected / totalDonors : 0;
             
@@ -9796,7 +10175,7 @@
                 <div class="stat-card">
                     <div class="stat-label">סכום שנאסף</div>
                     <div class="stat-value" data-stat-key="totalCollected">₪0</div>
-                    <div class="stat-subvalue">מתוך ${matchingGoal.toLocaleString()}</div>
+                    <div class="stat-subvalue">מתוך ${currentGoal.toLocaleString()}</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">מספר מתרימים</div>
@@ -9816,7 +10195,7 @@
                 totalDonors: 0,
                 avgDonation: 0
             };
-            const matchingGoalValue = matchingGoal;
+            const matchingGoalValue = currentGoal;
             animateValue(
                 statsGrid.querySelector('[data-stat-key="matchingGoal"]'),
                 statsCache.matchingGoal ?? 0,
@@ -10044,18 +10423,81 @@
 
         // מחיקת קבוצה
         function deleteGroup(groupId) {
-            if (confirm('האם אתה בטוח שברצונך למחוק את הקבוצה? כל המתרימים בקבוצה יימחקו יחד עם הקבוצה.')) {
-                // מחיקת כל המתרימים של הקבוצה
-                const groupDonors = donors.filter(d => d.groupId === groupId);
+            // מוצא את הקבוצה לפני המחיקה
+            const groupToDelete = groups.find(g => {
+                // השוואה גמישה - גם מספר וגם מחרוזת
+                if (typeof g.id === 'number' && typeof groupId === 'number') {
+                    return g.id === groupId;
+                }
+                if (typeof g.id === 'string' && typeof groupId === 'string') {
+                    return g.id === groupId;
+                }
+                // אם אחד מספר ואחד מחרוזת, נסה להמיר
+                const groupIdNum = typeof g.id === 'string' ? parseFloat(g.id) : g.id;
+                const deleteIdNum = typeof groupId === 'string' ? parseFloat(groupId) : groupId;
+                if (!isNaN(groupIdNum) && !isNaN(deleteIdNum)) {
+                    return groupIdNum === deleteIdNum;
+                }
+                // אחרת השווה כמחרוזות
+                return String(g.id) === String(groupId);
+            });
+            
+            if (!groupToDelete) {
+                showNotification('הקבוצה לא נמצאה', 'error');
+                return;
+            }
+            
+            const groupName = groupToDelete.name || 'הקבוצה';
+            const confirmMessage = groupName === 'נדרים פלוס' 
+                ? 'האם אתה בטוח שברצונך למחוק את קבוצת "נדרים פלוס"?\n\nהערה: הקבוצה תיווצר מחדש בפעם הבאה שתעשה סנכרון עם נדרים פלוס.'
+                : 'האם אתה בטוח שברצונך למחוק את הקבוצה? כל המתרימים בקבוצה יימחקו יחד עם הקבוצה.';
+            
+            if (confirm(confirmMessage)) {
+                // מחיקת כל המתרימים של הקבוצה (עם השוואה גמישה)
+                const groupDonors = donors.filter(d => {
+                    // השוואה גמישה
+                    if (typeof d.groupId === 'number' && typeof groupId === 'number') {
+                        return d.groupId === groupId;
+                    }
+                    if (typeof d.groupId === 'string' && typeof groupId === 'string') {
+                        return d.groupId === groupId;
+                    }
+                    const donorGroupIdNum = typeof d.groupId === 'string' ? parseFloat(d.groupId) : d.groupId;
+                    const deleteIdNum = typeof groupId === 'string' ? parseFloat(groupId) : groupId;
+                    if (!isNaN(donorGroupIdNum) && !isNaN(deleteIdNum)) {
+                        return donorGroupIdNum === deleteIdNum;
+                    }
+                    return String(d.groupId) === String(groupId);
+                });
+                
                 groupDonors.forEach(donor => {
-                    const index = donors.findIndex(d => d.id === donor.id);
+                    const index = donors.findIndex(d => {
+                        if (typeof d.id === 'number' && typeof donor.id === 'number') {
+                            return d.id === donor.id;
+                        }
+                        return String(d.id) === String(donor.id);
+                    });
                     if (index !== -1) {
                         donors.splice(index, 1);
                     }
                 });
                 
-                // מחיקת הקבוצה
-                groups = groups.filter(g => g.id !== groupId);
+                // מחיקת הקבוצה (עם השוואה גמישה)
+                groups = groups.filter(g => {
+                    if (typeof g.id === 'number' && typeof groupId === 'number') {
+                        return g.id !== groupId;
+                    }
+                    if (typeof g.id === 'string' && typeof groupId === 'string') {
+                        return g.id !== groupId;
+                    }
+                    const groupIdNum = typeof g.id === 'string' ? parseFloat(g.id) : g.id;
+                    const deleteIdNum = typeof groupId === 'string' ? parseFloat(groupId) : groupId;
+                    if (!isNaN(groupIdNum) && !isNaN(deleteIdNum)) {
+                        return groupIdNum !== deleteIdNum;
+                    }
+                    return String(g.id) !== String(groupId);
+                });
+                
                 saveData();
                 
                 // עדכון כל המדורים - מדור ניהול הוא המקור האמתי
@@ -10068,7 +10510,11 @@
                 updateHomeDonorBreakdown(); // עדכון מדור פילוח נתונים
                 updateHomeStats(); // עדכון סטטיסטיקות בית
                 updateFinanceUI(); // עדכון מדור כספים
-                showNotification('הקבוצה וכל המתרימים שלה נמחקו');
+                
+                const message = groupDonors.length > 0 
+                    ? `הקבוצה "${groupName}" ו-${groupDonors.length} מתרימים נמחקו`
+                    : `הקבוצה "${groupName}" נמחקה`;
+                showNotification(message);
             }
         }
         // הוספת קבוצה חדשה
@@ -10098,7 +10544,7 @@
         }
 
         // הוספת מתרים
-        function addDonor() {
+        async function addDonor() {
             const name = document.getElementById('donorNameInput').value.trim();
             const amountInput = parseFloat(document.getElementById('donorAmountInput').value) || 0;
             const groupId = document.getElementById('donorGroupSelect').value;
@@ -10123,6 +10569,25 @@
             if (donor.amount > 0) {
                 recordDonorHistory(donor, donor.amount, donor.amount, 'manual-add', 'הוספת מתרים');
                 addAmountToDailyBreakdown(donor, donor.amount, new Date());
+                
+                // שולח לנדרים פלוס אם יש סכום
+                try {
+                    const group = groups.find(g => g.id === donor.groupId);
+                    const groupName = group ? group.name : '';
+                    const matrimId = donor.nedarimMatrimId || null;
+                    await uploadOfflineDonation(
+                        name,
+                        'תרומה מהמערכת',
+                        donor.amount,
+                        'תרומה שנוספה דרך מערכת הניהול',
+                        groupName,
+                        matrimId
+                    );
+                    console.log(`✅ תרומה של ${donor.amount} ₪ נשלחה לנדרים פלוס עבור ${matrimId ? 'מספר מתרים: ' + matrimId : name}${groupName ? ' (קבוצה: ' + groupName + ')' : ''}`);
+                } catch (error) {
+                    console.warn('⚠️ התרומה נשמרה במערכת אך לא נשלחה לנדרים פלוס:', error.message);
+                    // לא נציג שגיאה למשתמש כי התרומה כבר נשמרה במערכת
+                }
             }
             donors.push(normalizeDonor(donor));
             saveData();
@@ -10137,10 +10602,10 @@
             updateLiveView();
             updateLeadersList();
             updateLiveTargets();
-            showNotification(`מתרים ${name} נוסף בהצלחה`);
+            showNotification(`מתרים ${name} נוסף בהצלחה${donor.amount > 0 ? ' והתרומה נשלחה לנדרים פלוס' : ''}`);
         }
         // הוספת מתרים לקבוצה
-        function addDonorToGroup(groupId) {
+        async function addDonorToGroup(groupId) {
             const nameInput = document.getElementById(`donorName_${groupId}`);
             const amountInput = document.getElementById(`donorAmount_${groupId}`);
             
@@ -10165,6 +10630,25 @@
             if (donor.amount > 0) {
                 recordDonorHistory(donor, donor.amount, donor.amount, 'group-add', 'הוספת מתרים לקבוצה');
                 addAmountToDailyBreakdown(donor, donor.amount, new Date());
+                
+                // שולח לנדרים פלוס אם יש סכום
+                try {
+                    const group = groups.find(g => g.id === donor.groupId);
+                    const groupName = group ? group.name : '';
+                    const matrimId = donor.nedarimMatrimId || null;
+                    await uploadOfflineDonation(
+                        name,
+                        'תרומה מהמערכת',
+                        donor.amount,
+                        'תרומה שנוספה דרך מערכת הניהול',
+                        groupName,
+                        matrimId
+                    );
+                    console.log(`✅ תרומה של ${donor.amount} ₪ נשלחה לנדרים פלוס עבור ${matrimId ? 'מספר מתרים: ' + matrimId : name}${groupName ? ' (קבוצה: ' + groupName + ')' : ''}`);
+                } catch (error) {
+                    console.warn('⚠️ התרומה נשמרה במערכת אך לא נשלחה לנדרים פלוס:', error.message);
+                    // לא נציג שגיאה למשתמש כי התרומה כבר נשמרה במערכת
+                }
             }
             donors.push(normalizeDonor(donor));
             saveData();
@@ -10178,10 +10662,17 @@
             updateLiveView();
             updateLeadersList();
             updateLiveTargets();
-            showNotification(`מתרים ${name} נוסף בהצלחה`);
+            showNotification(`מתרים ${name} נוסף בהצלחה${donor.amount > 0 ? ' והתרומה נשלחה לנדרים פלוס' : ''}`);
         }
 
-        function updateDonorName(donorId, rawName) {
+        // פונקציה עזר לקבלת שם התצוגה של מתרים
+        function getDonorDisplayName(donor) {
+            if (!donor) return 'ללא שם';
+            return donor.displayName || donor.name || 'ללא שם';
+        }
+
+        // עדכון שם תצוגה של מתרים (לא משנה את השם המקורי בנדרים פלוס)
+        function updateDonorDisplayName(donorId, rawName) {
             ensureDonorsNormalized();
             const donor = donors.find(d => d.id === donorId);
             const input = document.querySelector(`input[data-donor-name-input="${donorId}"]`);
@@ -10189,17 +10680,27 @@
                 if (input) input.value = '';
                 return;
             }
+            
+            // שומר את השם המקורי אם זה הפעם הראשונה
+            if (!donor.originalName && donor.fromNedarimPlus) {
+                donor.originalName = donor.name;
+            }
+            
             const trimmed = (rawName || '').toString().trim();
             if (!trimmed) {
                 showNotification('אנא הזן שם מתרים תקין');
-                if (input) input.value = donor.name || '';
+                const currentDisplayName = donor.displayName || donor.name;
+                if (input) input.value = currentDisplayName || '';
                 if (input) input.focus();
                 return;
             }
-            if (trimmed === donor.name) {
+            
+            const currentDisplayName = donor.displayName || donor.name;
+            if (trimmed === currentDisplayName) {
                 return;
             }
-            donor.name = trimmed;
+            
+            donor.displayName = trimmed;
             saveData();
             updateDonorsList();
             updateGroupsDisplay();
@@ -10207,7 +10708,12 @@
             updateLiveView();
             updateLeadersList();
             updateLiveTargets();
-            showNotification('שם המתרים עודכן');
+            showNotification('שם התצוגה של המתרים עודכן');
+        }
+
+        // פונקציה ישנה - משאירה לתאימות
+        function updateDonorName(donorId, rawName) {
+            updateDonorDisplayName(donorId, rawName);
         }
 
         function handleDonorNameKey(event, donorId) {
@@ -10266,19 +10772,31 @@
                     <option value="${g.id}" ${g.id === donor.groupId ? 'selected' : ''}>${escapeHtml(g.name)}</option>
                 `).join('');
                 const isEditing = editingDonorId === donor.id;
+                // משתמש ב-displayName אם יש, אחרת ב-name
+                const displayName = donor.displayName || donor.name;
+                const originalName = donor.originalName || donor.name;
+                const isSelected = selectedDonorIds.has(donor.id);
                 return `
-                    <div class="donor-item${isEditing ? ' editing' : ''}">
+                    <div class="donor-item${isEditing ? ' editing' : ''}${isSelected ? ' selected' : ''}" data-donor-id="${donor.id}">
+                        <div class="donor-checkbox-wrapper" style="margin-left: 10px; margin-right: 10px;">
+                            <input type="checkbox" 
+                                   class="donor-checkbox" 
+                                   data-donor-id="${donor.id}"
+                                   ${isSelected ? 'checked' : ''}
+                                   onchange="toggleDonorSelection(${donor.id}, this.checked)">
+                        </div>
                         <div class="donor-info">
                             <div class="donor-name">
                                 <input type="text"
                                        class="donor-name-input"
-                                       value="${escapeHtml(donor.name)}"
+                                       value="${escapeHtml(displayName)}"
                                        data-donor-name-input="${donor.id}"
-                                       onchange="updateDonorName(${donor.id}, this.value)"
+                                       onchange="updateDonorDisplayName(${donor.id}, this.value)"
                                        onkeydown="handleDonorNameKey(event, ${donor.id})"
                                        placeholder="שם המתרים">
                             </div>
                             <div class="donor-details">
+                                ${donor.nedarimMatrimId ? `<span style="color: var(--muted); font-size: 12px;">מספר מתרים: ${donor.nedarimMatrimId}</span> | ` : ''}
                                 קבוצה: ${group ? escapeHtml(group.name) : 'ללא קבוצה'} | 
                                 תרומה: ₪${donor.amount.toLocaleString()} | 
                                 יעד: ₪${donor.personalGoal.toLocaleString()} (${Math.round(progress)}%)
@@ -10292,8 +10810,10 @@
                         <div class="donor-edit-panel${isEditing ? ' active' : ''}" id="donorEdit_${donor.id}">
                             <div class="donor-edit-grid">
                                 <div class="donor-edit-field">
-                                    <label for="editName_${donor.id}">שם המתרים</label>
-                                    <input type="text" id="editName_${donor.id}" value="${escapeHtml(donor.name)}" placeholder="שם מלא">
+                                    <label for="editName_${donor.id}">שם המתרים (כפי שיוצג בתוכנה)</label>
+                                    <input type="text" id="editName_${donor.id}" value="${escapeHtml(displayName)}" placeholder="שם מלא">
+                                    ${donor.nedarimMatrimId ? `<small style="color: var(--muted); display: block; margin-top: 5px; font-weight: 600;">מספר מתרים: ${donor.nedarimMatrimId} (לא ניתן לערוך - זהו הזיהוי הייחודי)</small>` : ''}
+                                    ${originalName && originalName !== displayName ? `<small style="color: var(--muted); display: block; margin-top: 5px;">שם מקורי בנדרים פלוס: ${escapeHtml(originalName)}</small>` : ''}
                                 </div>
                                 <div class="donor-edit-field">
                                     <label for="editAmount_${donor.id}">סה"כ נאסף</label>
@@ -10336,11 +10856,230 @@
                 }, 40);
             }
             updateScoutsDatalist();
+            // מעדכן את תצוגת כפתורי הבחירה המרובה
+            if (typeof updateBulkActionsVisibility === 'function') {
+                updateBulkActionsVisibility();
+            }
         }
 
-        // מחיקת מתרים
-        function deleteDonor(donorId) {
-            if (confirm('האם אתה בטוח שברצונך למחוק את המתרים?')) {
+        // פונקציות לבחירת מתרימים מרובים
+        function toggleDonorSelection(donorId, isSelected) {
+            if (isSelected) {
+                selectedDonorIds.add(donorId);
+            } else {
+                selectedDonorIds.delete(donorId);
+            }
+            updateBulkActionsVisibility();
+            // מעדכן את המראה הויזואלי
+            const donorItem = document.querySelector(`.donor-item[data-donor-id="${donorId}"]`);
+            if (donorItem) {
+                if (isSelected) {
+                    donorItem.classList.add('selected');
+                } else {
+                    donorItem.classList.remove('selected');
+                }
+            }
+            
+            // לא פותח אוטומטית - המשתמש ילחץ על "העבר לקבוצה" בעצמו
+        }
+
+        function selectAllDonors() {
+            const container = document.getElementById('donorsListContainer');
+            if (!container) return;
+            
+            const checkboxes = container.querySelectorAll('.donor-checkbox');
+            checkboxes.forEach(checkbox => {
+                const donorId = parseFloat(checkbox.dataset.donorId);
+                if (!isNaN(donorId)) {
+                    selectedDonorIds.add(donorId);
+                    checkbox.checked = true;
+                    const donorItem = checkbox.closest('.donor-item');
+                    if (donorItem) {
+                        donorItem.classList.add('selected');
+                    }
+                }
+            });
+            updateBulkActionsVisibility();
+        }
+
+        function deselectAllDonors() {
+            selectedDonorIds.clear();
+            const container = document.getElementById('donorsListContainer');
+            if (!container) return;
+            
+            const checkboxes = container.querySelectorAll('.donor-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+                const donorItem = checkbox.closest('.donor-item');
+                if (donorItem) {
+                    donorItem.classList.remove('selected');
+                }
+            });
+            updateBulkActionsVisibility();
+        }
+
+        function updateBulkActionsVisibility() {
+            const bulkActions = document.getElementById('donorsBulkActions');
+            const countSpan = document.getElementById('selectedDonorsCount');
+            const moveBtn = document.getElementById('moveToGroupBtn');
+            if (!bulkActions || !countSpan || !moveBtn) return;
+            
+            const count = selectedDonorIds.size;
+            countSpan.textContent = count > 0 ? `${count} מתרימים נבחרו` : '0 מתרימים נבחרו';
+            
+            // מציג/מסתיר את כפתור "העבר לקבוצה" בהתאם למספר המתרימים הנבחרים
+            if (count > 0) {
+                moveBtn.style.display = 'inline-block';
+            } else {
+                moveBtn.style.display = 'none';
+            }
+        }
+
+        // העברת מתרימים נבחרים לקבוצה אחרת
+        function moveSelectedDonorsToGroup() {
+            if (selectedDonorIds.size === 0) {
+                showNotification('אנא בחר מתרימים להעברה', 'error');
+                return;
+            }
+
+            ensureDonorsNormalized();
+            
+            if (groups.length === 0) {
+                showNotification('אין קבוצות במערכת. אנא צור קבוצה קודם.', 'error');
+                return;
+            }
+
+            // יוצר דיאלוג לבחירת קבוצה
+            const groupOptions = groups.map(g => 
+                `<option value="${String(g.id)}">${escapeHtml(g.name)}</option>`
+            ).join('');
+
+            const groupSelectHtml = `
+                <div style="margin: 20px 0;">
+                    <label for="moveToGroupSelect" style="display: block; margin-bottom: 10px; font-weight: 600;">בחר קבוצה:</label>
+                    <select id="moveToGroupSelect" style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 16px; direction: rtl;">
+                        <option value="">-- בחר קבוצה --</option>
+                        ${groupOptions}
+                    </select>
+                </div>
+            `;
+
+            // יוצר דיאלוג מותאם אישית
+            const dialog = document.createElement('div');
+            dialog.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;';
+            dialog.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 16px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+                    <h3 style="margin: 0 0 20px 0; color: var(--brown-dark);">העברת ${selectedDonorIds.size} מתרימים לקבוצה</h3>
+                    ${groupSelectHtml}
+                    <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                        <button class="btn btn-secondary" onclick="this.closest('div[style*=\\'position: fixed\\']').remove()">ביטול</button>
+                        <button class="btn btn-primary" onclick="confirmMoveDonorsToGroup()">העבר</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(dialog);
+
+            // סגירה בלחיצה מחוץ לדיאלוג
+            dialog.addEventListener('click', (e) => {
+                if (e.target === dialog) {
+                    dialog.remove();
+                }
+            });
+        }
+
+        function confirmMoveDonorsToGroup() {
+            const groupSelect = document.getElementById('moveToGroupSelect');
+            if (!groupSelect || !groupSelect.value) {
+                showNotification('אנא בחר קבוצה', 'error');
+                return;
+            }
+
+            // מקבל את הערך מהבחירה - יכול להיות מספר או מחרוזת
+            const selectedValue = groupSelect.value;
+            
+            // מנסה למצוא את הקבוצה - עם השוואה גמישה
+            let targetGroup = null;
+            let targetGroupId = null;
+            
+            // מנסה למצוא לפי ID (מספר או מחרוזת)
+            for (const group of groups) {
+                // השוואה גמישה - גם מספר וגם מחרוזת
+                if (String(group.id) === String(selectedValue)) {
+                    targetGroup = group;
+                    targetGroupId = group.id;
+                    break;
+                }
+            }
+            
+            if (!targetGroup) {
+                console.error('קבוצה לא נמצאה:', selectedValue, 'קבוצות זמינות:', groups.map(g => ({ id: g.id, name: g.name })));
+                showNotification('הקבוצה לא נמצאה במערכת', 'error');
+                return;
+            }
+
+            ensureDonorsNormalized();
+            let movedCount = 0;
+
+            selectedDonorIds.forEach(donorId => {
+                const donor = donors.find(d => {
+                    // השוואה גמישה
+                    if (typeof d.id === 'number' && typeof donorId === 'number') {
+                        return d.id === donorId;
+                    }
+                    return String(d.id) === String(donorId);
+                });
+                if (donor) {
+                    donor.groupId = targetGroupId;
+                    movedCount++;
+                    console.log(`✅ מתרים ${donor.name || donor.displayName || 'ללא שם'} הועבר לקבוצה ${targetGroup.name}`);
+                }
+            });
+
+            if (movedCount > 0) {
+                saveData();
+                updateDonorsList();
+                updateGroupsDisplay();
+                updateHomeStats();
+                updateLiveView();
+                updateLeadersList();
+                updateLiveTargets();
+                
+                // מנקה את הבחירה
+                deselectAllDonors();
+                
+                // סוגר את הדיאלוג
+                const dialog = document.querySelector('div[style*="position: fixed"]');
+                if (dialog) dialog.remove();
+                
+                showNotification(`✅ ${movedCount} מתרימים הועברו לקבוצה "${targetGroup.name}"`);
+            } else {
+                showNotification('לא נמצאו מתרימים להעברה', 'error');
+            }
+        }
+
+        // מחיקת מתרים (מקומית בלבד - לא מוחק מנדרים פלוס)
+        async function deleteDonor(donorId) {
+            // מוצא את המתרים לפני המחיקה
+            const donorToDelete = donors.find(d => {
+                if (typeof d.id === 'number' && typeof donorId === 'number') {
+                    return d.id === donorId;
+                }
+                return String(d.id) === String(donorId);
+            });
+            
+            if (!donorToDelete) {
+                showNotification('המתרים לא נמצא', 'error');
+                return;
+            }
+            
+            const donorName = donorToDelete.displayName || donorToDelete.name || 'המתרים';
+            const isFromNedarimPlus = donorToDelete.fromNedarimPlus || donorToDelete.fromMatching;
+            
+            const confirmMessage = isFromNedarimPlus
+                ? `האם אתה בטוח שברצונך למחוק את "${donorName}"?\n\nהמתרים יימחק מהמערכת המקומית בלבד.\nלהחזרת המתרים, לחץ על "טען מתרימים מנדרים פלוס" או "סנכרון תרומות".`
+                : `האם אתה בטוח שברצונך למחוק את "${donorName}"?`;
+            
+            if (confirm(confirmMessage)) {
                 // השוואה גמישה - גם מספר וגם מחרוזת
                 const idToDelete = donorId;
                 donors = donors.filter(d => {
@@ -10361,6 +11100,7 @@
                     // אחרת השווה כמחרוזות
                     return String(d.id) !== String(idToDelete);
                 });
+                
                 saveData();
                 updateDonorsList();
                 updateGroupsDisplay();
@@ -10368,7 +11108,11 @@
                 updateLiveView();
                 updateLeadersList();
                 updateLiveTargets();
-                showNotification('מתרים נמחק');
+                
+                const message = isFromNedarimPlus
+                    ? `מתרים "${donorName}" נמחק מהמערכת המקומית. להחזרה, לחץ על "טען מתרימים מנדרים פלוס".`
+                    : `מתרים "${donorName}" נמחק`;
+                showNotification(message);
             }
         }
 
@@ -10404,6 +11148,7 @@
         }
         syncChannel.addEventListener('message', (event) => {
             if (event?.data?.type === 'data-updated') {
+                console.log('🔄 קיבלתי עדכון מ-BroadcastChannel - מעדכן תצוגות...');
                 loadData();
                 updateDonorsList();
                 updateGroupsDisplay();
@@ -10414,12 +11159,21 @@
                 renderScoutsTeams();
                 updateScoutsStats();
                 renderGroomGrantList();
+                // מעדכן גם את הסכום הכולל מ-API
+                fetchTotalFromMatchPlus().then(() => {
+                    updateHomeStats();
+                    updateLeadersList();
+                    updateLiveTargets();
+                });
+                // מעדכן את ה-hash
+                lastDataHash = calculateDataHash();
             }
         });
 
         window.addEventListener('storage', (event) => {
             if (!event || event.storageArea !== localStorage) return;
             if (['donors', 'groups', 'defaultDonorGoal', 'financeState', 'toolkitTips', 'scoutsSchedule', 'groomGrants'].includes(event.key)) {
+                console.log(`🔄 זוהה שינוי ב-localStorage (${event.key}) - מעדכן תצוגות...`);
                 loadData();
                 updateDonorsList();
                 updateGroupsDisplay();
@@ -10430,6 +11184,14 @@
                 renderScoutsTeams();
                 updateScoutsStats();
                 renderGroomGrantList();
+                // מעדכן גם את הסכום הכולל מ-API
+                fetchTotalFromMatchPlus().then(() => {
+                    updateHomeStats();
+                    updateLeadersList();
+                    updateLiveTargets();
+                });
+                // מעדכן את ה-hash
+                lastDataHash = calculateDataHash();
             }
         });
 
@@ -10479,7 +11241,7 @@
                 updateDonorsList();
             }
         }
-        function saveDonorEdits(donorId) {
+        async function saveDonorEdits(donorId) {
             ensureDonorsNormalized();
             const donor = donors.find(d => d.id === donorId);
             if (!donor) return;
@@ -10490,11 +11252,16 @@
             const groupSelect = document.getElementById(`editGroup_${donorId}`);
             const deltaInput = document.getElementById(`editDelta_${donorId}`);
 
-            const newName = nameInput ? nameInput.value.trim() : donor.name;
-            if (!newName) {
+            const newDisplayName = nameInput ? nameInput.value.trim() : (donor.displayName || donor.name);
+            if (!newDisplayName) {
                 showNotification('אנא הזן שם מתרים תקין');
                 if (nameInput) nameInput.focus();
                 return;
+            }
+            
+            // שומר את השם המקורי אם זה הפעם הראשונה
+            if (!donor.originalName && donor.fromNedarimPlus) {
+                donor.originalName = donor.name;
             }
 
             const parsedAmount = amountInput ? Math.max(0, Math.round(parseFloat(amountInput.value) || 0)) : (donor.amount || 0);
@@ -10515,8 +11282,9 @@
             const amountDelta = finalAmount - oldAmount;
 
             let changed = false;
-            if (donor.name !== newName) {
-                donor.name = newName;
+            const oldDisplayName = donor.displayName || donor.name;
+            if (oldDisplayName !== newDisplayName) {
+                donor.displayName = newDisplayName;
                 changed = true;
             }
             if (donor.personalGoal !== parsedGoal) {
@@ -10537,6 +11305,30 @@
                 const note = amountDelta > 0 ? 'תוספת ידנית' : 'הפחתה ידנית';
                 recordDonorHistory(donor, amountDelta, donor.amount, 'manual-edit', note);
                 changed = true;
+                
+                // שולח לנדרים פלוס אם יש שינוי בסכום (תוספת או הפחתה)
+                // משתמש במספר מתרים אם יש, אחרת בשם המקורי
+                if (amountDelta !== 0 && donor.fromNedarimPlus) {
+                    try {
+                        const originalName = donor.originalName || donor.name;
+                        const group = groups.find(g => g.id === donor.groupId);
+                        const groupName = group ? group.name : '';
+                        const matrimId = donor.nedarimMatrimId || null;
+                        await uploadOfflineDonation(
+                            originalName,
+                            'תרומה מהמערכת',
+                            amountDelta, // יכול להיות שלילי להפחתות
+                            `עדכון ידני: ${note}`,
+                            groupName,
+                            matrimId
+                        );
+                        const actionText = amountDelta > 0 ? 'נוספה' : 'הופחתה';
+                        console.log(`✅ תרומה של ${Math.abs(amountDelta)} ₪ ${actionText} בנדרים פלוס עבור ${matrimId ? 'מספר מתרים: ' + matrimId : originalName}${groupName ? ' (קבוצה: ' + groupName + ')' : ''}`);
+                    } catch (error) {
+                        console.warn('⚠️ העדכון נשמר במערכת אך לא נשלח לנדרים פלוס:', error.message);
+                        // לא נציג שגיאה למשתמש כי העדכון כבר נשמר במערכת
+                    }
+                }
             }
 
             if (!changed) {
@@ -10559,7 +11351,7 @@
             updateLeadersList();
             updateLiveTargets();
             notifyDataChanged();
-            showNotification('פרטי המתרים עודכנו');
+            showNotification('פרטי המתרים עודכנו' + (amountDelta > 0 ? ' והתרומה נשלחה לנדרים פלוס' : ''));
         }
 
         function getProgressColor(percentage) {
@@ -10742,7 +11534,11 @@
             }
             
             // יצירת רשימה כפולה לגלילה אינסופית
-            const donorsWithNames = donors.filter(d => d.name && d.name.trim());
+            // משתמש ב-displayName אם יש, אחרת ב-name
+            const donorsWithNames = donors.filter(d => {
+                const displayName = getDonorDisplayName(d);
+                return displayName && displayName.trim() && displayName !== 'ללא שם';
+            });
             
             if (donorsWithNames.length === 0) {
                 stopAutoScroll('donors');
@@ -10910,13 +11706,14 @@
                     const groupLabel = group ? group.name : 'ללא קבוצה';
                     structureEntries.push(`card:${donor.id}`);
 
+                    const donorDisplayName = getDonorDisplayName(donor);
                     htmlParts.push(`
                         <div class="live-donor-card" data-entry-type="card" data-donor-id="${donor.id}">
                             <div class="live-donor-progress-circle-wrapper">
                                 ${createProgressCircle(Math.min(percentage, 100), uniqueId, percentage)}
                             </div>
                             <div class="live-donor-info">
-                                <div class="live-donor-name">${donor.name}</div>
+                                <div class="live-donor-name">${escapeHtml(donorDisplayName)}</div>
                                 <div class="live-donor-group">${groupLabel}</div>
                                 <div class="live-donor-amount">
                                     <span class="amount-value" data-amount="${donor.amount}">${donor.amount.toLocaleString()}</span>
@@ -10972,7 +11769,7 @@
                 const groupObj = groups.find(g => g.id === donor.groupId) || null;
                 const percentage = donor.personalGoal > 0 ? (donor.amount / donor.personalGoal) * 100 : 0;
                 donorDataMap.set(String(donor.id), {
-                    name: donor.name,
+                    name: getDonorDisplayName(donor),
                     groupName: groupObj ? groupObj.name : 'ללא קבוצה',
                     amount: donor.amount,
                     goal: donor.personalGoal,
@@ -12408,6 +13205,16 @@
 
             const noteInput = prompt('הזן הערה לעדכון (לא חובה):');
             const note = noteInput && noteInput.trim() ? noteInput.trim() : '';
+            
+            // שואל אם להעלות לנדרים פלוס (תוספת או הפחתה)
+            let uploadToNedarim = false;
+            const donorDisplayName = getDonorDisplayName(donor);
+            if (actualDelta !== 0 && donor.fromNedarimPlus) {
+                const actionText = actualDelta > 0 ? 'להוסיף' : 'להפחית';
+                const amountText = Math.abs(actualDelta).toLocaleString();
+                uploadToNedarim = confirm(`האם ${actionText} תרומה זו בנדרים פלוס?\n\nמתרים: ${donorDisplayName}\nסכום: ${amountText} ₪`);
+            }
+            
             const paymentDate = new Date();
 
             donor.amount = newAmount;
@@ -12423,9 +13230,58 @@
             updateLeadersList();
             updateLiveTargets();
             const message = actualDelta > 0
-                ? `תשלום של ${Math.abs(actualDelta).toLocaleString()} ₪ נוסף ל-${donor.name} (${paymentDate.toLocaleDateString('he-IL')})`
-                : `הופחת סכום של ${Math.abs(actualDelta).toLocaleString()} ₪ מהמתרים ${donor.name} (${paymentDate.toLocaleDateString('he-IL')})`;
+                ? `תשלום של ${Math.abs(actualDelta).toLocaleString()} ₪ נוסף ל-${donorDisplayName} (${paymentDate.toLocaleDateString('he-IL')})`
+                : `הופחת סכום של ${Math.abs(actualDelta).toLocaleString()} ₪ מהמתרים ${donorDisplayName} (${paymentDate.toLocaleDateString('he-IL')})`;
             showNotification(message);
+
+            // מעלה לנדרים פלוס אם נבחר (תוספת או הפחתה)
+            // משתמש בשם המקורי מ-נדרים פלוס (לא שם התצוגה)
+            if (uploadToNedarim && actualDelta !== 0 && donor.fromNedarimPlus) {
+                const originalName = donor.originalName || donor.name;
+                uploadDonorPaymentToNedarim(originalName, actualDelta, note, donor.id);
+            }
+        }
+
+        // פונקציה להעלאת תשלום לנדרים פלוס
+        async function uploadDonorPaymentToNedarim(matrimName, amount, note = '', donorId = null) {
+            try {
+                showNotification('מעלה תרומה לנדרים פלוס...');
+                
+                // מוצא את המתרים כדי לקבל את שם הקבוצה ומספר המתרים
+                let groupName = '';
+                let matrimId = null;
+                if (donorId) {
+                    const donor = donors.find(d => {
+                        if (typeof d.id === 'number' && typeof donorId === 'number') {
+                            return d.id === donorId;
+                        }
+                        return String(d.id) === String(donorId);
+                    });
+                    if (donor) {
+                        const group = groups.find(g => g.id === donor.groupId);
+                        groupName = group ? group.name : '';
+                        matrimId = donor.nedarimMatrimId || null;
+                    }
+                }
+                
+                const result = await uploadOfflineDonation(
+                    matrimName,
+                    'תרומה מהמערכת',
+                    amount,
+                    note || 'תרומה שנוספה דרך מערכת הניהול',
+                    groupName,
+                    matrimId
+                );
+
+                if (result.success) {
+                    showNotification(`✅ התרומה הועלתה לנדרים פלוס בהצלחה!`);
+                } else {
+                    showNotification(`⚠️ התרומה נשמרה במערכת אך לא הועלתה לנדרים פלוס`);
+                }
+            } catch (error) {
+                console.error('שגיאה בהעלאת תרומה לנדרים פלוס:', error);
+                showNotification(`⚠️ התרומה נשמרה במערכת אך לא הועלתה לנדרים פלוס: ${error.message}`);
+            }
         }
 
         function adjustDonorAmount(donorId, delta) {
@@ -12736,6 +13592,1362 @@
             XLSX.writeFile(workbook, `history_${safeName || 'donor'}.xlsx`);
             showNotification(`קובץ היסטוריה למתרים ${donor.name} נוצר בהצלחה`);
         }
+
+        // ===== חיבור לנדרים פלוס - פונקציות =====
+
+        // פונקציה למשיכת נתוני מוסד מ-API דף האונליין
+        async function fetchNedarimMosadData() {
+            try {
+                // נשתמש בפרוקסי שעובד טוב עם APIs
+                const targetUrl = `${NEDARIM_CONFIG.onlineApiUrl}?Action=GetMosad&MosadId=${NEDARIM_CONFIG.mosadId}&S=&_=${Date.now()}`;
+                
+                console.log('מבצע בקשה ל:', targetUrl);
+                
+                // אפשרות 1: ננסה ישירות עם mode: 'no-cors'
+                try {
+                    const directResponse = await fetch(targetUrl, {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: {
+                            'Accept': 'application/json',
+                        }
+                    });
+                    
+                    if (directResponse.ok) {
+                        const data = await directResponse.json();
+                        console.log('✅ הצלחנו לקבל נתונים ישירות!');
+                        return data;
+                    }
+                } catch (directError) {
+                    console.log('בקשה ישירה נכשלה, מנסה דרך proxy...', directError);
+                }
+                
+                // אפשרות 2: משתמש בפרוקסי
+                const corsProxy = 'https://corsproxy.io/?';
+                const proxyUrl = corsProxy + encodeURIComponent(targetUrl);
+                
+                const response = await fetch(proxyUrl, {
+                    method: 'GET'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`שגיאת שרת: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('✅ הצלחנו לקבל נתונים דרך proxy!');
+                return data;
+            } catch (error) {
+                console.error('שגיאה במשיכת נתוני מוסד:', error);
+                throw error;
+            }
+        }
+
+        // פונקציה להמרת תאריך מפורמט נדרים פלוס (dd/mm/yyyy hh:mm:ss) לתאריך תקין
+        function parseNedarimDate(dateStr) {
+            if (!dateStr) return new Date();
+            
+            try {
+                // נדרים פלוס מחזיר תאריך בפורמט: "10/01/2026 20:30:45"
+                // צריך להמיר ל-ISO format
+                const parts = dateStr.split(' ');
+                if (parts.length >= 1) {
+                    const dateParts = parts[0].split('/');
+                    if (dateParts.length === 3) {
+                        const day = dateParts[0].padStart(2, '0');
+                        const month = dateParts[1].padStart(2, '0');
+                        const year = dateParts[2];
+                        const time = parts[1] || '00:00:00';
+                        
+                        // יוצר תאריך בפורמט ISO: yyyy-mm-ddThh:mm:ss
+                        const isoDate = `${year}-${month}-${day}T${time}`;
+                        const date = new Date(isoDate);
+                        
+                        // בודק אם התאריך תקין
+                        if (!isNaN(date.getTime())) {
+                            return date;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('שגיאה בהמרת תאריך:', dateStr, error);
+            }
+            
+            // אם יש בעיה, מחזיר תאריך נוכחי
+            return new Date();
+        }
+
+        // פונקציה למשיכת כל המתרימים ממערכת המצ'ינג של נדרים פלוס
+        async function fetchNedarimMatrim() {
+            try {
+                const formData = new FormData();
+                formData.append('Action', 'ExportMatchingMatrim');
+                formData.append('MosadNumber', NEDARIM_CONFIG.mosadId);
+                formData.append('ApiPassword', NEDARIM_CONFIG.apiPassword);
+
+                const response = await fetch(NEDARIM_CONFIG.apiUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`שגיאת שרת: ${response.status}`);
+                }
+
+                // הAPI מחזיר קובץ אקסל - צריך לטפל בזה אחרת
+                // בינתיים נשתמש בAPI אחר
+                return null;
+            } catch (error) {
+                console.error('שגיאה במשיכת מתרימים:', error);
+                throw error;
+            }
+        }
+
+        // פונקציה להעלאת תרומה אופליין לנדרים פלוס (תומכת גם בהפחתות - סכומים שליליים)
+        async function uploadOfflineDonation(matrimName, clientName, amount, comments = '', groupName = '', matrimId = null) {
+            try {
+                // בודק שהסכום תקין (מאפשר גם שלילי להפחתות)
+                const validAmount = Math.round(parseFloat(amount) || 0);
+                if (validAmount === 0) {
+                    throw new Error('סכום התרומה חייב להיות שונה מ-0');
+                }
+
+                // בודק שיש שם מתרים או מספר מתרים
+                if ((!matrimName || matrimName.trim() === '') && (matrimId === null || matrimId === undefined)) {
+                    throw new Error('חייב להזין שם מתרים או מספר מתרים');
+                }
+
+                // משתמש במספר מתרים אם יש, אחרת בשם
+                let finalMatrimId = null;
+                let finalMatrimName = null;
+                if (matrimId !== null && matrimId !== undefined) {
+                    // משתמש במספר מתרים
+                    finalMatrimId = String(matrimId);
+                    finalMatrimName = `מספר מתרים: ${matrimId}`;
+                } else {
+                    // מוסיף את שם הקבוצה לשם המתרים אם יש
+                    finalMatrimName = matrimName.trim();
+                    if (groupName && groupName.trim() !== '') {
+                        finalMatrimName = `${finalMatrimName} - ${groupName.trim()}`;
+                    }
+                    finalMatrimId = finalMatrimName;
+                }
+
+                const formData = new FormData();
+                formData.append('Action', 'MatchingOffLine');
+                formData.append('MosadNumber', NEDARIM_CONFIG.mosadId);
+                formData.append('ApiPassword', NEDARIM_CONFIG.apiPassword);
+                formData.append('MatrimId', finalMatrimId); // מספר מתרים או שם המתרים + שם הקבוצה
+                formData.append('ClientName', (clientName || 'תורם אנונימי').trim());
+                formData.append('Amount', validAmount.toString()); // יכול להיות שלילי להפחתות
+                formData.append('Comments', (comments || '').trim());
+                formData.append('AjaxId', Date.now().toString());
+
+                console.log('שולח תרומה לנדרים פלוס:', {
+                    matrimId: finalMatrimId,
+                    matrimName: finalMatrimName,
+                    clientName: clientName || 'תורם אנונימי',
+                    amount: validAmount,
+                    groupName: groupName || 'ללא קבוצה',
+                    isReduction: validAmount < 0
+                });
+
+                const response = await fetch(NEDARIM_CONFIG.apiUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`שגיאת שרת: ${response.status} ${response.statusText}`);
+                }
+
+                // מנסה לפרסר את התגובה כ-JSON
+                let data;
+                const responseText = await response.text();
+                try {
+                    data = JSON.parse(responseText);
+                } catch (parseError) {
+                    // אם זה לא JSON, בודק אם יש הודעת הצלחה בטקסט
+                    if (responseText.includes('OK') || responseText.includes('הצלח') || responseText.includes('success')) {
+                        return { success: true, message: 'התרומה הועלתה בהצלחה' };
+                    }
+                    throw new Error(`תגובה לא תקינה מהשרת: ${responseText.substring(0, 100)}`);
+                }
+                
+                if (data.Status === 'OK' || data.success === true) {
+                    return { success: true, message: data.Message || data.message || 'התרומה הועלתה בהצלחה' };
+                } else {
+                    throw new Error(data.Message || data.message || 'שגיאה לא ידועה');
+                }
+            } catch (error) {
+                console.error('שגיאה בהעלאת תרומה לנדרים פלוס:', error);
+                throw error;
+            }
+        }
+
+        // פונקציה למשיכת מתרימים מ-MatchPlus API עם חיפוש
+        async function fetchMatrimFromMatchPlusWithSearch(searchTerm = '') {
+            try {
+                const url = `${NEDARIM_CONFIG.matchPlusApiUrl}?Action=SearchMatrim&Name=${encodeURIComponent(searchTerm)}&MosadId=${NEDARIM_CONFIG.mosadId}`;
+                console.log('מושך מתרימים מ-MatchPlus עם חיפוש:', searchTerm || '(ריק)', url);
+                
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`שגיאת שרת: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (!Array.isArray(data)) {
+                    console.warn('תגובה לא צפויה מ-MatchPlus:', data);
+                    return [];
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('שגיאה במשיכת מתרימים מ-MatchPlus:', error);
+                throw error;
+            }
+        }
+
+        // פונקציה למשיכת כל המתרימים מ-MatchPlus API (עושה חיפושים מרובים)
+        async function fetchMatrimFromMatchPlus() {
+            try {
+                console.log('מושך את כל המתרימים מ-MatchPlus (עם חיפושים מרובים)...');
+                
+                // אוסף את כל המתרימים במערך
+                const allMatrim = new Map(); // משתמש ב-Map כדי למנוע כפילויות לפי שם
+                
+                // 1. חיפוש ריק (מביא את הראשונים)
+                console.log('חיפוש 1: חיפוש ריק...');
+                const emptySearch = await fetchMatrimFromMatchPlusWithSearch('');
+                emptySearch.forEach(matrim => {
+                    const name = (matrim.Name || matrim.name || '').trim();
+                    if (name) {
+                        allMatrim.set(name, matrim);
+                    }
+                });
+                console.log(`✅ מצאנו ${emptySearch.length} מתרימים בחיפוש ריק, סה"כ ${allMatrim.size} ייחודיים`);
+                
+                // 2. חיפוש לפי אותיות עבריות (א-ת)
+                const hebrewLetters = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י', 'כ', 'ל', 'מ', 'נ', 'ס', 'ע', 'פ', 'צ', 'ק', 'ר', 'ש', 'ת'];
+                
+                for (let i = 0; i < hebrewLetters.length; i++) {
+                    const letter = hebrewLetters[i];
+                    console.log(`חיפוש ${i + 2}: חיפוש לפי האות "${letter}"...`);
+                    
+                    try {
+                        const letterSearch = await fetchMatrimFromMatchPlusWithSearch(letter);
+                        letterSearch.forEach(matrim => {
+                            const name = (matrim.Name || matrim.name || '').trim();
+                            if (name) {
+                                allMatrim.set(name, matrim);
+                            }
+                        });
+                        console.log(`✅ מצאנו ${letterSearch.length} מתרימים בחיפוש "${letter}", סה"כ ${allMatrim.size} ייחודיים`);
+                        
+                        // המתנה קטנה בין קריאות כדי לא להעמיס על השרת
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                    } catch (error) {
+                        console.warn(`שגיאה בחיפוש לפי "${letter}":`, error);
+                        // ממשיך עם האות הבאה
+                    }
+                }
+                
+                // 3. חיפוש לפי מספרים (0-9) - למקרה שיש מתרימים שמתחילים במספר
+                for (let num = 0; num <= 9; num++) {
+                    console.log(`חיפוש נוסף: חיפוש לפי המספר "${num}"...`);
+                    try {
+                        const numSearch = await fetchMatrimFromMatchPlusWithSearch(num.toString());
+                        numSearch.forEach(matrim => {
+                            const name = (matrim.Name || matrim.name || '').trim();
+                            if (name) {
+                                allMatrim.set(name, matrim);
+                            }
+                        });
+                        console.log(`✅ מצאנו ${numSearch.length} מתרימים בחיפוש "${num}", סה"כ ${allMatrim.size} ייחודיים`);
+                        
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                    } catch (error) {
+                        console.warn(`שגיאה בחיפוש לפי "${num}":`, error);
+                    }
+                }
+                
+                // ממיר את ה-Map למערך
+                const result = Array.from(allMatrim.values());
+                console.log(`✅ סה"כ נמצאו ${result.length} מתרימים ייחודיים מכל החיפושים`);
+                
+                return result;
+            } catch (error) {
+                console.error('שגיאה במשיכת כל המתרימים מ-MatchPlus:', error);
+                throw error;
+            }
+        }
+
+        // פונקציה למשיכת הסכום הכולל והיעד מ-ShowGoal API (כמו בקוד של המשתמש השני)
+        async function fetchTotalFromMatchPlus() {
+            try {
+                const url = `${NEDARIM_CONFIG.matchPlusApiUrl}?Action=ShowGoal&MatchingId=${NEDARIM_CONFIG.matchingId}`;
+                console.log('מושך סכום כולל מ-ShowGoal:', url);
+                
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`שגיאת שרת: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('✅ קיבלנו נתונים מ-ShowGoal:', data);
+                
+                if (data && typeof data.Goal !== 'undefined' && typeof data.Donated !== 'undefined') {
+                    NEDARIM_CONFIG.totalDonatedFromAPI = parseInt(data.Donated) || 0;
+                    NEDARIM_CONFIG.goalFromAPI = parseInt(data.Goal) || 0;
+                    console.log(`✅ עדכנו: יעד=${NEDARIM_CONFIG.goalFromAPI}, נאסף=${NEDARIM_CONFIG.totalDonatedFromAPI}`);
+                    
+                    // בודק אם יש פער בין הסכום הכולל לסכום של המתרימים
+                    const totalFromDonors = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
+                    const difference = NEDARIM_CONFIG.totalDonatedFromAPI - totalFromDonors;
+                    if (difference > 0) {
+                        console.log(`⚠️ יש פער של ${difference.toLocaleString()} ש"ח בין הסכום הכולל לסכום המתרימים`);
+                        console.log(`   סכום כולל מ-ShowGoal: ${NEDARIM_CONFIG.totalDonatedFromAPI.toLocaleString()} ש"ח`);
+                        console.log(`   סכום מהתרימים: ${totalFromDonors.toLocaleString()} ש"ח`);
+                        console.log(`   ההפרש כנראה מתרומות כלליות שלא קשורות למתרימים ספציפיים`);
+                    }
+                    
+                    return { Goal: NEDARIM_CONFIG.goalFromAPI, Donated: NEDARIM_CONFIG.totalDonatedFromAPI };
+                }
+                
+                return null;
+            } catch (error) {
+                console.error('שגיאה במשיכת סכום כולל מ-ShowGoal:', error);
+                return null;
+            }
+        }
+
+        // פונקציה לטעינת כל המתרימים מנדרים פלוס (משתמש ב-MatchPlus API)
+        async function loadMatrimFromNedarim() {
+            const btn = document.getElementById('nedarimLoadMatrimBtn');
+                    if (btn) {
+                btn.disabled = true;
+                btn.textContent = '⏳ טוען...';
+            }
+
+            showNedarimStatus('טוען מתרימים מנדרים פלוס... (זה עשוי לקחת מספר דקות)', 'loading');
+
+            try {
+                // קודם כל, מושך את הסכום הכולל והיעד מ-ShowGoal (כולל כל התרומות)
+                showNedarimStatus('מעדכן סכום כולל...', 'loading');
+                const totalData = await fetchTotalFromMatchPlus();
+                if (totalData) {
+                    console.log(`✅ עדכנו סכום כולל: ${totalData.Donated} ש"ח, יעד: ${totalData.Goal} ש"ח`);
+                }
+
+                // משתמש ב-API של MatchPlus עם חיפושים מרובים כדי לקבל את כל המתרימים
+                showNedarimStatus('מושך את כל המתרימים... (עושה חיפושים מרובים, זה עשוי לקחת מספר דקות)', 'loading');
+                const matrimList = await fetchMatrimFromMatchPlus();
+                
+                if (!matrimList || matrimList.length === 0) {
+                    console.error('לא נמצאו מתרימים!');
+                    showNedarimStatus('לא נמצאו מתרימים בנדרים פלוס.', 'error');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.textContent = '📥 טען מתרימים מנדרים פלוס';
+                    }
+                    return;
+                }
+
+                console.log(`✅ נמצאו ${matrimList.length} מתרימים בנדרים פלוס`);
+                console.log('דוגמה למתרים ראשון:', matrimList[0]);
+
+                // יוצר או מעדכן מתרימים במערכת
+                let newMatrim = 0;
+                let updatedMatrim = 0;
+
+                // מחפש או יוצר קבוצה "נדרים פלוס"
+                let nedarimGroup = groups.find(g => g.name === 'נדרים פלוס');
+                if (!nedarimGroup) {
+                    nedarimGroup = {
+                        id: Date.now(),
+                        name: 'נדרים פלוס',
+                        goal: defaultGroupGoal || 100000
+                    };
+                    groups.push(nedarimGroup);
+                }
+
+                matrimList.forEach(matrim => {
+                    // מבנה של matrim מ-MatchPlus: {Name: "שם מתרים", Goal: 2500, Cumule: 228, Id: 123, MatrimId: 123, ...}
+                    const matrimName = matrim.Name || matrim.name;
+                    const matrimGoal = parseInt(matrim.Goal) || 0;
+                    const matrimAmount = parseInt(matrim.Cumule) || 0;
+                    // מספר מתרים - יכול להיות Id, MatrimId, או שדה אחר
+                    const matrimId = matrim.Id || matrim.MatrimId || matrim.id || matrim.MatrimNumber || null;
+                    
+                    if (!matrimName || matrimName.trim() === '') return;
+
+                    // מחפש מתרים קיים - מחפש לפי מספר מתרים (ID) אם יש, אחרת לפי שם
+                    let existingDonor = null;
+                    if (matrimId !== null && matrimId !== undefined) {
+                        // חיפוש לפי מספר מתרים (הזיהוי העיקרי)
+                        existingDonor = donors.find(d => {
+                            const donorMatrimId = d.nedarimMatrimId || d.matrimId;
+                            if (donorMatrimId !== null && donorMatrimId !== undefined) {
+                                // השוואה גמישה
+                                return String(donorMatrimId) === String(matrimId);
+                            }
+                            return false;
+                        });
+                    }
+                    
+                    // אם לא נמצא לפי מספר מתרים, מחפש לפי שם (לתאימות לאחור)
+                    if (!existingDonor) {
+                        existingDonor = donors.find(d => {
+                            // מחפש לפי השם המקורי מ-נדרים פלוס
+                            const originalName = d.originalName || d.name || '';
+                            const dName = originalName.trim();
+                            const tName = matrimName.trim();
+                            // חיפוש מדויק
+                            if (dName === tName) return true;
+                            // חיפוש חלקי (אם השם מכיל את שם המתרים או להיפך)
+                            if (dName.includes(tName) || tName.includes(dName)) return true;
+                            return false;
+                        });
+                    }
+                    
+                    if (!existingDonor) {
+                        // מתרים חדש - יוצר
+                        const newDonor = {
+                            id: Date.now() + Math.random(),
+                            name: matrimName.trim(), // השם המקורי מ-נדרים פלוס
+                            originalName: matrimName.trim(), // שומר את השם המקורי
+                            displayName: null, // שם התצוגה (אם לא שונה, יוצג השם המקורי)
+                            nedarimMatrimId: matrimId, // מספר מתרים מ-נדרים פלוס (הזיהוי העיקרי)
+                            groupId: nedarimGroup.id,
+                            amount: matrimAmount, // הסכום הנוכחי מ-נדרים פלוס
+                            personalGoal: matrimGoal || null, // היעד האישי מ-נדרים פלוס
+                            history: [],
+                            createdAt: new Date().toISOString(),
+                            fromNedarimPlus: true,
+                            fromMatching: true // סימון שזה ממצינג
+                        };
+
+                        donors.push(newDonor);
+                        newMatrim++;
+                        console.log(`✅ נוסף מתרים חדש: ${matrimName} (מספר מתרים: ${matrimId}, יעד: ${matrimGoal}, סכום: ${matrimAmount})`);
+                    } else {
+                        // מתרים קיים - מעדכן את הסכום והיעד
+                        // מעדכן את מספר המתרים אם לא היה לו
+                        if (matrimId !== null && matrimId !== undefined && !existingDonor.nedarimMatrimId) {
+                            existingDonor.nedarimMatrimId = matrimId;
+                        }
+                        // שומר את השם המקורי אם זה הפעם הראשונה
+                        if (!existingDonor.originalName && existingDonor.fromNedarimPlus) {
+                            existingDonor.originalName = existingDonor.name;
+                        }
+                        // מעדכן את השם המקורי אם הוא השתנה בנדרים פלוס
+                        if (existingDonor.originalName && existingDonor.originalName !== matrimName.trim()) {
+                            existingDonor.originalName = matrimName.trim();
+                            // אם אין שם תצוגה מותאם אישית, מעדכן גם את השם
+                            if (!existingDonor.displayName) {
+                                existingDonor.name = matrimName.trim();
+                            }
+                        }
+                        existingDonor.amount = matrimAmount;
+                        if (matrimGoal > 0) {
+                            existingDonor.personalGoal = matrimGoal;
+                        }
+                        if (!existingDonor.fromMatching) {
+                            existingDonor.fromMatching = true;
+                        }
+                        updatedMatrim++;
+                        console.log(`ℹ️ מתרים קיים עודכן: ${matrimName} (מספר מתרים: ${matrimId || existingDonor.nedarimMatrimId || 'ללא'}, יעד: ${matrimGoal}, סכום: ${matrimAmount})`);
+                    }
+                });
+
+                // שומר את השינויים
+                saveData();
+                
+                // מרענן תצוגה
+                if (typeof renderDonorsTable === 'function') {
+                    renderDonorsTable();
+                }
+                if (typeof renderGroupsGrid === 'function') {
+                    renderGroupsGrid();
+                }
+                if (typeof updateStats === 'function') {
+                    updateStats();
+                }
+                if (typeof updateLiveView === 'function') {
+                    updateLiveView(true);
+                }
+
+                const message = `טעינה הושלמה! ${newMatrim} מתרימים חדשים | ${updatedMatrim} מתרימים עודכנו | סה"כ ${matrimList.length} מתרימים`;
+                showNedarimStatus(message, 'success');
+                showNotification(`✅ ${message}`);
+
+            } catch (error) {
+                console.error('שגיאה בטעינת מתרימים:', error);
+                showNedarimStatus(`שגיאה: ${error.message}`, 'error');
+                showNotification(`❌ שגיאה בטעינת מתרימים: ${error.message}`);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = '📥 טען מתרימים מנדרים פלוס';
+                }
+            }
+        }
+
+        // פונקציה להצגת סטטוס סנכרון
+        function showNedarimStatus(message, type = 'loading') {
+            const statusDiv = document.getElementById('nedarimSyncStatus');
+            if (!statusDiv) return;
+            
+            statusDiv.textContent = message;
+            statusDiv.className = 'nedarim-sync-status show ' + type;
+            
+            // אם זה הצלחה או שגיאה, נסתיר אחרי 5 שניות
+            if (type === 'success' || type === 'error') {
+                setTimeout(() => {
+                    statusDiv.classList.remove('show');
+                }, 5000);
+            }
+        }
+
+        // פונקציה לפרסור נתונים ממצינג (קובץ אקסל/טקסט מובנה)
+        function parseMatchingOfflineData(responseText) {
+            const transactions = [];
+            
+            try {
+                // מנסה לפרסר כטקסט מובנה (CSV או TSV)
+                // מהתמונה של האקסל נראה שהפורמט הוא:
+                // עמודה A: תאריך + מזהה (למשל "3.6.2025 16:37 1079")
+                // עמודה B: מספר קטן
+                // עמודה C: שם מתרים (למשל "עובדיה חממי")
+                // עמודה D: קטגוריה (למשל "וועד שלישי", "תרומה מהמערכת")
+                // עמודה E: סכום (למשל "1300", "-13")
+                // עמודה F: מזהה (למשל "288861")
+                
+                // מנסה לפרסר כקובץ אקסל (Excel) - יכול להיות בפורמט בינארי או טקסט
+                // אם זה טקסט, ננסה לפרסר לפי תבניות
+                
+                const lines = responseText.split(/\r?\n/).filter(line => line.trim());
+                
+                console.log('מפרסר נתוני מצינג, סה"כ שורות:', lines.length);
+                console.log('שורה ראשונה לדוגמה:', lines[0]?.substring(0, 200));
+                
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line || line.length < 10) continue;
+                    
+                    // מחפש תאריך בפורמט dd.mm.yyyy או dd/mm/yyyy
+                    const dateMatch1 = line.match(/(\d{1,2})\.(\d{1,2})\.(\d{4})\s+(\d{1,2}):(\d{1,2}):(\d{1,2})/);
+                    const dateMatch2 = line.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{1,2}):(\d{1,2})/);
+                    const dateMatch = dateMatch1 || dateMatch2;
+                    
+                    if (!dateMatch) continue;
+                    
+                    const dateStr = dateMatch[0];
+                    
+                    // מנסה לחלץ את כל החלקים - יכול להיות מופרד בטאבים, פסיקים, או רווחים
+                    let parts = [];
+                    if (line.includes('\t')) {
+                        parts = line.split('\t');
+                    } else if (line.includes(',')) {
+                        parts = line.split(',');
+                    } else {
+                        // מנסה לפרסר לפי רווחים, אבל לשמור שמות בעברית יחד
+                        parts = line.match(/([\u0590-\u05FF\s]+|\d+\.\d+\.\d{4}|\d+\/\d+\/\d{4}|\d{1,2}:\d{2}:\d{2}|-?\d+)/g) || [];
+                    }
+                    
+                    if (parts.length < 3) continue;
+                    
+                    // מחפש סכום - מספר חיובי או שלילי (לא מזהה)
+                    let amount = 0;
+                    let amountFound = false;
+                    for (let j = 0; j < parts.length; j++) {
+                        const part = parts[j].trim();
+                        const num = parseFloat(part.replace(/,/g, ''));
+                        // סכום הוא מספר בין -1000 ל-1000000 (לא מזהה של 6 ספרות)
+                        if (!isNaN(num) && num !== 0 && Math.abs(num) >= 1 && Math.abs(num) < 1000000 && 
+                            (!(num > 100000 && num < 1000000))) {
+                            amount = num;
+                            amountFound = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!amountFound || amount === 0) continue;
+                    
+                    // מחפש שם מתרים - טקסט בעברית (לא קטגוריה)
+                    let matrimName = '';
+                    for (let j = 0; j < parts.length; j++) {
+                        const part = parts[j].trim();
+                        // בודק אם זה טקסט בעברית ולא קטגוריה
+                        if (/[\u0590-\u05FF]/.test(part) && 
+                            !part.includes('וועד') && 
+                            !part.includes('תרומה') && 
+                            !part.includes('מהמערכת') &&
+                            part.length > 2) {
+                            matrimName = part;
+                            break;
+                        }
+                    }
+                    
+                    // אם לא מצאנו שם, ננסה לקחת את כל הטקסטים בעברית
+                    if (!matrimName) {
+                        const hebrewTexts = parts.filter(p => {
+                            const trimmed = p.trim();
+                            return /[\u0590-\u05FF]/.test(trimmed) && 
+                                   !trimmed.includes('וועד') && 
+                                   !trimmed.includes('תרומה') &&
+                                   !trimmed.includes('מהמערכת') &&
+                                   trimmed.length > 2;
+                        });
+                        if (hebrewTexts.length > 0) {
+                            matrimName = hebrewTexts[0].trim();
+                        }
+                    }
+                    
+                    if (!matrimName || matrimName.length < 2) continue;
+                    
+                    // מחפש מזהה עסקה (מספר של 6 ספרות)
+                    let transactionId = 0;
+                    for (let j = 0; j < parts.length; j++) {
+                        const num = parseInt(parts[j].trim());
+                        if (!isNaN(num) && num >= 100000 && num < 1000000) {
+                            transactionId = num;
+                            break;
+                        }
+                    }
+                    
+                    // אם יש סכום ושם מתרים, נוסיף את העסקה
+                    transactions.push({
+                        TransactionId: transactionId || Date.now() + i,
+                        TransactionTime: dateStr,
+                        MatrimName: matrimName,
+                        Amount: amount,
+                        ClientName: matrimName, // במצינג, שם המתרים הוא גם שם התורם
+                        Groupe: matrimName, // שם המתרים
+                        Source: 'matching_offline',
+                        RawLine: line
+                    });
+                }
+                
+                console.log(`✅ פורסר ${transactions.length} עסקאות ממצינג`);
+                return transactions;
+                
+            } catch (error) {
+                console.error('שגיאה בפרסור נתוני מצינג:', error);
+                // ננסה גישה פשוטה יותר - חיפוש תאריכים וסכומים
+                return parseMatchingOfflineDataSimple(responseText);
+            }
+        }
+        
+        // פונקציה פשוטה יותר לפרסור נתוני מצינג (גיבוי)
+        function parseMatchingOfflineDataSimple(responseText) {
+            const transactions = [];
+            const lines = responseText.split(/\r?\n/).filter(line => line.trim());
+            
+            console.log('משתמש בפונקציה פשוטה לפרסור, סה"כ שורות:', lines.length);
+            
+            for (const line of lines) {
+                // מחפש תאריך בפורמט dd.mm.yyyy או dd/mm/yyyy
+                const dateMatch1 = line.match(/(\d{1,2})\.(\d{1,2})\.(\d{4})\s+(\d{1,2}):(\d{1,2}):(\d{1,2})/);
+                const dateMatch2 = line.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{1,2}):(\d{1,2})/);
+                const dateMatch = dateMatch1 || dateMatch2;
+                
+                if (!dateMatch) continue;
+                
+                // מחפש סכום (מספר חיובי או שלילי, לא מזהה)
+                const amountMatches = line.match(/(-?\d{1,6}(?:,\d{3})*(?:\.\d{2})?)/g);
+                if (!amountMatches || amountMatches.length === 0) continue;
+                
+                // לוקח את המספר הראשון שנראה כמו סכום (לא מזהה של 6 ספרות)
+                let amount = 0;
+                for (const match of amountMatches) {
+                    const num = parseFloat(match.replace(/,/g, ''));
+                    if (!isNaN(num) && num !== 0 && Math.abs(num) >= 1 && 
+                        !(num >= 100000 && num < 1000000)) {
+                        amount = num;
+                        break;
+                    }
+                }
+                
+                if (amount === 0) continue;
+                
+                // מחפש שם מתרים (טקסט בעברית, לא קטגוריה)
+                const hebrewMatches = line.match(/([\u0590-\u05FF\s]{2,})/g);
+                if (!hebrewMatches || hebrewMatches.length === 0) continue;
+                
+                // לוקח את הטקסט הראשון בעברית שלא נראה כמו קטגוריה
+                let matrimName = '';
+                for (const match of hebrewMatches) {
+                    const trimmed = match.trim();
+                    if (trimmed.length >= 2 && 
+                        !trimmed.includes('וועד') && 
+                        !trimmed.includes('תרומה') &&
+                        !trimmed.includes('מהמערכת')) {
+                        matrimName = trimmed;
+                        break;
+                    }
+                }
+                
+                if (!matrimName || matrimName.length < 2) continue;
+                
+                transactions.push({
+                    TransactionId: Date.now() + Math.random(),
+                    TransactionTime: dateMatch[0],
+                    MatrimName: matrimName,
+                    Amount: amount,
+                    ClientName: matrimName,
+                    Groupe: matrimName,
+                    Source: 'matching_offline',
+                    RawLine: line
+                });
+            }
+            
+            console.log(`✅ פורסר ${transactions.length} עסקאות (פונקציה פשוטה)`);
+            return transactions;
+        }
+
+        // פונקציה למשיכת תרומות ממצינג (נדרים פלוס)
+        async function fetchNedarimDonations(lastId = null) {
+            try {
+                const formData = new FormData();
+                formData.append('Action', 'ExportMatchingOffLine');
+                formData.append('MosadNumber', NEDARIM_CONFIG.mosadId);
+                formData.append('ApiPassword', NEDARIM_CONFIG.apiPassword);
+
+                console.log('מבצע בקשה ל-API של מצינג...');
+
+                const response = await fetch(NEDARIM_CONFIG.apiUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`שגיאת שרת: ${response.status} ${response.statusText}`);
+                }
+
+                // ה-API מחזיר קובץ אקסל או טקסט מובנה, לא JSON
+                const responseText = await response.text();
+                
+                console.log('קיבלנו תגובה מה-API, אורך:', responseText.length);
+                console.log('תחילת התגובה:', responseText.substring(0, 500));
+                
+                // מנסה לפרסר את הנתונים
+                const transactions = parseMatchingOfflineData(responseText);
+                
+                if (transactions.length === 0) {
+                    console.warn('לא נמצאו עסקאות בנתונים');
+                    // ננסה לבדוק אם יש שגיאה בטקסט
+                    if (responseText.includes('error') || responseText.includes('Error')) {
+                        throw new Error('השרת החזיר שגיאה');
+                    }
+                }
+                
+                // מחזיר את כל הנתונים מ-ExportMatchingOffLine (לא מסנן לפי lastId)
+                // כי אנחנו רוצים את כל הנתונים העדכניים ממצינג
+                return transactions;
+                
+            } catch (error) {
+                console.error('שגיאה במשיכת נתונים ממצינג:', error);
+                throw error;
+            }
+        }
+
+        // פונקציה לעדכון מתרים בהתבסס על תרומה ממצינג (נדרים פלוס)
+        function updateDonorFromNedarim(transaction) {
+            ensureDonorsNormalized();
+            
+            // במצינג, שם המתרים יכול להיות ב-MatrimName או Groupe
+            const matrimName = transaction.MatrimName || transaction.Groupe || '';
+            const amount = Math.round(parseFloat(transaction.Amount) || 0);
+            const donorName = transaction.ClientName || matrimName || 'תורם אנונימי';
+            
+            if (amount <= 0) {
+                console.log('תרומה עם סכום 0 או שלילי, מדלג:', transaction);
+                return null;
+            }
+            
+            // אם אין שם מתרים, מתעלמים מהתרומה
+            if (!matrimName || matrimName.trim() === '') {
+                console.log('תרומה ללא שם מתרים, מדלג:', transaction);
+                return null;
+            }
+
+            // מחפש מתרים קיים לפי שם המתרים
+            // ננסה גם חיפוש חלקי (למקרה שיש הבדלים קטנים בשם)
+            let donor = donors.find(d => {
+                if (!d.name) return false;
+                const dName = d.name.trim();
+                const tName = matrimName.trim();
+                // חיפוש מדויק
+                if (dName === tName) return true;
+                // חיפוש חלקי (אם השם מכיל את שם המתרים או להיפך)
+                if (dName.includes(tName) || tName.includes(dName)) return true;
+                return false;
+            });
+            
+            if (donor) {
+                // מתרים קיים - מעדכן סכום
+                // במצינג, הסכום הוא הסכום הכולל שהמתרים הביא, לא תוספת
+                // אז נשמור את הסכום המקסימלי (הכי גבוה)
+                const oldAmount = donor.amount || 0;
+                
+                // אם הסכום החדש גדול מהקיים, מעדכן
+                // אם הסכום קטן יותר, זה יכול להיות תיקון או ביטול, אז נשמור את הגבוה
+                if (amount > oldAmount) {
+                    const delta = amount - oldAmount;
+                    donor.amount = amount;
+                
+                // מוסיף להיסטוריה
+                if (!Array.isArray(donor.history)) {
+                    donor.history = [];
+                }
+                donor.history.push({
+                    id: Date.now() + Math.random(),
+                    date: parseNedarimDate(transaction.TransactionTime).toISOString(),
+                        delta: delta,
+                    amountAfter: donor.amount,
+                        source: 'matching_offline',
+                        note: `תרומה ממצינג | עסקה ${transaction.TransactionId || 'N/A'}`
+                });
+                
+                    return { type: 'update', donor, amount: delta };
+            } else {
+                    // הסכום לא גדול יותר, לא מעדכן
+                    console.log(`סכום לא עודכן למתרים ${matrimName}: ${amount} <= ${oldAmount}`);
+                    return null;
+                }
+            } else {
+                // מתרים לא נמצא במערכת
+                // במצינג, כל התרומות צריכות להיות של מתרים קיימים
+                // אבל אם המשתמש רוצה, אפשר ליצור מתרים חדש
+                console.log(`מתרים "${matrimName}" לא נמצא במערכת, מדלג על תרומה של ${amount} ש"ח`);
+                return null;
+            }
+        }
+
+        // פונקציה ראשית לסנכרון עם נדרים פלוס (משתמש ב-MatchPlus API)
+        async function syncWithNedarimPlus() {
+            const btn = document.getElementById('nedarimSyncBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = '⏳ מסנכרן...';
+            }
+
+            showNedarimStatus('מסנכרן תרומות מנדרים פלוס...', 'loading');
+
+            try {
+                ensureDonorsNormalized();
+
+                console.log('מתחיל סנכרון מנדרים פלוס...');
+                showNedarimStatus('מושך נתונים מנדרים פלוס...', 'loading');
+
+                // קודם כל, מושך את הסכום הכולל והיעד מ-ShowGoal (כולל כל התרומות)
+                showNedarimStatus('מעדכן סכום כולל...', 'loading');
+                const totalData = await fetchTotalFromMatchPlus();
+                if (totalData) {
+                    console.log(`✅ עדכנו סכום כולל: ${totalData.Donated.toLocaleString()} ש"ח, יעד: ${totalData.Goal.toLocaleString()} ש"ח`);
+                    
+                    // בודק את הסכום הנוכחי מהתרימים
+                    const currentTotalFromDonors = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
+                    console.log(`📊 סכום מהתרימים לפני עדכון: ${currentTotalFromDonors.toLocaleString()} ש"ח`);
+                    
+                    // מעדכן את הסטטיסטיקות עם הנתונים החדשים
+                    if (typeof updateHomeStats === 'function') {
+                        updateHomeStats();
+                    }
+                    // עדכון תצוגת לייב מיד אחרי עדכון הנתונים מ-API
+                    if (typeof updateLeadersList === 'function') {
+                        updateLeadersList();
+                    }
+                    if (typeof updateLiveTargets === 'function') {
+                        updateLiveTargets();
+                    }
+                } else {
+                    console.warn('⚠️ לא הצלחנו לקבל את הסכום הכולל מ-ShowGoal');
+                }
+
+                // משתמש ב-API של MatchPlus עם חיפושים מרובים כדי לקבל את כל המתרימים
+                showNedarimStatus('מושך את כל המתרימים... (עושה חיפושים מרובים)', 'loading');
+                const matrimList = await fetchMatrimFromMatchPlus();
+
+                console.log(`✅ קיבלנו ${matrimList.length} מתרימים מנדרים פלוס`);
+
+                if (matrimList.length === 0) {
+                    showNedarimStatus('אין מתרימים בנדרים פלוס', 'success');
+                    // מאפס את הסכומים של כל המתרימים מנדרים פלוס
+                    const matchingDonors = donors.filter(d => d.fromMatching || d.fromNedarimPlus);
+                    matchingDonors.forEach(donor => {
+                        donor.amount = 0;
+                    });
+                    saveData();
+                    if (typeof updateLiveView === 'function') {
+                        updateLiveView(true);
+                    }
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.textContent = '🔄 סנכרון תרומות';
+                    }
+                    return;
+                }
+
+                showNedarimStatus(`מעדכן ${matrimList.length} מתרימים...`, 'loading');
+
+                // יוצר Set של שמות מתרימים ומספרי מתרימים שקיימים בנדרים פלוס
+                const matrimNamesSet = new Set();
+                const matrimIdsSet = new Set();
+                matrimList.forEach(matrim => {
+                    const name = (matrim.Name || matrim.name || '').trim();
+                    if (name) {
+                        matrimNamesSet.add(name);
+                    }
+                    const matrimId = matrim.Id || matrim.MatrimId || matrim.id || matrim.MatrimNumber || null;
+                    if (matrimId !== null && matrimId !== undefined) {
+                        matrimIdsSet.add(String(matrimId));
+                    }
+                });
+
+                // מאפס את הסכומים של מתרימים שלא מופיעים יותר בנדרים פלוס
+                // מחפש לפי מספר מתרים אם יש, אחרת לפי שם
+                const matchingDonors = donors.filter(d => d.fromMatching || d.fromNedarimPlus);
+                matchingDonors.forEach(donor => {
+                    let isInList = false;
+                    
+                    // מחפש לפי מספר מתרים (הזיהוי העיקרי)
+                    if (donor.nedarimMatrimId !== null && donor.nedarimMatrimId !== undefined) {
+                        isInList = matrimIdsSet.has(String(donor.nedarimMatrimId));
+                    }
+                    
+                    // אם לא נמצא לפי מספר מתרים, מחפש לפי שם (לתאימות לאחור)
+                    if (!isInList) {
+                        isInList = Array.from(matrimNamesSet).some(name => {
+                            // מחפש לפי השם המקורי (לא שם התצוגה)
+                            const originalName = donor.originalName || donor.name || '';
+                            const dName = originalName.trim();
+                            const tName = name.trim();
+                            return dName === tName || dName.includes(tName) || tName.includes(dName);
+                        });
+                    }
+                    
+                    if (!isInList) {
+                        donor.amount = 0;
+                    }
+                });
+
+                let updatedDonors = 0;
+                let newDonors = 0;
+
+                // מעדכן את כל המתרימים לפי הנתונים מ-נדרים פלוס
+                matrimList.forEach(matrim => {
+                    const matrimName = (matrim.Name || matrim.name || '').trim();
+                    const matrimGoal = parseInt(matrim.Goal) || 0;
+                    const matrimAmount = parseInt(matrim.Cumule) || 0;
+                    // מספר מתרים - יכול להיות Id, MatrimId, או שדה אחר
+                    const matrimId = matrim.Id || matrim.MatrimId || matrim.id || matrim.MatrimNumber || null;
+                    
+                    if (!matrimName) return;
+
+                    // מחפש מתרים קיים - מחפש לפי מספר מתרים (ID) אם יש, אחרת לפי שם
+                    let donor = null;
+                    if (matrimId !== null && matrimId !== undefined) {
+                        // חיפוש לפי מספר מתרים (הזיהוי העיקרי)
+                        donor = donors.find(d => {
+                            const donorMatrimId = d.nedarimMatrimId || d.matrimId;
+                            if (donorMatrimId !== null && donorMatrimId !== undefined) {
+                                // השוואה גמישה
+                                return String(donorMatrimId) === String(matrimId);
+                            }
+                            return false;
+                        });
+                    }
+                    
+                    // אם לא נמצא לפי מספר מתרים, מחפש לפי שם (לתאימות לאחור)
+                    if (!donor) {
+                        donor = donors.find(d => {
+                            // מחפש לפי השם המקורי מ-נדרים פלוס
+                            const originalName = d.originalName || d.name || '';
+                            const dName = originalName.trim();
+                            const tName = matrimName.trim();
+                            if (dName === tName) return true;
+                            if (dName.includes(tName) || tName.includes(dName)) return true;
+                            return false;
+                        });
+                    }
+                    
+                    if (donor) {
+                        // מתרים קיים - מעדכן את הסכום והיעד
+                        // מעדכן את מספר המתרים אם לא היה לו או אם השתנה
+                        if (matrimId !== null && matrimId !== undefined) {
+                            if (!donor.nedarimMatrimId) {
+                                donor.nedarimMatrimId = matrimId;
+                            }
+                        }
+                        // שומר את השם המקורי אם זה הפעם הראשונה
+                        if (!donor.originalName && donor.fromNedarimPlus) {
+                            donor.originalName = donor.name;
+                        }
+                        // מעדכן את השם המקורי אם הוא השתנה בנדרים פלוס
+                        if (donor.originalName && donor.originalName !== matrimName.trim()) {
+                            donor.originalName = matrimName.trim();
+                            // אם אין שם תצוגה מותאם אישית, מעדכן גם את השם
+                            if (!donor.displayName) {
+                                donor.name = matrimName.trim();
+                            }
+                        }
+                        
+                        const oldAmount = donor.amount || 0;
+                        const delta = matrimAmount - oldAmount;
+                        
+                        if (delta !== 0 || matrimGoal !== (donor.personalGoal || 0)) {
+                            donor.amount = matrimAmount;
+                            if (matrimGoal > 0) {
+                                donor.personalGoal = matrimGoal;
+                            }
+                            updatedDonors++;
+                            
+                            // מוסיף להיסטוריה רק אם יש שינוי בסכום
+                            if (delta !== 0) {
+                                if (!Array.isArray(donor.history)) {
+                                    donor.history = [];
+                                }
+                                donor.history.push({
+                                    id: Date.now() + Math.random(),
+                                    date: new Date().toISOString(),
+                                    delta: delta,
+                                    amountAfter: donor.amount,
+                                    source: 'nedarim_plus',
+                                    note: `עדכון מנדרים פלוס - סכום: ${matrimAmount} ש"ח`
+                                });
+                            }
+                        }
+                    } else {
+                        // מתרים חדש - יוצר אותו (אם לא נמצא לפי שם או מספר)
+                        const newDonor = {
+                            id: Date.now() + Math.random(),
+                            name: matrimName.trim(),
+                            originalName: matrimName.trim(),
+                            displayName: null,
+                            nedarimMatrimId: matrimId,
+                            groupId: nedarimGroup.id,
+                            amount: matrimAmount,
+                            personalGoal: matrimGoal || null,
+                            history: [],
+                            createdAt: new Date().toISOString(),
+                            fromNedarimPlus: true,
+                            fromMatching: true
+                        };
+                        donors.push(newDonor);
+                        newDonors++;
+                        console.log(`✅ נוסף מתרים חדש: ${matrimName} (מספר מתרים: ${matrimId || 'ללא'}, יעד: ${matrimGoal}, סכום: ${matrimAmount})`);
+                    }
+                });
+
+                // שומר את השינויים
+                saveData();
+                
+                // מרענן תצוגה
+                if (typeof renderDonorsTable === 'function') {
+                    renderDonorsTable();
+                }
+                if (typeof renderGroupsGrid === 'function') {
+                    renderGroupsGrid();
+                }
+                if (typeof updateStats === 'function') {
+                    updateStats();
+                }
+                if (typeof updateDonorsSummary === 'function') {
+                    updateDonorsSummary();
+                }
+                if (typeof updateLiveView === 'function') {
+                    updateLiveView(true); // עדכון מיידי של תצוגת לייב
+                }
+
+                // בודק את הסכום הכולל אחרי העדכון
+                const finalTotalFromDonors = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
+                const totalFromAPI = NEDARIM_CONFIG.totalDonatedFromAPI || 0;
+                const difference = totalFromAPI - finalTotalFromDonors;
+                
+                console.log(`📊 אחרי עדכון:`);
+                console.log(`   סכום כולל מ-ShowGoal: ${totalFromAPI.toLocaleString()} ש"ח`);
+                console.log(`   סכום מהתרימים: ${finalTotalFromDonors.toLocaleString()} ש"ח`);
+                if (difference > 0) {
+                    console.log(`   ⚠️ יש פער של ${difference.toLocaleString()} ש"ח - כנראה תרומות כלליות שלא קשורות למתרימים ספציפיים`);
+                }
+
+                // הודעת הצלחה
+                let message = `סנכרון הושלם! ${matrimList.length} מתרימים | ${updatedDonors} מתרימים עודכנו`;
+                if (totalFromAPI > 0) {
+                    message += ` | סכום כולל: ${totalFromAPI.toLocaleString()} ש"ח`;
+                }
+                
+                showNedarimStatus(message, 'success');
+                showNotification(`✅ ${message}`);
+
+            } catch (error) {
+                console.error('שגיאה בסנכרון:', error);
+                showNedarimStatus(`שגיאה בסנכרון: ${error.message}`, 'error');
+                showNotification(`❌ שגיאה בסנכרון עם נדרים פלוס: ${error.message}`);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = '🔄 סנכרון תרומות';
+                }
+            }
+        }
+
+        // משתנים לבדיקת שינויים בנתונים
+        let lastDataHash = null;
+        let dataCheckTimer = null;
+        let totalCheckTimer = null;
+
+        // פונקציה לחישוב hash של הנתונים (לזיהוי שינויים)
+        function calculateDataHash() {
+            const data = {
+                donors: donors.map(d => ({ id: d.id, amount: d.amount, name: d.name })),
+                groups: groups.map(g => ({ id: g.id, name: g.name, goal: g.goal })),
+                matchingGoal: matchingGoal
+            };
+            return JSON.stringify(data);
+        }
+
+        // פונקציה לבדיקת שינויים בנתונים מקומיים
+        function checkForLocalDataChanges() {
+            const currentHash = calculateDataHash();
+            if (lastDataHash && currentHash !== lastDataHash) {
+                console.log('🔄 זוהה שינוי בנתונים מקומיים - מעדכן תצוגות...');
+                // מעדכן את כל התצוגות
+                updateDonorsList();
+                updateGroupsDisplay();
+                updateHomeStats();
+                updateLiveView();
+                updateLeadersList();
+                updateLiveTargets();
+                renderScoutsTeams();
+                updateScoutsStats();
+                // מעדכן את הסכום הכולל מ-API
+                fetchTotalFromMatchPlus().then(() => {
+                    updateHomeStats();
+                    updateLeadersList();
+                    updateLiveTargets();
+                });
+            }
+            lastDataHash = currentHash;
+        }
+
+        // פונקציה להפעלת סנכרון אוטומטי
+        function startAutoSync() {
+            // מבטל טיימרים קודמים אם יש
+            if (nedarimSyncTimer) {
+                clearInterval(nedarimSyncTimer);
+            }
+            if (dataCheckTimer) {
+                clearInterval(dataCheckTimer);
+            }
+            if (totalCheckTimer) {
+                clearInterval(totalCheckTimer);
+            }
+
+            // מפעיל סנכרון אוטומטי עם נדרים פלוס כל 15 שניות
+            nedarimSyncTimer = setInterval(() => {
+                console.log('🔄 מבצע סנכרון אוטומטי עם נדרים פלוס...');
+                syncWithNedarimPlus();
+            }, NEDARIM_CONFIG.autoSyncInterval);
+
+            // מפעיל בדיקת שינויים בנתונים מקומיים כל 10 שניות
+            dataCheckTimer = setInterval(() => {
+                checkForLocalDataChanges();
+            }, NEDARIM_CONFIG.dataCheckInterval);
+
+            // מפעיל עדכון של הסכום הכולל מ-ShowGoal כל 20 שניות
+            totalCheckTimer = setInterval(async () => {
+                console.log('📊 מעדכן סכום כולל מ-ShowGoal...');
+                const totalData = await fetchTotalFromMatchPlus();
+                if (totalData) {
+                    updateHomeStats();
+                    updateLeadersList();
+                    updateLiveTargets();
+                }
+            }, 20 * 1000);
+
+            // מאתחל את ה-hash הראשוני
+            lastDataHash = calculateDataHash();
+
+            console.log('✅ סנכרון אוטומטי הופעל:');
+            console.log(`   - סנכרון עם נדרים פלוס: כל ${NEDARIM_CONFIG.autoSyncInterval / 1000} שניות`);
+            console.log(`   - בדיקת שינויים מקומיים: כל ${NEDARIM_CONFIG.dataCheckInterval / 1000} שניות`);
+            console.log(`   - עדכון סכום כולל: כל 20 שניות`);
+        }
+
+        // פונקציה לעצירת סנכרון אוטומטי
+        function stopAutoSync() {
+            if (nedarimSyncTimer) {
+                clearInterval(nedarimSyncTimer);
+                nedarimSyncTimer = null;
+            }
+            if (dataCheckTimer) {
+                clearInterval(dataCheckTimer);
+                dataCheckTimer = null;
+            }
+            if (totalCheckTimer) {
+                clearInterval(totalCheckTimer);
+                totalCheckTimer = null;
+            }
+            console.log('⏹️ סנכרון אוטומטי הופסק');
+        }
+
+        // טעינת מזהה עסקה אחרון משמור
+        function loadNedarimConfig() {
+            const savedLastId = localStorage.getItem('nedarimLastTransactionId');
+            if (savedLastId) {
+                NEDARIM_CONFIG.lastTransactionId = parseInt(savedLastId) || 0;
+                console.log('נטען מזהה עסקה אחרון:', NEDARIM_CONFIG.lastTransactionId);
+            }
+        }
+
+        // אתחול בטעינת הדף
+        window.addEventListener('load', () => {
+            loadNedarimConfig();
+            startAutoSync();
+            
+            // עדכון ראשוני של הסכום הכולל מ-ShowGoal
+            setTimeout(async () => {
+                console.log('מעדכן סכום כולל מ-ShowGoal...');
+                const totalData = await fetchTotalFromMatchPlus();
+                if (totalData && typeof updateHomeStats === 'function') {
+                    updateHomeStats();
+                }
+            }, 1000);
+            
+            // סנכרון ראשוני אחרי 3 שניות
+            setTimeout(() => {
+                console.log('מבצע סנכרון ראשוני עם נדרים פלוס...');
+                syncWithNedarimPlus();
+            }, 3000);
+        });
+
+        // עצירת סנכרון כשעוזבים את הדף
+        window.addEventListener('beforeunload', () => {
+            stopAutoSync();
+        });
+
+        // ===== סוף חיבור לנדרים פלוס =====
+
+        // ===== פונקציות למסך מלא =====
+        function toggleFullscreen() {
+            const liveSection = document.getElementById('liveviewSection');
+            if (!liveSection) return;
+            
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const fullscreenIcon = document.getElementById('fullscreenIcon');
+            
+            if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
+                // נכנס למסך מלא
+                if (liveSection.requestFullscreen) {
+                    liveSection.requestFullscreen();
+                } else if (liveSection.webkitRequestFullscreen) {
+                    liveSection.webkitRequestFullscreen();
+                } else if (liveSection.mozRequestFullScreen) {
+                    liveSection.mozRequestFullScreen();
+                } else if (liveSection.msRequestFullscreen) {
+                    liveSection.msRequestFullscreen();
+                }
+                
+                if (fullscreenBtn) {
+                    fullscreenBtn.classList.add('active');
+                    fullscreenBtn.classList.add('visible');
+                    // מתחיל טיימר שיסתיר את הכפתור אחרי זמן ללא תזוזה
+                    if (liveViewFullscreenButtonTimer) {
+                        clearTimeout(liveViewFullscreenButtonTimer);
+                    }
+                    liveViewFullscreenButtonTimer = setTimeout(() => {
+                        hideLiveViewFullscreenButton();
+                    }, LIVE_VIEW_FULLSCREEN_BUTTON_TIMEOUT);
+                }
+                if (fullscreenIcon) {
+                    // משנה לאייקון יציאה ממסך מלא
+                    fullscreenIcon.innerHTML = '<path d="M8 3V5M16 3V5M3 8H5M19 8H21M3 16H5M19 16H21M8 21V19M16 21V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+                }
+            } else {
+                // יוצא ממסך מלא
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                
+                if (fullscreenBtn) fullscreenBtn.classList.remove('active');
+                if (fullscreenIcon) {
+                    // משנה לאייקון מסך מלא
+                    fullscreenIcon.innerHTML = '<path d="M8 3H5C3.89543 3 3 3.89543 3 5V8M21 8V5C21 3.89543 20.1046 3 19 3H16M16 21H19C20.1046 21 21 20.1046 21 19V16M3 16V19C3 20.1046 3.89543 21 5 21H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+                }
+            }
+        }
+
+        // מאזין לשינויי מסך מלא
+        document.addEventListener('fullscreenchange', updateFullscreenButton);
+        document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+        document.addEventListener('mozfullscreenchange', updateFullscreenButton);
+        document.addEventListener('MSFullscreenChange', updateFullscreenButton);
+
+        function updateFullscreenButton() {
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const fullscreenIcon = document.getElementById('fullscreenIcon');
+            const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+            
+            if (fullscreenBtn) {
+                if (isFullscreen) {
+                    fullscreenBtn.classList.add('active');
+                    // במסך מלא - מציג את הכפתור ומתחיל טיימר שיסתיר אותו אחרי זמן ללא תזוזה
+                    fullscreenBtn.classList.add('visible');
+                    // מתחיל טיימר שיסתיר את הכפתור אחרי זמן ללא תזוזה
+                    if (liveViewFullscreenButtonTimer) {
+                        clearTimeout(liveViewFullscreenButtonTimer);
+                    }
+                    liveViewFullscreenButtonTimer = setTimeout(() => {
+                        hideLiveViewFullscreenButton();
+                    }, LIVE_VIEW_FULLSCREEN_BUTTON_TIMEOUT);
+                } else {
+                    fullscreenBtn.classList.remove('active');
+                    // מחוץ למסך מלא - הכפתור ייעלם אחרי זמן ללא תזוזה
+                }
+            }
+            
+            if (fullscreenIcon) {
+                if (isFullscreen) {
+                    // אייקון יציאה ממסך מלא
+                    fullscreenIcon.innerHTML = '<path d="M8 3V5M16 3V5M3 8H5M19 8H21M3 16H5M19 16H21M8 21V19M16 21V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+                } else {
+                    // אייקון מסך מלא
+                    fullscreenIcon.innerHTML = '<path d="M8 3H5C3.89543 3 3 3.89543 3 5V8M21 8V5C21 3.89543 20.1046 3 19 3H16M16 21H19C20.1046 21 21 20.1046 21 19V16M3 16V19C3 20.1046 3.89543 21 5 21H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+                }
+            }
+        }
+
+        // מציג את כפתור המסך המלא בתצוגת לייב
+        function showLiveViewButtons() {
+            const backBtn = document.querySelector('.back-home-btn');
+            const fullscreenBtn = document.querySelector('.fullscreen-btn');
+            if (backBtn) backBtn.classList.add('visible');
+            // כפתור המסך המלא תמיד גלוי בתצוגת לייב
+            if (fullscreenBtn && isLiveViewActive()) {
+                fullscreenBtn.classList.add('visible');
+            }
+        }
+
+        // מסתיר את כפתורי המסך המלא
+        function hideLiveViewButtons() {
+            const backBtn = document.querySelector('.back-home-btn');
+            const fullscreenBtn = document.querySelector('.fullscreen-btn');
+            if (backBtn) backBtn.classList.remove('visible');
+            // כפתור המסך המלא נשאר גלוי גם אם כפתור החזרה מוסתר
+            // if (fullscreenBtn) fullscreenBtn.classList.remove('visible');
+        }
+        // ===== סוף פונקציות למסך מלא =====
 
     </script>
 </body>
