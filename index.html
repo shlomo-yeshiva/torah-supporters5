@@ -5278,6 +5278,9 @@
                         <button class="btn btn-primary" onclick="loadMatrimFromNedarim()" id="nedarimLoadMatrimBtn">
                             📥 טען מתרימים מנדרים פלוס
                         </button>
+                        <button class="btn btn-info" onclick="checkTotalAmountFromAPI()" id="checkTotalBtn" style="background: #17a2b8; color: white;">
+                            🔍 בדוק סכום כולל מ-API
+                        </button>
                     </div>
                     <div class="default-goal-note">השינוי ישפיע על מתרימים חדשים ויעדכן מתרימים קיימים שמשתמשים ביעד ברירת המחדל.</div>
                     <div class="nedarim-sync-status" id="nedarimSyncStatus"></div>
@@ -6244,8 +6247,9 @@
             autoSyncInterval: 15 * 1000, // 15 שניות במילישניות (עדכון אוטומטי מהיר)
             dataCheckInterval: 10 * 1000, // 10 שניות - בדיקת שינויים בנתונים מקומיים
             lastTransactionId: 0, // נשמור את מזהה העסקה האחרונה
-            totalDonatedFromAPI: 0, // הסכום הכולל מ-ShowGoal API
-            goalFromAPI: 0 // היעד מ-ShowGoal API
+            totalDonatedFromAPI: null, // הסכום הכולל מ-ShowGoal API (null = עדיין לא נטען)
+            goalFromAPI: null, // היעד מ-ShowGoal API (null = עדיין לא נטען)
+            apiDataLoaded: false // האם הנתונים נטענו מ-API
         };
         let nedarimSyncTimer = null;
         // ===== סוף הגדרות נדרים פלוס =====
@@ -10385,12 +10389,13 @@
             // משתמש בסכום הכולל מ-ShowGoal API (כולל כל התרומות - ידניות ואשראי)
             // אם אין עדיין נתונים מ-API, משתמש בסכום המחושב מהתרימים
             const totalCollectedFromDonors = donors.reduce((sum, d) => sum + d.amount, 0);
-            const totalCollected = NEDARIM_CONFIG.totalDonatedFromAPI > 0 
+            // משתמש בסכום מ-API רק אם הנתונים נטענו (גם אם הסכום הוא 0)
+            const totalCollected = (NEDARIM_CONFIG.apiDataLoaded && NEDARIM_CONFIG.totalDonatedFromAPI !== null)
                 ? NEDARIM_CONFIG.totalDonatedFromAPI 
                 : totalCollectedFromDonors;
             
             // משתמש ביעד מ-ShowGoal API אם יש, אחרת ביעד המקומי
-            const currentGoal = NEDARIM_CONFIG.goalFromAPI > 0 
+            const currentGoal = (NEDARIM_CONFIG.apiDataLoaded && NEDARIM_CONFIG.goalFromAPI !== null)
                 ? NEDARIM_CONFIG.goalFromAPI 
                 : matchingGoal;
             
@@ -12111,9 +12116,14 @@
                 .sort((a, b) => b.amount - a.amount)
                 .slice(0, 5);
             
-            // חישוב סכום כולל
-            const totalCollected = donors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0);
-            const goal = Math.max(0, Math.round(parseFloat(matchingGoal) || 0));
+            // חישוב סכום כולל - משתמש בסכום מ-API אם נטען
+            const totalCollectedFromDonors = donors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0);
+            const totalCollected = (NEDARIM_CONFIG.apiDataLoaded && NEDARIM_CONFIG.totalDonatedFromAPI !== null)
+                ? NEDARIM_CONFIG.totalDonatedFromAPI 
+                : totalCollectedFromDonors;
+            const goal = (NEDARIM_CONFIG.apiDataLoaded && NEDARIM_CONFIG.goalFromAPI !== null)
+                ? NEDARIM_CONFIG.goalFromAPI 
+                : Math.max(0, Math.round(parseFloat(matchingGoal) || 0));
             const percentage = goal > 0 ? (totalCollected / goal) * 100 : 0;
             const percentDisplay = percentage >= 100 ? Math.round(percentage) : Math.max(0, percentage).toFixed(1);
             
@@ -12229,8 +12239,14 @@
                 const text = overallContainer.querySelector('.leaders-overall-progress-text');
                 const note = overallContainer.querySelector('.leaders-overall-progress-note');
 
-                const totalCollected = donors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0);
-                const goal = Math.max(0, Math.round(parseFloat(matchingGoal) || 0));
+                // חישוב סכום כולל - משתמש בסכום מ-API אם נטען
+                const totalCollectedFromDonors = donors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0);
+                const totalCollected = (NEDARIM_CONFIG.apiDataLoaded && NEDARIM_CONFIG.totalDonatedFromAPI !== null)
+                    ? NEDARIM_CONFIG.totalDonatedFromAPI 
+                    : totalCollectedFromDonors;
+                const goal = (NEDARIM_CONFIG.apiDataLoaded && NEDARIM_CONFIG.goalFromAPI !== null)
+                    ? NEDARIM_CONFIG.goalFromAPI 
+                    : Math.max(0, Math.round(parseFloat(matchingGoal) || 0));
 
                 if (goal > 0) {
                     const percentRaw = (totalCollected / goal) * 100;
@@ -12877,7 +12893,7 @@
         } */
 
         // הוסר - אפקט scroll לכרטיסיות נחיתה
-        /* function initLandingCards() {
+        function initLandingCards() {
             // כל הכרטיסיות שצריכות אפקט נחיתה
             const selectors = [
                 '.stat-card',
@@ -12932,7 +12948,7 @@
                     }
                 });
             }, 100);
-        } */
+        }
 
 
             // טעינה ראשונית
@@ -14121,41 +14137,225 @@
             }
         }
 
-        // פונקציה למשיכת הסכום הכולל והיעד מ-ShowGoal API (כמו בקוד של המשתמש השני)
+        // פונקציה למשיכת הסכום הכולל והיעד מ-API
+        // בודקת מספר אפשרויות: ShowGoal API וגם getCampaignData API
         async function fetchTotalFromMatchPlus() {
             try {
-                const url = `${NEDARIM_CONFIG.matchPlusApiUrl}?Action=ShowGoal&MatchingId=${NEDARIM_CONFIG.matchingId}`;
-                console.log('מושך סכום כולל מ-ShowGoal:', url);
-                
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`שגיאת שרת: ${response.status} ${response.statusText}`);
-                }
-                
-                const data = await response.json();
-                console.log('✅ קיבלנו נתונים מ-ShowGoal:', data);
-                
-                if (data && typeof data.Goal !== 'undefined' && typeof data.Donated !== 'undefined') {
-                    NEDARIM_CONFIG.totalDonatedFromAPI = parseInt(data.Donated) || 0;
-                    NEDARIM_CONFIG.goalFromAPI = parseInt(data.Goal) || 0;
-                    console.log(`✅ עדכנו: יעד=${NEDARIM_CONFIG.goalFromAPI}, נאסף=${NEDARIM_CONFIG.totalDonatedFromAPI}`);
+                // ניסיון 1: ShowGoal API (הקיים)
+                try {
+                    const url1 = `${NEDARIM_CONFIG.matchPlusApiUrl}?Action=ShowGoal&MatchingId=${NEDARIM_CONFIG.matchingId}`;
+                    console.log('🔍 ניסיון 1: מושך סכום כולל מ-ShowGoal:', url1);
                     
-                    // בודק אם יש פער בין הסכום הכולל לסכום של המתרימים
-                    const totalFromDonors = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
-                    const difference = NEDARIM_CONFIG.totalDonatedFromAPI - totalFromDonors;
-                    if (difference > 0) {
-                        console.log(`⚠️ יש פער של ${difference.toLocaleString()} ש"ח בין הסכום הכולל לסכום המתרימים`);
-                        console.log(`   סכום כולל מ-ShowGoal: ${NEDARIM_CONFIG.totalDonatedFromAPI.toLocaleString()} ש"ח`);
-                        console.log(`   סכום מהתרימים: ${totalFromDonors.toLocaleString()} ש"ח`);
-                        console.log(`   ההפרש כנראה מתרומות כלליות שלא קשורות למתרימים ספציפיים`);
+                    const response1 = await fetch(url1);
+                    if (response1.ok) {
+                        const data1 = await response1.json();
+                        console.log('📦 נתונים מ-ShowGoal:', JSON.stringify(data1, null, 2));
+                        
+                        // בודק את כל השדות האפשריים לסכום
+                        const possibleAmountFields = ['Donated', 'totalAmount', 'totalRaised', 'sum', 'current', 'Total', 'TotalAmount', 'TotalRaised', 'amount', 'Amount'];
+                        const possibleGoalFields = ['Goal', 'goal', 'target', 'Target', 'totalGoal', 'TotalGoal'];
+                        
+                        let foundAmount = null;
+                        let foundGoal = null;
+                        
+                        // מחפש את השדה הנכון לסכום
+                        for (const field of possibleAmountFields) {
+                            if (data1 && typeof data1[field] !== 'undefined' && data1[field] !== null) {
+                                const value = parseInt(data1[field]) || 0;
+                                if (value > 0 || foundAmount === null) {
+                                    foundAmount = value;
+                                    console.log(`✅ מצאנו שדה סכום: ${field} = ${value.toLocaleString()}`);
+                                }
+                            }
+                        }
+                        
+                        // מחפש את השדה הנכון ליעד
+                        for (const field of possibleGoalFields) {
+                            if (data1 && typeof data1[field] !== 'undefined' && data1[field] !== null) {
+                                const value = parseInt(data1[field]) || 0;
+                                if (value > 0 || foundGoal === null) {
+                                    foundGoal = value;
+                                    console.log(`✅ מצאנו שדה יעד: ${field} = ${value.toLocaleString()}`);
+                                }
+                            }
+                        }
+                        
+                        if (foundAmount !== null) {
+                            // בודק אם יש פער בין הסכום הכולל לסכום של המתרימים
+                            const totalFromDonors = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
+                            
+                            // אם ה-API מחזיר 0 אבל יש סכום מהתרימים, זה אומר שה-API לא עובד נכון
+                            // במקרה הזה, נשתמש בסכום מהתרימים
+                            if (foundAmount === 0 && totalFromDonors > 0) {
+                                console.warn('⚠️ ה-API מחזיר 0 אבל יש סכום מהתרימים - כנראה ה-API לא עובד נכון');
+                                console.warn(`   נשתמש בסכום מהתרימים: ${totalFromDonors.toLocaleString()} ש"ח`);
+                                // לא נשתמש ב-API במקרה הזה
+                                return null;
+                            }
+                            
+                            NEDARIM_CONFIG.totalDonatedFromAPI = foundAmount;
+                            NEDARIM_CONFIG.goalFromAPI = foundGoal || 0;
+                            NEDARIM_CONFIG.apiDataLoaded = true;
+                            console.log(`✅ עדכנו מ-ShowGoal: יעד=${NEDARIM_CONFIG.goalFromAPI.toLocaleString()}, נאסף=${NEDARIM_CONFIG.totalDonatedFromAPI.toLocaleString()}`);
+                            
+                            const difference = NEDARIM_CONFIG.totalDonatedFromAPI - totalFromDonors;
+                            if (Math.abs(difference) > 0) {
+                                console.log(`ℹ️ יש הבדל של ${difference.toLocaleString()} ש"ח בין הסכום הכולל לסכום המתרימים`);
+                                console.log(`   סכום כולל מ-API: ${NEDARIM_CONFIG.totalDonatedFromAPI.toLocaleString()} ש"ח`);
+                                console.log(`   סכום מהתרימים: ${totalFromDonors.toLocaleString()} ש"ח`);
+                                if (difference > 0) {
+                                    console.log(`   ההפרש כנראה מתרומות כלליות שלא קשורות למתרימים ספציפיים`);
+                                } else {
+                                    console.log(`   הסכום מהתרימים גבוה יותר - ייתכן שיש תרומות מקומיות שעדיין לא הועלו לנדרים פלוס`);
+                                }
+                            }
+                            
+                            return { Goal: NEDARIM_CONFIG.goalFromAPI, Donated: NEDARIM_CONFIG.totalDonatedFromAPI };
+                        }
                     }
-                    
-                    return { Goal: NEDARIM_CONFIG.goalFromAPI, Donated: NEDARIM_CONFIG.totalDonatedFromAPI };
+                } catch (error1) {
+                    console.warn('⚠️ ShowGoal API נכשל:', error1.message);
                 }
                 
+                // ניסיון 2: getCampaignData API (המוצע)
+                try {
+                    const url2 = `https://matara.pro/nedarimplus/v6/api/getCampaignData?mosad=${NEDARIM_CONFIG.mosadId}&password=${NEDARIM_CONFIG.apiPassword}`;
+                    console.log('🔍 ניסיון 2: מושך סכום כולל מ-getCampaignData:', url2);
+                    
+                    const response2 = await fetch(url2);
+                    if (response2.ok) {
+                        const data2 = await response2.json();
+                        console.log('📦 נתונים מ-getCampaignData:', JSON.stringify(data2, null, 2));
+                        
+                        // בודק את כל השדות האפשריים
+                        const possibleAmountFields = ['Donated', 'totalAmount', 'totalRaised', 'sum', 'current', 'Total', 'TotalAmount', 'TotalRaised', 'amount', 'Amount', 'collected', 'Collected'];
+                        const possibleGoalFields = ['Goal', 'goal', 'target', 'Target', 'totalGoal', 'TotalGoal'];
+                        
+                        let foundAmount = null;
+                        let foundGoal = null;
+                        
+                        for (const field of possibleAmountFields) {
+                            if (data2 && typeof data2[field] !== 'undefined' && data2[field] !== null) {
+                                const value = parseInt(data2[field]) || 0;
+                                if (value > 0 || foundAmount === null) {
+                                    foundAmount = value;
+                                    console.log(`✅ מצאנו שדה סכום: ${field} = ${value.toLocaleString()}`);
+                                }
+                            }
+                        }
+                        
+                        for (const field of possibleGoalFields) {
+                            if (data2 && typeof data2[field] !== 'undefined' && data2[field] !== null) {
+                                const value = parseInt(data2[field]) || 0;
+                                if (value > 0 || foundGoal === null) {
+                                    foundGoal = value;
+                                    console.log(`✅ מצאנו שדה יעד: ${field} = ${value.toLocaleString()}`);
+                                }
+                            }
+                        }
+                        
+                        if (foundAmount !== null && foundAmount > 0) {
+                            const totalFromDonors = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
+                            NEDARIM_CONFIG.totalDonatedFromAPI = foundAmount;
+                            NEDARIM_CONFIG.goalFromAPI = foundGoal || 0;
+                            NEDARIM_CONFIG.apiDataLoaded = true;
+                            console.log(`✅ עדכנו מ-getCampaignData: יעד=${NEDARIM_CONFIG.goalFromAPI.toLocaleString()}, נאסף=${NEDARIM_CONFIG.totalDonatedFromAPI.toLocaleString()}`);
+                            
+                            const difference = NEDARIM_CONFIG.totalDonatedFromAPI - totalFromDonors;
+                            if (Math.abs(difference) > 0) {
+                                console.log(`ℹ️ יש הבדל של ${difference.toLocaleString()} ש"ח בין הסכום הכולל לסכום המתרימים`);
+                            }
+                            
+                            return { Goal: NEDARIM_CONFIG.goalFromAPI, Donated: NEDARIM_CONFIG.totalDonatedFromAPI };
+                        }
+                    }
+                } catch (error2) {
+                    console.warn('⚠️ getCampaignData API נכשל:', error2.message);
+                }
+                
+                // ניסיון 3: GetMosad API (דרך דף האונליין)
+                try {
+                    const url3 = `${NEDARIM_CONFIG.onlineApiUrl}?Action=GetMosad&MosadId=${NEDARIM_CONFIG.mosadId}&S=&_=${Date.now()}`;
+                    console.log('🔍 ניסיון 3: מושך סכום כולל מ-GetMosad:', url3);
+                    
+                    const response3 = await fetch(url3, {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: {
+                            'Accept': 'application/json',
+                        }
+                    });
+                    
+                    if (response3.ok) {
+                        const data3 = await response3.json();
+                        console.log('📦 נתונים מ-GetMosad:', JSON.stringify(data3, null, 2));
+                        
+                        // בודק את כל השדות האפשריים
+                        const possibleAmountFields = ['Donated', 'totalAmount', 'totalRaised', 'sum', 'current', 'Total', 'TotalAmount', 'TotalRaised', 'amount', 'Amount', 'collected', 'Collected', 'TotalDonated', 'totalDonated'];
+                        const possibleGoalFields = ['Goal', 'goal', 'target', 'Target', 'totalGoal', 'TotalGoal'];
+                        
+                        let foundAmount = null;
+                        let foundGoal = null;
+                        
+                        // בודק גם שדות מקוננים (nested)
+                        const checkNestedFields = (obj, prefix = '') => {
+                            if (!obj || typeof obj !== 'object') return;
+                            
+                            for (const key in obj) {
+                                const fullKey = prefix ? `${prefix}.${key}` : key;
+                                const value = obj[key];
+                                
+                                // בודק אם זה שדה סכום
+                                if (possibleAmountFields.includes(key) && (typeof value === 'number' || (typeof value === 'string' && !isNaN(value)))) {
+                                    const numValue = parseInt(value) || 0;
+                                    if (numValue > 0 || foundAmount === null) {
+                                        foundAmount = numValue;
+                                        console.log(`✅ מצאנו שדה סכום: ${fullKey} = ${numValue.toLocaleString()}`);
+                                    }
+                                }
+                                
+                                // בודק אם זה שדה יעד
+                                if (possibleGoalFields.includes(key) && (typeof value === 'number' || (typeof value === 'string' && !isNaN(value)))) {
+                                    const numValue = parseInt(value) || 0;
+                                    if (numValue > 0 || foundGoal === null) {
+                                        foundGoal = numValue;
+                                        console.log(`✅ מצאנו שדה יעד: ${fullKey} = ${numValue.toLocaleString()}`);
+                                    }
+                                }
+                                
+                                // בודק מקונן
+                                if (typeof value === 'object' && value !== null) {
+                                    checkNestedFields(value, fullKey);
+                                }
+                            }
+                        };
+                        
+                        checkNestedFields(data3);
+                        
+                        if (foundAmount !== null && foundAmount > 0) {
+                            const totalFromDonors = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
+                            NEDARIM_CONFIG.totalDonatedFromAPI = foundAmount;
+                            NEDARIM_CONFIG.goalFromAPI = foundGoal || 0;
+                            NEDARIM_CONFIG.apiDataLoaded = true;
+                            console.log(`✅ עדכנו מ-GetMosad: יעד=${NEDARIM_CONFIG.goalFromAPI.toLocaleString()}, נאסף=${NEDARIM_CONFIG.totalDonatedFromAPI.toLocaleString()}`);
+                            
+                            const difference = NEDARIM_CONFIG.totalDonatedFromAPI - totalFromDonors;
+                            if (Math.abs(difference) > 0) {
+                                console.log(`ℹ️ יש הבדל של ${difference.toLocaleString()} ש"ח בין הסכום הכולל לסכום המתרימים`);
+                            }
+                            
+                            return { Goal: NEDARIM_CONFIG.goalFromAPI, Donated: NEDARIM_CONFIG.totalDonatedFromAPI };
+                        }
+                    }
+                } catch (error3) {
+                    console.warn('⚠️ GetMosad API נכשל:', error3.message);
+                }
+                
+                console.error('❌ לא הצלחנו לקבל את הסכום הכולל מאף אחד מה-APIs');
                 return null;
+                
             } catch (error) {
-                console.error('שגיאה במשיכת סכום כולל מ-ShowGoal:', error);
+                console.error('❌ שגיאה כללית במשיכת סכום כולל:', error);
                 return null;
             }
         }
@@ -14902,19 +15102,25 @@
 
                 // בודק את הסכום הכולל אחרי העדכון
                 const finalTotalFromDonors = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
-                const totalFromAPI = NEDARIM_CONFIG.totalDonatedFromAPI || 0;
+                const totalFromAPI = (NEDARIM_CONFIG.apiDataLoaded && NEDARIM_CONFIG.totalDonatedFromAPI !== null) 
+                    ? NEDARIM_CONFIG.totalDonatedFromAPI 
+                    : 0;
                 const difference = totalFromAPI - finalTotalFromDonors;
                 
                 console.log(`📊 אחרי עדכון:`);
                 console.log(`   סכום כולל מ-ShowGoal: ${totalFromAPI.toLocaleString()} ש"ח`);
                 console.log(`   סכום מהתרימים: ${finalTotalFromDonors.toLocaleString()} ש"ח`);
-                if (difference > 0) {
-                    console.log(`   ⚠️ יש פער של ${difference.toLocaleString()} ש"ח - כנראה תרומות כלליות שלא קשורות למתרימים ספציפיים`);
+                if (Math.abs(difference) > 0) {
+                    if (difference > 0) {
+                        console.log(`   ⚠️ יש פער של ${difference.toLocaleString()} ש"ח - כנראה תרומות כלליות שלא קשורות למתרימים ספציפיים`);
+                    } else {
+                        console.log(`   ℹ️ הסכום מהתרימים גבוה יותר ב-${Math.abs(difference).toLocaleString()} ש"ח`);
+                    }
                 }
 
                 // הודעת הצלחה
                 let message = `סנכרון הושלם! ${matrimList.length} מתרימים | ${updatedDonors} מתרימים עודכנו`;
-                if (totalFromAPI > 0) {
+                if (NEDARIM_CONFIG.apiDataLoaded && NEDARIM_CONFIG.totalDonatedFromAPI !== null) {
                     message += ` | סכום כולל: ${totalFromAPI.toLocaleString()} ש"ח`;
                 }
                 
@@ -14998,12 +15204,19 @@
 
             // מפעיל עדכון של הסכום הכולל מ-ShowGoal כל 20 שניות
             totalCheckTimer = setInterval(async () => {
-                console.log('📊 מעדכן סכום כולל מ-ShowGoal...');
-                const totalData = await fetchTotalFromMatchPlus();
-                if (totalData) {
-                    updateHomeStats();
-                    updateLeadersList();
-                    updateLiveTargets();
+                console.log('📊 [אוטומטי] מעדכן סכום כולל מ-API...');
+                try {
+                    const totalData = await fetchTotalFromMatchPlus();
+                    if (totalData) {
+                        console.log('✅ [אוטומטי] הסכום עודכן:', totalData);
+                        updateHomeStats();
+                        updateLeadersList();
+                        updateLiveTargets();
+                    } else {
+                        console.warn('⚠️ [אוטומטי] לא התקבלו נתונים מ-API');
+                    }
+                } catch (error) {
+                    console.error('❌ [אוטומטי] שגיאה בעדכון סכום כולל:', error);
                 }
             }, 20 * 1000);
 
@@ -15049,16 +15262,26 @@
             
             // עדכון ראשוני של הסכום הכולל מ-ShowGoal
             setTimeout(async () => {
-                console.log('מעדכן סכום כולל מ-ShowGoal...');
-                const totalData = await fetchTotalFromMatchPlus();
-                if (totalData && typeof updateHomeStats === 'function') {
-                    updateHomeStats();
+                console.log('🚀 [אתחול] מתחיל עדכון סכום כולל מ-API...');
+                try {
+                    const totalData = await fetchTotalFromMatchPlus();
+                    if (totalData) {
+                        console.log('✅ [אתחול] הסכום הכולל עודכן בהצלחה:', totalData);
+                        if (typeof updateHomeStats === 'function') {
+                            updateHomeStats();
+                            console.log('✅ [אתחול] תצוגת הבית עודכנה');
+                        }
+                    } else {
+                        console.warn('⚠️ [אתחול] לא התקבלו נתונים מ-API');
+                    }
+                } catch (error) {
+                    console.error('❌ [אתחול] שגיאה בעדכון סכום כולל:', error);
                 }
             }, 1000);
             
             // סנכרון ראשוני אחרי 3 שניות
             setTimeout(() => {
-                console.log('מבצע סנכרון ראשוני עם נדרים פלוס...');
+                console.log('🔄 [אתחול] מבצע סנכרון ראשוני עם נדרים פלוס...');
                 syncWithNedarimPlus();
             }, 3000);
         });
@@ -15067,6 +15290,65 @@
         window.addEventListener('beforeunload', () => {
             stopAutoSync();
         });
+
+        // פונקציה לבדיקת הסכום הכולל מ-API (לצורך דיבוג)
+        async function checkTotalAmountFromAPI() {
+            const btn = document.getElementById('checkTotalBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = '⏳ בודק...';
+            }
+            
+            console.log('═══════════════════════════════════════════════════════');
+            console.log('🔍 [בדיקה ידנית] מתחיל בדיקת סכום כולל מ-API');
+            console.log('═══════════════════════════════════════════════════════');
+            
+            // מציג את הסכום הנוכחי במערכת
+            const totalFromDonors = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
+            console.log('📊 [מקומי] סכום מחושב מהתרימים:', totalFromDonors.toLocaleString(), 'ש"ח');
+            console.log('📊 [מקומי] מספר מתרימים:', donors.length);
+            
+            // מציג את הסכום הנוכחי מ-API (אם נטען)
+            if (NEDARIM_CONFIG.apiDataLoaded && NEDARIM_CONFIG.totalDonatedFromAPI !== null) {
+                console.log('📊 [API - נטען קודם] סכום מ-API:', NEDARIM_CONFIG.totalDonatedFromAPI.toLocaleString(), 'ש"ח');
+                console.log('📊 [API - נטען קודם] יעד מ-API:', NEDARIM_CONFIG.goalFromAPI.toLocaleString(), 'ש"ח');
+            } else {
+                console.log('⚠️ [API] עדיין לא נטען סכום מ-API');
+            }
+            
+            // מנסה למשוך את הסכום מ-API
+            try {
+                const totalData = await fetchTotalFromMatchPlus();
+                if (totalData) {
+                    console.log('✅ [בדיקה] הסכום עודכן בהצלחה:', totalData);
+                    console.log('📊 [API - חדש] סכום:', totalData.Donated.toLocaleString(), 'ש"ח');
+                    console.log('📊 [API - חדש] יעד:', totalData.Goal.toLocaleString(), 'ש"ח');
+                    
+                    // מעדכן את התצוגות
+                    updateHomeStats();
+                    updateLeadersList();
+                    updateLiveTargets();
+                    
+                    // מציג הודעה למשתמש
+                    showNotification(`✅ הסכום הכולל עודכן: ${totalData.Donated.toLocaleString()} ש"ח`);
+                } else {
+                    console.error('❌ [בדיקה] לא התקבלו נתונים מ-API');
+                    showNotification('⚠️ לא הצלחנו לקבל את הסכום הכולל מ-API. בדוק את הקונסול לפרטים.');
+                }
+            } catch (error) {
+                console.error('❌ [בדיקה] שגיאה:', error);
+                showNotification(`❌ שגיאה בבדיקת הסכום: ${error.message}`);
+            }
+            
+            console.log('═══════════════════════════════════════════════════════');
+            console.log('🔍 [בדיקה ידנית] סיום בדיקה');
+            console.log('═══════════════════════════════════════════════════════');
+            
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = '🔍 בדוק סכום כולל מ-API';
+            }
+        }
 
         // ===== סוף חיבור לנדרים פלוס =====
 
