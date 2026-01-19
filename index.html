@@ -5006,7 +5006,14 @@
     <!-- Supabase (שלב 1): טעינת SDK דרך CDN + קונפיג בסיסי -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // ניתן לשים כאן את הערכים האמיתיים כשיהיו מוכנים
+    // הגדרת Google Apps Script לשמירת נתונים
+    if (typeof google !== 'undefined' && google.script && google.script.url) {
+       // אם זה ב-Apps Script, זה יעבוד אוטומטית
+   } else {
+       // אם זה בדפדפן רגיל, צריך להוסיף את ה-URL של ה-Web App
+       // (אבל זה לא עובד ישירות - צריך להשתמש ב-localStorage או Supabase)
+   }
+ // ניתן לשים כאן את הערכים האמיתיים כשיהיו מוכנים
         // חשוב: אלו מפתחות ציבוריים (anon) בלבד; אין לשים סודות צד־שרת בקוד לקוח
         window.SUPABASE_URL = window.SUPABASE_URL || '';
         window.SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || '';
@@ -15648,7 +15655,7 @@
                 checkForLocalDataChanges();
             }, NEDARIM_CONFIG.dataCheckInterval);
 
-            // מפעיל עדכון של הסכום הכולל מ-API כל 30 שניות
+            // מפעיל עדכון של הסכום הכולל מ-API כל 5 שניות (עדכון מיידי)
             totalCheckTimer = setInterval(async () => {
                 console.log('📊 [אוטומטי] מעדכן סכום כולל מ-API...');
                 try {
@@ -15658,13 +15665,14 @@
                     updateHomeStats();
                     updateLeadersList();
                     updateLiveTargets();
+                    updateLiveView(); // מעדכן גם את תצוגת הלייב
                     } else {
                         console.log('ℹ️ [אוטומטי] ה-API מחזיר 0 - נשתמש בסכום מהתרימים');
                 }
                 } catch (error) {
                     console.error('❌ [אוטומטי] שגיאה בעדכון סכום כולל:', error);
                 }
-            }, 30 * 1000);
+            }, 5 * 1000); // 5 שניות במקום 30 - עדכון מיידי!
 
             // מאתחל את ה-hash הראשוני
             lastDataHash = calculateDataHash();
