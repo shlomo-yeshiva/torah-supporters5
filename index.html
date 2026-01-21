@@ -14247,16 +14247,16 @@
         async function fetchNedarimMatrim() {
             try {
                 // משתמש בשרת פרוקסי מאובטח
-                if (window.SECURE_PROXY_SERVER_URL && window.SECURE_PROXY_SERVER_URL.trim() !== '') {
-                    const params = {
-                        Action: 'ExportMatchingMatrim',
-                        MosadNumber: NEDARIM_CONFIG.mosadId
-                    };
-                    const url = `${window.SECURE_PROXY_SERVER_URL}?action=matara&endpoint=api&params=${encodeURIComponent(JSON.stringify(params))}`;
-                    const response = await fetch(url, { method: 'POST' });
-                } else {
+                if (!window.SECURE_PROXY_SERVER_URL || window.SECURE_PROXY_SERVER_URL.trim() === '') {
                     throw new Error('שרת פרוקסי לא מוגדר');
                 }
+
+                const params = {
+                    Action: 'ExportMatchingMatrim',
+                    MosadNumber: NEDARIM_CONFIG.mosadId
+                };
+                const url = `${window.SECURE_PROXY_SERVER_URL}?action=matara&endpoint=api&params=${encodeURIComponent(JSON.stringify(params))}`;
+                const response = await fetch(url, { method: 'POST' });
 
                 if (!response.ok) {
                     throw new Error(`שגיאת שרת: ${response.status}`);
@@ -14328,12 +14328,19 @@
                 const url = `${window.SECURE_PROXY_SERVER_URL}?action=matara&endpoint=api&params=${encodeURIComponent(JSON.stringify(params))}`;
                 const response = await fetch(url, { method: 'POST' });
 
-                const responseText = await response.text();
+                if (!response.ok) {
+                    throw new Error(`שגיאת שרת: ${response.status} ${response.statusText}`);
+                }
+
+                const responseData = await response.json();
+                const responseText = responseData.data || responseData;
+                const responseTextStr = typeof responseText === 'string' ? responseText : JSON.stringify(responseText);
+                
                 console.log('📦 תגובה מנדרים פלוס (העלאה):', {
                     status: response.status,
                     statusText: response.statusText,
-                    responseLength: responseText.length,
-                    responsePreview: responseText.substring(0, 200)
+                    responseLength: responseTextStr.length,
+                    responsePreview: responseTextStr.substring(0, 200)
                 });
 
                 // אם קוד התגובה הוא 200 (OK), זה נחשב להצלחה גם אם אין JSON
@@ -14341,7 +14348,7 @@
                 // מנסה לפרסר את התגובה כ-JSON
                 let data;
                 try {
-                    data = JSON.parse(responseText);
+                    data = typeof responseText === 'string' ? JSON.parse(responseText) : responseText;
                         
                         // אם יש JSON, בודק את הסטטוס
                         if (data.Status === 'OK' || data.success === true) {
@@ -14513,7 +14520,7 @@
         // תיעוד רשמי: https://matara.pro/nedarimplus/ApiDocumentation.html
         // ⚠️ חשוב: יש לבדוק את התיעוד הרשמי כדי לוודא שהפניות והשדות תואמים
         // דף אונליין: https://www.matara.pro/nedarimplus/online/?mosad=1000642
-        async function fetchTotalFromMatchPlus() {
+        async function fetchTotalFromMatchPlus()
             // מאפס את המשתנים לפני חיפוש חדש
             let foundAmount = null;
             let foundGoal = null;
@@ -14530,7 +14537,15 @@
                     console.log('📡 תגובת הפרוקסי:', response.status, response.statusText);
                     
                     if (response.ok) {
-                        const data = await response.json();
+                        const responseData = await response.json();
+                        // השרת מחזיר {success: true, data: "..."} - נמשוך את ה-data
+                        const responseText = responseData.data || responseData;
+                        let data;
+                        try {
+                            data = typeof responseText === 'string' ? JSON.parse(responseText) : responseText;
+                        } catch (e) {
+                            data = responseText;
+                        }
                         console.log('📦 נתונים מהפרוקסי:', JSON.stringify(data, null, 2));
                         
                         // מחפש את השדות Donated ו-Goal
@@ -14696,10 +14711,12 @@
                         console.log('🔗 URL:', url2);
                         
                         const response2 = await fetch(url2);
-                    console.log('📡 תגובת ה-API (ניסיון 2):', response2.status, response2.statusText);
-                    if (response2.ok) {
-                        const data2 = await response2.json();
-                        console.log('📦 נתונים מ-getCampaignData (כל הנתונים):', JSON.stringify(data2, null, 2));
+                        console.log('📡 תגובת ה-API (ניסיון 2):', response2.status, response2.statusText);
+                        if (response2.ok) {
+                            const responseData2 = await response2.json();
+                            // השרת מחזיר {success: true, data: "..."} - נמשוך את ה-data
+                            const data2 = responseData2.data || responseData2;
+                            console.log('📦 נתונים מ-getCampaignData (כל הנתונים):', JSON.stringify(data2, null, 2));
                         console.log('📦 סוג הנתונים:', typeof data2, Array.isArray(data2) ? '(מערך)' : '(אובייקט)');
                         
                         // בודק את כל השדות האפשריים
@@ -15461,8 +15478,9 @@
                     throw new Error(`שגיאת שרת: ${response.status} ${response.statusText}`);
                 }
 
-                // ה-API מחזיר קובץ אקסל או טקסט מובנה, לא JSON
-                const responseText = await response.text();
+                // השרת מחזיר {success: true, data: "..."} - נמשוך את ה-data
+                const responseData = await response.json();
+                const responseText = responseData.data || responseData;
                 
                 console.log('קיבלנו תגובה מה-API, אורך:', responseText.length);
                 console.log('תחילת התגובה:', responseText.substring(0, 500));
