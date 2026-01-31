@@ -5949,6 +5949,10 @@
                                 <button class="btn btn-secondary" onclick="saveToGoogleSheets()">💾 שמור לגליון</button>
                                 <button class="btn btn-info" onclick="syncWithGoogleSheets()">🔄 סנכרון דו-כיווני</button>
                             </div>
+                            <div class="sync-actions" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; padding-top: 10px; border-top: 1px dashed var(--border);">
+                                <button class="btn btn-warning" onclick="loadFromSimpleSheet()" style="background: #ff9800; color: white;">📋 טען מגיליון פשוט (שם+קבוצה)</button>
+                                <span style="color: var(--muted); font-size: 12px; align-self: center;">לייבוא ראשוני מגיליון עם שתי עמודות</span>
+                            </div>
                             
                             <div class="sync-status" id="googleSheetsSyncStatus" style="display: none; padding: 10px; border-radius: 6px; margin-bottom: 15px;"></div>
                             
@@ -17853,7 +17857,10 @@
 
         // ========== סנכרון Google Sheets ==========
         
-        let googleSheetsWebAppUrl = '';
+        // ⚠️ הכתובת הקבועה של ה-Web App - שנה רק אם יצרת פריסה חדשה!
+        const DEFAULT_GOOGLE_SHEETS_URL = ''; // הכנס כאן את ה-URL שקיבלת מהפריסה
+        
+        let googleSheetsWebAppUrl = DEFAULT_GOOGLE_SHEETS_URL;
         let googleSheetsSyncEnabled = false;
         let saveToGoogleSheetsTimeout = null;
         
@@ -17881,8 +17888,15 @@
         // טעינת הגדרות Google Sheets
         function loadGoogleSheetsSettings() {
             try {
-                googleSheetsWebAppUrl = localStorage.getItem('googleSheetsWebAppUrl') || '';
+                // קודם בודק אם יש URL שמור, אחרת משתמש בברירת המחדל
+                const savedUrl = localStorage.getItem('googleSheetsWebAppUrl');
+                googleSheetsWebAppUrl = savedUrl || DEFAULT_GOOGLE_SHEETS_URL || '';
                 googleSheetsSyncEnabled = localStorage.getItem('googleSheetsSyncEnabled') === 'true';
+                
+                // אם יש URL ברירת מחדל ואין URL שמור - שומר אותו
+                if (DEFAULT_GOOGLE_SHEETS_URL && !savedUrl) {
+                    localStorage.setItem('googleSheetsWebAppUrl', DEFAULT_GOOGLE_SHEETS_URL);
+                }
                 
                 const urlInput = document.getElementById('googleSheetsWebAppUrl');
                 const autoSyncCheckbox = document.getElementById('autoGoogleSheetsSyncCheckbox');
@@ -18162,6 +18176,80 @@
             }
         }
         
+        // טעינה מגיליון פשוט (שם מתרים + קבוצה)
+        async function loadFromSimpleSheet() {
+            const urlInput = document.getElementById('googleSheetsWebAppUrl');
+            const url = urlInput ? urlInput.value.trim() : googleSheetsWebAppUrl;
+            
+            if (!url) {
+                showNotification('❌ נא להגדיר את כתובת ה-Web App קודם', 'error');
+                showGoogleSheetsStatus('❌ נא להגדיר את כתובת ה-Web App', 'error');
+                return;
+            }
+            
+            showGoogleSheetsStatus('📋 טוען מגיליון פשוט (שם + קבוצה)...', 'info');
+            
+            try {
+                const response = await fetch(url + '?action=getSimpleData', {
+                    method: 'GET',
+                    redirect: 'follow'
+                });
+                
+                const result = await response.json();
+                
+                if (!result.success && result.error) {
+                    throw new Error(result.error);
+                }
+                
+                let loadedDonors = 0;
+                let loadedGroups = 0;
+                
+                // טעינת קבוצות
+                if (result.groups && Array.isArray(result.groups) && result.groups.length > 0) {
+                    groups = result.groups;
+                    loadedGroups = groups.length;
+                }
+                
+                // טעינת מתרימים
+                if (result.donors && Array.isArray(result.donors) && result.donors.length > 0) {
+                    donors = result.donors;
+                    loadedDonors = donors.length;
+                }
+                
+                // שמירה מקומית ועדכון תצוגה
+                ensureDonorsNormalized();
+                saveData();
+                updateDonorsList();
+                updateGroupsDisplay();
+                updateHomeStats();
+                updateLiveView();
+                updateLeadersList();
+                updateLiveTargets();
+                
+                const message = `✅ יובאו ${loadedDonors} מתרימים ו-${loadedGroups} קבוצות מהגיליון הפשוט!`;
+                
+                showNotification(message, 'success');
+                showGoogleSheetsStatus(message, 'success');
+                
+                console.log('✅ נתונים יובאו מגיליון פשוט:', { donors: loadedDonors, groups: loadedGroups });
+                
+                // שומר גם לגיליונות המסודרים
+                setTimeout(async () => {
+                    try {
+                        await saveToGoogleSheets();
+                        showNotification('💾 הנתונים נשמרו גם בפורמט המלא', 'success');
+                    } catch (e) {
+                        console.warn('לא הצלחתי לשמור בפורמט מלא:', e);
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                console.error('שגיאה בטעינה מגיליון פשוט:', error);
+                showNotification('❌ שגיאה בטעינה: ' + error.message, 'error');
+                showGoogleSheetsStatus('❌ שגיאה בטעינה: ' + error.message, 'error');
+            }
+        }
+
         // שמירה אוטומטית ל-Google Sheets (debounced)
         function autoSaveToGoogleSheets() {
             if (!googleSheetsWebAppUrl || !googleSheetsSyncEnabled) return;
