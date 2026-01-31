@@ -5881,6 +5881,72 @@
                             </ul>
                             </div>
                         </div>
+                        
+                        <!-- סנכרון דרך Google Sheets -->
+                        <div style="margin-top: 30px; padding-top: 30px; border-top: 2px solid var(--border);">
+                            <h3 style="margin-bottom: 15px;">🗂️ סנכרון דרך Google Sheets (גליון אלקטרוני)</h3>
+                            
+                            <div style="background: #e8f5e9; border: 2px solid #4caf50; border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                    <span style="font-size: 24px;">✨</span>
+                                    <strong style="color: #2e7d32; font-size: 16px;">מומלץ! הדרך הקלה ביותר לסנכרון בין מחשבים</strong>
+                                </div>
+                                <p style="color: #2e7d32; margin: 0; line-height: 1.6;">
+                                    סנכרון דרך Google Sheets מאפשר לך לראות ולערוך את הנתונים גם ישירות בגליון האלקטרוני, 
+                                    ולעבוד מכל מחשב בלי צורך ב-GitHub Token.
+                                </p>
+                            </div>
+                            
+                            <div class="sync-input-group" style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">כתובת Web App של Google Apps Script:</label>
+                                <input type="text" id="googleSheetsWebAppUrl" placeholder="https://script.google.com/macros/s/xxxx/exec" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" onchange="saveGoogleSheetsSettings()">
+                                <small style="display: block; margin-top: 5px; color: var(--muted);">
+                                    זה ה-URL שמתקבל אחרי פריסת הקוד ב-Google Apps Script. ראה הוראות למטה.
+                                </small>
+                            </div>
+                            
+                            <div class="sync-actions" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
+                                <button class="btn btn-success" onclick="testGoogleSheetsConnection()">🔌 בדוק חיבור</button>
+                                <button class="btn btn-primary" onclick="loadFromGoogleSheets()">📥 טען מהגליון</button>
+                                <button class="btn btn-secondary" onclick="saveToGoogleSheets()">💾 שמור לגליון</button>
+                                <button class="btn btn-info" onclick="syncWithGoogleSheets()">🔄 סנכרון דו-כיווני</button>
+                            </div>
+                            
+                            <div class="sync-status" id="googleSheetsSyncStatus" style="display: none; padding: 10px; border-radius: 6px; margin-bottom: 15px;"></div>
+                            
+                            <div style="margin-top: 15px; margin-bottom: 20px;">
+                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 500;">
+                                    <input type="checkbox" id="autoGoogleSheetsSyncCheckbox" onchange="saveGoogleSheetsSettings()" style="width: 20px; height: 20px; cursor: pointer;">
+                                    <span>🔄 הפעל סנכרון אוטומטי: טעינה מהגליון בעליית התוכנה ושמירה בכל שינוי</span>
+                                </label>
+                            </div>
+                            
+                            <div style="background: #fff3e0; border: 2px solid #ff9800; border-radius: 10px; padding: 15px; margin-top: 15px;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                    <span style="font-size: 24px;">📋</span>
+                                    <strong style="color: #e65100; font-size: 16px;">הוראות התקנה (פעם אחת בלבד)</strong>
+                                </div>
+                                <ol style="color: #e65100; margin: 0; padding-right: 25px; line-height: 2;">
+                                    <li>פתח את הגליון האלקטרוני שלך ב-Google Sheets</li>
+                                    <li>לחץ על <strong>"הרחבות" (Extensions)</strong> → <strong>"Apps Script"</strong></li>
+                                    <li>מחק את כל הקוד הקיים והדבק את התוכן מהקובץ <code>SheetsSync.gs</code></li>
+                                    <li>שנה את <code>SPREADSHEET_ID</code> למזהה של הגליון שלך (מופיע ב-URL)</li>
+                                    <li>לחץ על <strong>"פריסה" (Deploy)</strong> → <strong>"פריסה חדשה"</strong></li>
+                                    <li>בחר סוג: <strong>"אפליקציית אינטרנט"</strong></li>
+                                    <li>הגדר <strong>"הפעל כ"</strong>: אני (Me) | <strong>"למי יש גישה"</strong>: כל אחד (Anyone)</li>
+                                    <li>לחץ <strong>"פרוס"</strong> והעתק את ה-URL שמתקבל</li>
+                                    <li>הדבק את ה-URL בשדה למעלה ולחץ "בדוק חיבור"</li>
+                                </ol>
+                            </div>
+                            
+                            <div style="background: #e3f2fd; border: 1px solid #2196f3; border-radius: 8px; padding: 12px; margin-top: 15px;">
+                                <strong style="color: #1565c0;">💡 טיפ:</strong>
+                                <p style="color: #1565c0; margin: 5px 0 0 0; line-height: 1.6;">
+                                    הגליון האלקטרוני שלך: 
+                                    <a href="https://docs.google.com/spreadsheets/d/1YI6XQZObSP1vfhIVh9wXYtIufM20PFjIGGM9rB-_rc8/edit" target="_blank" style="color: #1565c0; text-decoration: underline;">לחץ כאן לפתיחה</a>
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -10223,6 +10289,11 @@
                     // שמירה אוטומטית ל-Gist (אם מופעל)
                     if (typeof autoSaveToGist === 'function') {
                         autoSaveToGist();
+                    }
+                    
+                    // שמירה אוטומטית ל-Google Sheets (אם מופעל)
+                    if (typeof autoSaveToGoogleSheets === 'function') {
+                        autoSaveToGoogleSheets();
                     }
                     
                     console.log('💾 נתונים נשמרו אוטומטית');
@@ -17742,17 +17813,367 @@
 
         // שמירה אוטומטית ל-Gist אחרי כל שינוי - נעשה דרך saveData
 
+        // ========== סנכרון Google Sheets ==========
+        
+        let googleSheetsWebAppUrl = '';
+        let googleSheetsSyncEnabled = false;
+        let saveToGoogleSheetsTimeout = null;
+        
+        // שמירת הגדרות Google Sheets
+        function saveGoogleSheetsSettings() {
+            const urlInput = document.getElementById('googleSheetsWebAppUrl');
+            const autoSyncCheckbox = document.getElementById('autoGoogleSheetsSyncCheckbox');
+            
+            if (urlInput) {
+                googleSheetsWebAppUrl = urlInput.value.trim();
+            }
+            if (autoSyncCheckbox) {
+                googleSheetsSyncEnabled = autoSyncCheckbox.checked;
+            }
+            
+            try {
+                localStorage.setItem('googleSheetsWebAppUrl', googleSheetsWebAppUrl);
+                localStorage.setItem('googleSheetsSyncEnabled', googleSheetsSyncEnabled ? 'true' : 'false');
+                console.log('💾 הגדרות Google Sheets נשמרו');
+            } catch (e) {
+                console.warn('שגיאה בשמירת הגדרות Google Sheets:', e);
+            }
+        }
+        
+        // טעינת הגדרות Google Sheets
+        function loadGoogleSheetsSettings() {
+            try {
+                googleSheetsWebAppUrl = localStorage.getItem('googleSheetsWebAppUrl') || '';
+                googleSheetsSyncEnabled = localStorage.getItem('googleSheetsSyncEnabled') === 'true';
+                
+                const urlInput = document.getElementById('googleSheetsWebAppUrl');
+                const autoSyncCheckbox = document.getElementById('autoGoogleSheetsSyncCheckbox');
+                
+                if (urlInput) {
+                    urlInput.value = googleSheetsWebAppUrl;
+                }
+                if (autoSyncCheckbox) {
+                    autoSyncCheckbox.checked = googleSheetsSyncEnabled;
+                }
+                
+                console.log('📂 הגדרות Google Sheets נטענו:', { url: googleSheetsWebAppUrl ? 'מוגדר' : 'לא מוגדר', autoSync: googleSheetsSyncEnabled });
+            } catch (e) {
+                console.warn('שגיאה בטעינת הגדרות Google Sheets:', e);
+            }
+        }
+        
+        // הצגת סטטוס Google Sheets
+        function showGoogleSheetsStatus(message, type = 'info') {
+            const statusEl = document.getElementById('googleSheetsSyncStatus');
+            if (!statusEl) return;
+            
+            statusEl.style.display = 'block';
+            statusEl.className = 'sync-status ' + type;
+            
+            if (type === 'success') {
+                statusEl.style.background = '#d4edda';
+                statusEl.style.color = '#155724';
+                statusEl.style.border = '1px solid #c3e6cb';
+            } else if (type === 'error') {
+                statusEl.style.background = '#f8d7da';
+                statusEl.style.color = '#721c24';
+                statusEl.style.border = '1px solid #f5c6cb';
+            } else {
+                statusEl.style.background = '#cce5ff';
+                statusEl.style.color = '#004085';
+                statusEl.style.border = '1px solid #b8daff';
+            }
+            
+            statusEl.textContent = message;
+            
+            // הסתרה אחרי 10 שניות
+            setTimeout(() => {
+                if (statusEl) statusEl.style.display = 'none';
+            }, type === 'error' ? 15000 : 10000);
+        }
+        
+        // בדיקת חיבור ל-Google Sheets
+        async function testGoogleSheetsConnection() {
+            const urlInput = document.getElementById('googleSheetsWebAppUrl');
+            const url = urlInput ? urlInput.value.trim() : googleSheetsWebAppUrl;
+            
+            if (!url) {
+                showNotification('❌ נא להזין את כתובת ה-Web App', 'error');
+                showGoogleSheetsStatus('❌ נא להזין את כתובת ה-Web App', 'error');
+                return;
+            }
+            
+            showGoogleSheetsStatus('🔄 בודק חיבור...', 'info');
+            
+            try {
+                const response = await fetch(url + '?action=ping', {
+                    method: 'GET',
+                    redirect: 'follow'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('✅ החיבור ל-Google Sheets תקין!', 'success');
+                    showGoogleSheetsStatus('✅ החיבור תקין! ' + (result.timestamp ? 'עודכן: ' + new Date(result.timestamp).toLocaleString('he-IL') : ''), 'success');
+                    googleSheetsWebAppUrl = url;
+                    saveGoogleSheetsSettings();
+                } else {
+                    throw new Error(result.error || 'תגובה לא תקינה');
+                }
+            } catch (error) {
+                console.error('שגיאה בבדיקת חיבור:', error);
+                showNotification('❌ שגיאה בחיבור: ' + error.message, 'error');
+                showGoogleSheetsStatus('❌ שגיאה בחיבור: ' + error.message, 'error');
+            }
+        }
+        
+        // טעינת נתונים מ-Google Sheets
+        async function loadFromGoogleSheets() {
+            const urlInput = document.getElementById('googleSheetsWebAppUrl');
+            const url = urlInput ? urlInput.value.trim() : googleSheetsWebAppUrl;
+            
+            if (!url) {
+                showNotification('❌ נא להגדיר את כתובת ה-Web App קודם', 'error');
+                showGoogleSheetsStatus('❌ נא להגדיר את כתובת ה-Web App', 'error');
+                return;
+            }
+            
+            showGoogleSheetsStatus('📥 טוען נתונים מהגליון...', 'info');
+            
+            try {
+                const response = await fetch(url + '?action=getAll', {
+                    method: 'GET',
+                    redirect: 'follow'
+                });
+                
+                const result = await response.json();
+                
+                if (!result.success && result.error) {
+                    throw new Error(result.error);
+                }
+                
+                let loadedDonors = 0;
+                let loadedGroups = 0;
+                
+                // טעינת קבוצות
+                if (result.groups && Array.isArray(result.groups) && result.groups.length > 0) {
+                    groups = result.groups;
+                    loadedGroups = groups.length;
+                }
+                
+                // טעינת מתרימים
+                if (result.donors && Array.isArray(result.donors) && result.donors.length > 0) {
+                    donors = result.donors;
+                    loadedDonors = donors.length;
+                }
+                
+                // טעינת הגדרות
+                if (result.settings) {
+                    if (result.settings.defaultDonorGoal) {
+                        defaultDonorGoal = Number(result.settings.defaultDonorGoal);
+                    }
+                }
+                
+                // שמירה מקומית ועדכון תצוגה
+                ensureDonorsNormalized();
+                saveData();
+                updateDonorsList();
+                updateGroupsDisplay();
+                updateHomeStats();
+                updateLiveView();
+                updateLeadersList();
+                updateLiveTargets();
+                
+                const totalAmount = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
+                const message = `✅ נטענו ${loadedDonors} מתרימים ו-${loadedGroups} קבוצות | סכום כולל: ${totalAmount.toLocaleString()} ש"ח`;
+                
+                showNotification(message, 'success');
+                showGoogleSheetsStatus(message, 'success');
+                
+                console.log('✅ נתונים נטענו מ-Google Sheets:', { donors: loadedDonors, groups: loadedGroups, total: totalAmount });
+                
+            } catch (error) {
+                console.error('שגיאה בטעינה מ-Google Sheets:', error);
+                showNotification('❌ שגיאה בטעינה: ' + error.message, 'error');
+                showGoogleSheetsStatus('❌ שגיאה בטעינה: ' + error.message, 'error');
+            }
+        }
+        
+        // שמירת נתונים ל-Google Sheets
+        async function saveToGoogleSheets() {
+            const urlInput = document.getElementById('googleSheetsWebAppUrl');
+            const url = urlInput ? urlInput.value.trim() : googleSheetsWebAppUrl;
+            
+            if (!url) {
+                showNotification('❌ נא להגדיר את כתובת ה-Web App קודם', 'error');
+                showGoogleSheetsStatus('❌ נא להגדיר את כתובת ה-Web App', 'error');
+                return;
+            }
+            
+            showGoogleSheetsStatus('💾 שומר נתונים לגליון...', 'info');
+            
+            try {
+                const dataToSave = {
+                    action: 'saveAll',
+                    donors: donors,
+                    groups: groups,
+                    settings: {
+                        defaultDonorGoal: defaultDonorGoal
+                    }
+                };
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    redirect: 'follow',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8'
+                    },
+                    body: JSON.stringify(dataToSave)
+                });
+                
+                const result = await response.json();
+                
+                if (!result.success && result.error) {
+                    throw new Error(result.error);
+                }
+                
+                const message = `✅ נשמרו ${donors.length} מתרימים ו-${groups.length} קבוצות לגליון`;
+                showNotification(message, 'success');
+                showGoogleSheetsStatus(message, 'success');
+                
+                console.log('✅ נתונים נשמרו ל-Google Sheets');
+                
+            } catch (error) {
+                console.error('שגיאה בשמירה ל-Google Sheets:', error);
+                showNotification('❌ שגיאה בשמירה: ' + error.message, 'error');
+                showGoogleSheetsStatus('❌ שגיאה בשמירה: ' + error.message, 'error');
+            }
+        }
+        
+        // סנכרון דו-כיווני עם Google Sheets
+        async function syncWithGoogleSheets() {
+            const urlInput = document.getElementById('googleSheetsWebAppUrl');
+            const url = urlInput ? urlInput.value.trim() : googleSheetsWebAppUrl;
+            
+            if (!url) {
+                showNotification('❌ נא להגדיר את כתובת ה-Web App קודם', 'error');
+                showGoogleSheetsStatus('❌ נא להגדיר את כתובת ה-Web App', 'error');
+                return;
+            }
+            
+            showGoogleSheetsStatus('🔄 מסנכרן נתונים...', 'info');
+            
+            try {
+                const dataToSync = {
+                    action: 'syncAll',
+                    donors: donors,
+                    groups: groups,
+                    settings: {
+                        defaultDonorGoal: defaultDonorGoal
+                    }
+                };
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    redirect: 'follow',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8'
+                    },
+                    body: JSON.stringify(dataToSync)
+                });
+                
+                const result = await response.json();
+                
+                if (!result.success && result.error) {
+                    throw new Error(result.error);
+                }
+                
+                // עדכון הנתונים המקומיים עם התוצאה הממוזגת
+                if (result.donors && Array.isArray(result.donors)) {
+                    donors = result.donors;
+                }
+                if (result.groups && Array.isArray(result.groups)) {
+                    groups = result.groups;
+                }
+                
+                // שמירה מקומית ועדכון תצוגה
+                ensureDonorsNormalized();
+                saveData();
+                updateDonorsList();
+                updateGroupsDisplay();
+                updateHomeStats();
+                updateLiveView();
+                updateLeadersList();
+                updateLiveTargets();
+                
+                const totalAmount = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
+                const message = result.merged 
+                    ? `✅ סנכרון הושלם (מיזוג)! ${donors.length} מתרימים, ${groups.length} קבוצות | סכום: ${totalAmount.toLocaleString()} ש"ח`
+                    : `✅ סנכרון הושלם! ${donors.length} מתרימים, ${groups.length} קבוצות | סכום: ${totalAmount.toLocaleString()} ש"ח`;
+                
+                showNotification(message, 'success');
+                showGoogleSheetsStatus(message, 'success');
+                
+                console.log('✅ סנכרון עם Google Sheets הושלם');
+                
+            } catch (error) {
+                console.error('שגיאה בסנכרון עם Google Sheets:', error);
+                showNotification('❌ שגיאה בסנכרון: ' + error.message, 'error');
+                showGoogleSheetsStatus('❌ שגיאה בסנכרון: ' + error.message, 'error');
+            }
+        }
+        
+        // שמירה אוטומטית ל-Google Sheets (debounced)
+        function autoSaveToGoogleSheets() {
+            if (!googleSheetsWebAppUrl || !googleSheetsSyncEnabled) return;
+            
+            if (saveToGoogleSheetsTimeout) {
+                clearTimeout(saveToGoogleSheetsTimeout);
+            }
+            
+            // שמירה אחרי 5 שניות ללא שינויים נוספים
+            saveToGoogleSheetsTimeout = setTimeout(async () => {
+                try {
+                    await saveToGoogleSheets();
+                    console.log('💾 [אוטומטי] הנתונים נשמרו ל-Google Sheets');
+                } catch (err) {
+                    console.warn('⚠️ שגיאה בשמירה אוטומטית ל-Google Sheets:', err);
+                }
+            }, 5000);
+        }
+        
+        // ========== סוף סנכרון Google Sheets ==========
+
         // טעינה אוטומטית בעליית התוכנה
         window.addEventListener('load', async () => {
-            console.log('🚀 [אתחול] טוען הגדרות Gist...');
+            console.log('🚀 [אתחול] טוען הגדרות סנכרון...');
             loadGistSyncSettings();
+            loadGoogleSheetsSettings();
             
             // מחכה קצת כדי לוודא שהכל נטען
             await new Promise(resolve => setTimeout(resolve, 500));
             
-            // טעינה מ-Gist אם יש Gist ID (גם אם סנכרון אוטומטי לא מופעל)
-            // זה מבטיח שכל המחשבים יטענו את הנתונים המעודכנים
-            if (gistId && gistId.trim()) {
+            // בדיקה אם יש Google Sheets מוגדר עם סנכרון אוטומטי
+            if (googleSheetsWebAppUrl && googleSheetsSyncEnabled) {
+                console.log('🔄 [אתחול] נמצא Google Sheets URL, טוען נתונים מהגליון...');
+                const sheetsStatusEl = document.getElementById('googleSheetsSyncStatus');
+                if (sheetsStatusEl) {
+                    sheetsStatusEl.style.display = 'block';
+                    sheetsStatusEl.style.background = '#cce5ff';
+                    sheetsStatusEl.style.color = '#004085';
+                    sheetsStatusEl.textContent = '🔄 טוען נתונים מהגליון בעת פתיחת התוכנה...';
+                }
+                
+                try {
+                    await loadFromGoogleSheets();
+                    console.log('✅ [אתחול] הנתונים נטענו בהצלחה מ-Google Sheets');
+                } catch (error) {
+                    console.error('❌ [אתחול] שגיאה בטעינה מ-Google Sheets:', error);
+                }
+            }
+            // אחרת, בדיקה אם יש Gist ID
+            else if (gistId && gistId.trim()) {
                 console.log('🔄 [אתחול] נמצא Gist ID, טוען נתונים מ-Gist...', gistId);
                 // מציג הודעה למשתמש שהנתונים נטענים
                 const statusEl = document.getElementById('gistSyncStatus');
