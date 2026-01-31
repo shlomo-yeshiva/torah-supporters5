@@ -1862,6 +1862,28 @@
             border-color: var(--primary-gold);
         }
 
+        .group-card {
+            cursor: grab;
+            position: relative;
+        }
+
+        .group-card::before {
+            content: "⋮⋮";
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 18px;
+            color: var(--muted);
+            opacity: 0.5;
+            cursor: grab;
+            transition: opacity 0.2s;
+        }
+
+        .group-card:hover::before {
+            opacity: 1;
+            color: var(--primary-gold);
+        }
+
         .group-card.dragging {
             opacity: 0.65;
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
@@ -1872,6 +1894,21 @@
         .group-card.drag-over {
             border-color: var(--primary-gold);
             box-shadow: 0 12px 40px rgba(212, 175, 55, 0.45);
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .group-card.drag-over::after {
+            content: "שחרר כאן";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--primary-gold);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            z-index: 10;
         }
 
         .group-header {
@@ -5314,8 +5351,9 @@
 
                 <!-- ניהול קבוצות -->
                 <div class="management-content active" id="groupsContent">
-                    <div class="management-actions-row">
+                    <div class="management-actions-row" style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
                         <button class="btn" onclick="addNewGroup()">הוסף קבוצה חדשה</button>
+                        <span style="color: var(--muted); font-size: 13px;">💡 טיפ: גרור כרטיסיות כדי לשנות סדר</span>
                     </div>
                     <div class="groups-grid" id="groupsGrid">
                         <!-- יוטען דינמית -->
