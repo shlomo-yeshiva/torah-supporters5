@@ -5322,6 +5322,7 @@
                         מחשבון
                     </button>
                     <button class="management-tab" data-tab="sync">עדכונים</button>
+                    <button class="management-tab" data-tab="history">📜 היסטוריה</button>
                     <button class="management-tab" data-tab="reset">אפשרויות איפוס</button>
                     <button class="management-tab" data-tab="password">הגדרת סיסמה</button>
                 </div>
@@ -5386,6 +5387,106 @@
                         </div>
                         <div class="donors-list" id="donorsListContainer">
                             <!-- יוטען דינמית -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- היסטוריה -->
+                <div class="management-content" id="historyContent">
+                    <div class="history-settings-panel" style="padding: 20px;">
+                        <h3 style="margin-bottom: 20px;">📜 היסטוריית פעולות במערכת</h3>
+                        
+                        <!-- הגדרות מחשב -->
+                        <div style="background: #e3f2fd; border: 2px solid #2196f3; border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                            <h4 style="color: #1565c0; margin-bottom: 15px;">🖥️ זיהוי מחשב זה</h4>
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
+                                <div style="flex: 1; min-width: 200px;">
+                                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">שם המחשב:</label>
+                                    <input type="text" id="computerNameInput" placeholder="לדוגמה: מחשב משרד / לפטופ בית" 
+                                           style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;">
+                                </div>
+                                <div style="width: 120px;">
+                                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">מספר מחשב:</label>
+                                    <input type="number" id="computerIdInput" placeholder="1" min="1" 
+                                           style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;">
+                                </div>
+                                <button class="btn btn-primary" onclick="saveComputerSettings()" style="height: 40px;">💾 שמור</button>
+                            </div>
+                            <small style="display: block; margin-top: 10px; color: #1565c0;">
+                                ההגדרות האלה יעזרו לזהות מאיזה מחשב בוצעה כל פעולה בהיסטוריה.
+                            </small>
+                        </div>
+                        
+                        <!-- סינון היסטוריה -->
+                        <div style="background: rgba(255, 255, 255, 0.8); border-radius: 10px; padding: 15px; margin-bottom: 20px; border: 1px solid var(--border);">
+                            <h4 style="margin-bottom: 15px;">🔍 סינון היסטוריה</h4>
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 5px; font-size: 13px;">מתאריך:</label>
+                                    <input type="date" id="historyStartDate" style="padding: 8px; border: 1px solid var(--border); border-radius: 6px;">
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 5px; font-size: 13px;">עד תאריך:</label>
+                                    <input type="date" id="historyEndDate" style="padding: 8px; border: 1px solid var(--border); border-radius: 6px;">
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 5px; font-size: 13px;">מקור:</label>
+                                    <select id="historySourceFilter" style="padding: 8px; border: 1px solid var(--border); border-radius: 6px;">
+                                        <option value="">הכל</option>
+                                        <option value="manual">ידני</option>
+                                        <option value="nedarim">נדרים פלוס</option>
+                                        <option value="import">ייבוא</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 5px; font-size: 13px;">סוג פעולה:</label>
+                                    <select id="historyActionFilter" style="padding: 8px; border: 1px solid var(--border); border-radius: 6px;">
+                                        <option value="">הכל</option>
+                                        <option value="payment">תשלום</option>
+                                        <option value="add">הוספה</option>
+                                        <option value="update">עדכון</option>
+                                        <option value="delete">מחיקה</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary" onclick="loadHistory()">🔄 טען היסטוריה</button>
+                                <button class="btn btn-secondary" onclick="clearHistoryFilters()">🗑️ נקה סינון</button>
+                            </div>
+                        </div>
+                        
+                        <!-- כפתורי ייצוא -->
+                        <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                            <button class="btn btn-success" onclick="exportHistoryToExcel()">📥 ייצוא לאקסל</button>
+                            <button class="btn btn-info" onclick="exportHistoryToExcel('manual')">📥 ייצוא ידניים בלבד</button>
+                            <button class="btn btn-warning" onclick="exportHistoryToExcel('nedarim')" style="background: #ff9800; color: white;">📥 ייצוא נדרים פלוס בלבד</button>
+                        </div>
+                        
+                        <!-- סטטוס -->
+                        <div id="historyStatus" style="display: none; padding: 10px; border-radius: 6px; margin-bottom: 15px;"></div>
+                        
+                        <!-- טבלת היסטוריה -->
+                        <div style="overflow-x: auto;">
+                            <table id="historyTable" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                                <thead>
+                                    <tr style="background: var(--primary-gold); color: white;">
+                                        <th style="padding: 12px 8px; text-align: right;">תאריך</th>
+                                        <th style="padding: 12px 8px; text-align: right;">שעה</th>
+                                        <th style="padding: 12px 8px; text-align: right;">פעולה</th>
+                                        <th style="padding: 12px 8px; text-align: right;">סוג</th>
+                                        <th style="padding: 12px 8px; text-align: right;">שם</th>
+                                        <th style="padding: 12px 8px; text-align: right;">פרטים</th>
+                                        <th style="padding: 12px 8px; text-align: right;">סכום</th>
+                                        <th style="padding: 12px 8px; text-align: right;">מקור</th>
+                                        <th style="padding: 12px 8px; text-align: right;">מחשב</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyTableBody">
+                                    <tr><td colspan="9" style="text-align: center; padding: 30px; color: var(--muted);">לחץ "טען היסטוריה" לטעינת הנתונים</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- סיכום -->
+                        <div id="historySummary" style="margin-top: 15px; padding: 10px; background: rgba(212, 175, 55, 0.1); border-radius: 8px; display: none;">
                         </div>
                     </div>
                 </div>
@@ -14518,6 +14619,17 @@
                 ? `תשלום של ${Math.abs(actualDelta).toLocaleString()} ₪ נוסף ל-${donorDisplayName} (${paymentDate.toLocaleDateString('he-IL')})`
                 : `הופחת סכום של ${Math.abs(actualDelta).toLocaleString()} ₪ מהמתרים ${donorDisplayName} (${paymentDate.toLocaleDateString('he-IL')})`;
             showNotification(message);
+            
+            // רישום בהיסטוריה המרכזית
+            logHistory({
+                actionType: actualDelta > 0 ? 'payment' : 'update',
+                entityType: 'donor',
+                entityId: donor.id,
+                entityName: donorDisplayName,
+                details: note || (actualDelta > 0 ? 'הוספת תשלום' : 'הפחתת סכום'),
+                amount: actualDelta,
+                source: 'manual'
+            });
 
             // מעלה לנדרים פלוס אם נבחר (תוספת או הפחתה)
             // משתמש בשם המקורי מ-נדרים פלוס (לא שם התצוגה)
@@ -16685,6 +16797,19 @@
                 showNotification(`✅ ${message}`);
                 }
                 
+                // רישום בהיסטוריה המרכזית
+                if (updatedDonors > 0 || newDonors > 0) {
+                    logHistory({
+                        actionType: 'update',
+                        entityType: 'sync',
+                        entityId: 'nedarim_plus',
+                        entityName: 'סנכרון נדרים פלוס',
+                        details: `${matrimList.length} מתרימים, ${updatedDonors} עודכנו, ${newDonors} חדשים`,
+                        amount: finalTotalFromDonors,
+                        source: 'nedarim'
+                    });
+                }
+                
                 // סנכרון לבסיס הנתונים אחרי העדכון
                 await syncAllDataToDatabase();
 
@@ -18271,11 +18396,263 @@
         
         // ========== סוף סנכרון Google Sheets ==========
 
+        // ========== מערכת היסטוריה וזיהוי מחשב ==========
+        
+        let computerName = '';
+        let computerId = '';
+        let historyData = [];
+        
+        // טעינת הגדרות מחשב
+        function loadComputerSettings() {
+            try {
+                computerName = localStorage.getItem('computerName') || '';
+                computerId = localStorage.getItem('computerId') || '';
+                
+                const nameInput = document.getElementById('computerNameInput');
+                const idInput = document.getElementById('computerIdInput');
+                
+                if (nameInput) nameInput.value = computerName;
+                if (idInput) idInput.value = computerId;
+                
+                console.log('🖥️ הגדרות מחשב נטענו:', { name: computerName, id: computerId });
+            } catch (e) {
+                console.warn('שגיאה בטעינת הגדרות מחשב:', e);
+            }
+        }
+        
+        // שמירת הגדרות מחשב
+        function saveComputerSettings() {
+            const nameInput = document.getElementById('computerNameInput');
+            const idInput = document.getElementById('computerIdInput');
+            
+            computerName = nameInput ? nameInput.value.trim() : '';
+            computerId = idInput ? idInput.value.trim() : '';
+            
+            try {
+                localStorage.setItem('computerName', computerName);
+                localStorage.setItem('computerId', computerId);
+                showNotification('✅ הגדרות מחשב נשמרו', 'success');
+            } catch (e) {
+                showNotification('❌ שגיאה בשמירת הגדרות מחשב', 'error');
+            }
+        }
+        
+        // הוספת רשומה להיסטוריה
+        async function logHistory(entry) {
+            if (!googleSheetsWebAppUrl) return;
+            
+            try {
+                const historyEntry = {
+                    ...entry,
+                    computerName: computerName || 'לא מוגדר',
+                    computerId: computerId || '?',
+                    timestamp: new Date().toISOString()
+                };
+                
+                await fetch(googleSheetsWebAppUrl, {
+                    method: 'POST',
+                    redirect: 'follow',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'addHistory',
+                        entry: historyEntry
+                    })
+                });
+                
+                console.log('📜 היסטוריה נשמרה:', historyEntry);
+            } catch (e) {
+                console.warn('⚠️ שגיאה בשמירת היסטוריה:', e);
+            }
+        }
+        
+        // טעינת היסטוריה מהגליון
+        async function loadHistory() {
+            if (!googleSheetsWebAppUrl) {
+                showHistoryStatus('❌ נא להגדיר את כתובת ה-Web App קודם', 'error');
+                return;
+            }
+            
+            showHistoryStatus('🔄 טוען היסטוריה...', 'info');
+            
+            try {
+                // בניית פרמטרים לסינון
+                let params = new URLSearchParams();
+                params.append('action', 'getHistory');
+                
+                const startDate = document.getElementById('historyStartDate')?.value;
+                const endDate = document.getElementById('historyEndDate')?.value;
+                const source = document.getElementById('historySourceFilter')?.value;
+                const actionType = document.getElementById('historyActionFilter')?.value;
+                
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                if (source) params.append('source', source);
+                if (actionType) params.append('actionType', actionType);
+                
+                const response = await fetch(googleSheetsWebAppUrl + '?' + params.toString(), {
+                    method: 'GET',
+                    redirect: 'follow'
+                });
+                
+                const result = await response.json();
+                
+                if (!result.success && result.error) {
+                    throw new Error(result.error);
+                }
+                
+                historyData = result.history || [];
+                renderHistoryTable();
+                
+                showHistoryStatus(`✅ נטענו ${historyData.length} רשומות`, 'success');
+                
+            } catch (error) {
+                console.error('שגיאה בטעינת היסטוריה:', error);
+                showHistoryStatus('❌ שגיאה בטעינה: ' + error.message, 'error');
+            }
+        }
+        
+        // הצגת טבלת היסטוריה
+        function renderHistoryTable() {
+            const tbody = document.getElementById('historyTableBody');
+            if (!tbody) return;
+            
+            if (historyData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 30px; color: var(--muted);">לא נמצאו רשומות</td></tr>';
+                return;
+            }
+            
+            const sourceLabels = {
+                'manual': '✏️ ידני',
+                'nedarim': '🔗 נדרים פלוס',
+                'import': '📥 ייבוא',
+                '': '?'
+            };
+            
+            const actionLabels = {
+                'payment': '💰 תשלום',
+                'add': '➕ הוספה',
+                'update': '✏️ עדכון',
+                'delete': '🗑️ מחיקה',
+                '': '?'
+            };
+            
+            tbody.innerHTML = historyData.map(entry => `
+                <tr style="border-bottom: 1px solid var(--border);">
+                    <td style="padding: 10px 8px;">${entry.date || ''}</td>
+                    <td style="padding: 10px 8px;">${entry.time || ''}</td>
+                    <td style="padding: 10px 8px;">${actionLabels[entry.actionType] || entry.actionType || ''}</td>
+                    <td style="padding: 10px 8px;">${entry.entityType || ''}</td>
+                    <td style="padding: 10px 8px; font-weight: 500;">${entry.entityName || ''}</td>
+                    <td style="padding: 10px 8px; font-size: 12px; color: var(--muted);">${entry.details || ''}</td>
+                    <td style="padding: 10px 8px; color: var(--success); font-weight: 500;">${entry.amount ? '₪' + Number(entry.amount).toLocaleString() : ''}</td>
+                    <td style="padding: 10px 8px;">${sourceLabels[entry.source] || entry.source || ''}</td>
+                    <td style="padding: 10px 8px; font-size: 12px;">${entry.computerName || ''} ${entry.computerId ? '(#' + entry.computerId + ')' : ''}</td>
+                </tr>
+            `).join('');
+            
+            // סיכום
+            const summary = document.getElementById('historySummary');
+            if (summary) {
+                const totalAmount = historyData.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+                const manualCount = historyData.filter(e => e.source === 'manual').length;
+                const nedarimCount = historyData.filter(e => e.source === 'nedarim').length;
+                
+                summary.style.display = 'block';
+                summary.innerHTML = `
+                    <strong>סיכום:</strong> ${historyData.length} רשומות | 
+                    סכום כולל: ₪${totalAmount.toLocaleString()} | 
+                    ידני: ${manualCount} | נדרים פלוס: ${nedarimCount}
+                `;
+            }
+        }
+        
+        // הצגת סטטוס היסטוריה
+        function showHistoryStatus(message, type = 'info') {
+            const statusEl = document.getElementById('historyStatus');
+            if (!statusEl) return;
+            
+            statusEl.style.display = 'block';
+            statusEl.textContent = message;
+            
+            if (type === 'success') {
+                statusEl.style.background = '#d4edda';
+                statusEl.style.color = '#155724';
+            } else if (type === 'error') {
+                statusEl.style.background = '#f8d7da';
+                statusEl.style.color = '#721c24';
+            } else {
+                statusEl.style.background = '#cce5ff';
+                statusEl.style.color = '#004085';
+            }
+            
+            setTimeout(() => { statusEl.style.display = 'none'; }, 10000);
+        }
+        
+        // ניקוי סינון
+        function clearHistoryFilters() {
+            const startDate = document.getElementById('historyStartDate');
+            const endDate = document.getElementById('historyEndDate');
+            const source = document.getElementById('historySourceFilter');
+            const action = document.getElementById('historyActionFilter');
+            
+            if (startDate) startDate.value = '';
+            if (endDate) endDate.value = '';
+            if (source) source.value = '';
+            if (action) action.value = '';
+        }
+        
+        // ייצוא היסטוריה לאקסל
+        function exportHistoryToExcel(sourceFilter = null) {
+            if (typeof XLSX === 'undefined') {
+                showNotification('❌ ספריית XLSX לא זמינה', 'error');
+                return;
+            }
+            
+            let dataToExport = historyData;
+            
+            // סינון לפי מקור אם צוין
+            if (sourceFilter) {
+                dataToExport = historyData.filter(e => e.source === sourceFilter);
+            }
+            
+            if (dataToExport.length === 0) {
+                showNotification('❌ אין נתונים לייצוא', 'error');
+                return;
+            }
+            
+            const rows = dataToExport.map(entry => ({
+                'תאריך': entry.date || '',
+                'שעה': entry.time || '',
+                'סוג פעולה': entry.actionType || '',
+                'סוג ישות': entry.entityType || '',
+                'שם': entry.entityName || '',
+                'פרטים': entry.details || '',
+                'סכום': entry.amount || 0,
+                'מקור': entry.source === 'manual' ? 'ידני' : entry.source === 'nedarim' ? 'נדרים פלוס' : entry.source || '',
+                'מחשב': entry.computerName || '',
+                'מספר מחשב': entry.computerId || ''
+            }));
+            
+            const workbook = XLSX.utils.book_new();
+            const worksheet = XLSX.utils.json_to_sheet(rows);
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'היסטוריה');
+            
+            const filename = sourceFilter 
+                ? `history_${sourceFilter}_${new Date().toISOString().split('T')[0]}.xlsx`
+                : `history_${new Date().toISOString().split('T')[0]}.xlsx`;
+            
+            XLSX.writeFile(workbook, filename);
+            showNotification(`✅ יוצאו ${dataToExport.length} רשומות לאקסל`, 'success');
+        }
+        
+        // ========== סוף מערכת היסטוריה ==========
+
         // טעינה אוטומטית בעליית התוכנה
         window.addEventListener('load', async () => {
             console.log('🚀 [אתחול] טוען הגדרות סנכרון...');
             loadGistSyncSettings();
             loadGoogleSheetsSettings();
+            loadComputerSettings();
             
             // מחכה קצת כדי לוודא שהכל נטען
             await new Promise(resolve => setTimeout(resolve, 500));
