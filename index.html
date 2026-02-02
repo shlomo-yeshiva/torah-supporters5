@@ -17947,6 +17947,7 @@
                 return;
             }
             
+            console.log('📥 [Google Sheets] מתחיל טעינה...');
             showGoogleSheetsStatus('📥 טוען נתונים מהגליון...', 'info');
             
             try {
@@ -17956,6 +17957,7 @@
                 });
                 
                 const result = await response.json();
+                console.log('📥 [Google Sheets] תגובה מהשרת:', result.success ? 'הצלחה' : 'שגיאה');
                 
                 if (!result.success && result.error) {
                     throw new Error(result.error);
@@ -17968,12 +17970,20 @@
                 if (result.groups && Array.isArray(result.groups) && result.groups.length > 0) {
                     groups = result.groups;
                     loadedGroups = groups.length;
+                    console.log('📥 [Google Sheets] קבוצות נטענו:', groups.map(g => ({ id: g.id, name: g.name })));
                 }
                 
                 // טעינת מתרימים
                 if (result.donors && Array.isArray(result.donors) && result.donors.length > 0) {
                     donors = result.donors;
                     loadedDonors = donors.length;
+                    
+                    // הצגת דוגמה למתרים עם שם תצוגה מותאם
+                    const donorsWithDisplayName = donors.filter(d => d.displayName && d.displayName !== d.name);
+                    console.log('📥 [Google Sheets] מתרימים עם שם תצוגה מותאם:', donorsWithDisplayName.length);
+                    if (donorsWithDisplayName.length > 0) {
+                        console.log('📥 [Google Sheets] דוגמה:', donorsWithDisplayName[0]);
+                    }
                 }
                 
                 // טעינת הגדרות
@@ -17999,10 +18009,10 @@
                 showNotification(message, 'success');
                 showGoogleSheetsStatus(message, 'success');
                 
-                console.log('✅ נתונים נטענו מ-Google Sheets:', { donors: loadedDonors, groups: loadedGroups, total: totalAmount });
+                console.log('📥 [Google Sheets] טעינה הושלמה:', { donors: loadedDonors, groups: loadedGroups, total: totalAmount });
                 
             } catch (error) {
-                console.error('שגיאה בטעינה מ-Google Sheets:', error);
+                console.error('❌ [Google Sheets] שגיאה בטעינה:', error);
                 showNotification('❌ שגיאה בטעינה: ' + error.message, 'error');
                 showGoogleSheetsStatus('❌ שגיאה בטעינה: ' + error.message, 'error');
             }
@@ -18019,10 +18029,23 @@
             
             if (!url) {
                 console.warn('⚠️ אין URL לשמירה ל-Google Sheets');
-                return;
+                return { success: false, error: 'אין URL' };
             }
             
-            showGoogleSheetsStatus('💾 שומר נתונים לגליון...', 'info');
+            console.log('💾 [Google Sheets] מתחיל שמירה...');
+            console.log('💾 [Google Sheets] URL:', url.substring(0, 50) + '...');
+            console.log('💾 [Google Sheets] מתרימים:', donors.length, ', קבוצות:', groups.length);
+            
+            // דוגמה למתרים ראשון עם שם תצוגה
+            const sampleDonor = donors.find(d => d.displayName);
+            if (sampleDonor) {
+                console.log('💾 [Google Sheets] דוגמה למתרים:', {
+                    id: sampleDonor.id,
+                    name: sampleDonor.name,
+                    displayName: sampleDonor.displayName,
+                    groupId: sampleDonor.groupId
+                });
+            }
             
             try {
                 const dataToSave = {
@@ -18043,22 +18066,23 @@
                     body: JSON.stringify(dataToSave)
                 });
                 
+                console.log('💾 [Google Sheets] תגובה מהשרת:', response.status, response.statusText);
+                
                 const result = await response.json();
+                console.log('💾 [Google Sheets] תוצאה:', JSON.stringify(result));
                 
                 if (!result.success && result.error) {
                     throw new Error(result.error);
                 }
                 
                 const message = `✅ נשמרו ${donors.length} מתרימים ו-${groups.length} קבוצות לגליון`;
-                showNotification(message, 'success');
-                showGoogleSheetsStatus(message, 'success');
+                console.log('💾 [Google Sheets] הצלחה!', message);
                 
-                console.log('✅ נתונים נשמרו ל-Google Sheets');
+                return { success: true };
                 
             } catch (error) {
-                console.error('שגיאה בשמירה ל-Google Sheets:', error);
-                showNotification('❌ שגיאה בשמירה: ' + error.message, 'error');
-                showGoogleSheetsStatus('❌ שגיאה בשמירה: ' + error.message, 'error');
+                console.error('❌ [Google Sheets] שגיאה בשמירה:', error);
+                return { success: false, error: error.message };
             }
         }
         
