@@ -524,9 +524,11 @@ function saveDonors(donors, groups) {
     var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     var sheet = ss.getSheetByName(SHEET_NAMES.DONORS);
     
-    // מחיקת נתונים ישנים
-    if (sheet.getLastRow() > 1) {
-      sheet.deleteRows(2, sheet.getLastRow() - 1);
+    // מחיקת נתונים ישנים - משתמש ב-clearContent במקום deleteRows כדי למנוע שגיאת שורות מוקפאות
+    var lastRow = sheet.getLastRow();
+    if (lastRow > 1) {
+      var lastCol = sheet.getLastColumn() || DONOR_COLUMNS.length;
+      sheet.getRange(2, 1, lastRow - 1, lastCol).clearContent();
     }
     
     if (!donors || donors.length === 0) {
@@ -602,9 +604,11 @@ function saveGroups(groups) {
     var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     var sheet = ss.getSheetByName(SHEET_NAMES.GROUPS);
     
-    // מחיקת נתונים ישנים
-    if (sheet.getLastRow() > 1) {
-      sheet.deleteRows(2, sheet.getLastRow() - 1);
+    // מחיקת נתונים ישנים - משתמש ב-clearContent במקום deleteRows
+    var lastRow = sheet.getLastRow();
+    if (lastRow > 1) {
+      var lastCol = sheet.getLastColumn() || GROUP_COLUMNS.length;
+      sheet.getRange(2, 1, lastRow - 1, lastCol).clearContent();
     }
     
     if (!groups || groups.length === 0) {
