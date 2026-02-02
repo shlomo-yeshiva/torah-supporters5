@@ -10801,9 +10801,12 @@
                     }
                 }
             } else if (key === 'leaders') {
+                // איפוס הדגל שהגלילה רצה
+                leadersScrollIsRunning = false;
+                
                 const wrapper = document.getElementById('leadersScrollWrapper');
                 if (wrapper) {
-                    wrapper.scrollTop = 0;
+                    // לא מאפסים את scrollTop - שומרים את המיקום
                     wrapper.classList.remove('fade-bright');
                 }
                 const primaryContent = document.querySelector('#leadersScrollPrimary .live-leaders-content');
@@ -10864,8 +10867,15 @@
         // דגל למניעת קפיצות בזמן עדכון
         let leadersScrollRestartPending = false;
         let leadersScrollRestartTimeout = null;
+        let leadersScrollIsRunning = false; // דגל חדש - האם הגלילה כבר רצה
         
         function restartLeadersAutoScroll({ immediate = false } = {}) {
+            // אם הגלילה כבר רצה - לא לאפס! פשוט להמשיך
+            if (leadersScrollIsRunning) {
+                console.log('🔄 גלילת מובילים כבר רצה - לא מאפסים');
+                return;
+            }
+            
             // מניעת קפיצות: אם כבר יש עדכון ממתין, לא מתחילים עוד אחד
             if (leadersScrollRestartPending && !immediate) {
                 return;
@@ -10879,7 +10889,9 @@
                 leadersScrollRestartPending = true;
                 leadersScrollRestartTimeout = setTimeout(() => {
                     leadersScrollRestartPending = false;
-                    doRestartLeadersAutoScroll({ immediate: false });
+                    if (!leadersScrollIsRunning) {
+                        doRestartLeadersAutoScroll({ immediate: false });
+                    }
                 }, 500);
                 return;
             }
@@ -10894,6 +10906,7 @@
             const state = autoScrollStates.leaders;
 
             if (!wrapper || !primary || !clone || !state) {
+                leadersScrollIsRunning = false;
                 stopAutoScroll('leaders');
                 return;
             }
@@ -10903,6 +10916,12 @@
                 state.cooldownHandle = null;
             }
             state.isInCooldown = false;
+
+            // אם כבר רץ - לא להתחיל מחדש!
+            if (state.handle && leadersScrollIsRunning) {
+                console.log('🔄 גלילה כבר פעילה - ממשיכים');
+                return;
+            }
 
             if (state.handle) {
                 cancelAnimationFrame(state.handle);
@@ -10914,6 +10933,7 @@
             if (!primaryContent) {
                 clone.innerHTML = '';
                 clone.style.display = 'none';
+                leadersScrollIsRunning = false;
                 stopAutoScroll('leaders');
                 return;
             }
@@ -10925,6 +10945,7 @@
             const contentHeight = primary.scrollHeight;
             if (!contentHeight || !isFinite(contentHeight) || contentHeight === 0) {
                 wrapper.scrollTop = 0;
+                leadersScrollIsRunning = false;
                 stopAutoScroll('leaders');
                 return;
             }
@@ -10944,6 +10965,9 @@
             
             showContent();
             wrapper.scrollTop = offset;
+            
+            // מסמן שהגלילה רצה
+            leadersScrollIsRunning = true;
 
             let last = performance.now();
 
@@ -13206,11 +13230,21 @@
 
             leadersList.innerHTML = listHtml + groupsCardsHtml + summaryHtml;
             
-            // הפעלת גלילה אוטומטית אחרי עדכון הרשימה
+            // עדכון הקלון בלבד אם הגלילה כבר רצה - בלי לאפס את המיקום!
             if (isLiveViewActive() && liveViewSettings.enableAutoScroll) {
-                setTimeout(() => {
-                    restartLeadersAutoScroll({ immediate: true });
-                }, 100);
+                if (leadersScrollIsRunning) {
+                    // רק מעדכנים את הקלון, לא מאפסים את הגלילה
+                    const clone = document.getElementById('leadersScrollClone');
+                    const primaryContent = document.querySelector('#leadersScrollPrimary .live-leaders-content');
+                    if (clone && primaryContent) {
+                        clone.innerHTML = primaryContent.outerHTML;
+                    }
+                } else {
+                    // אם הגלילה לא רצה, מתחילים אותה
+                    setTimeout(() => {
+                        restartLeadersAutoScroll({ immediate: true });
+                    }, 100);
+                }
             }
         }
 
