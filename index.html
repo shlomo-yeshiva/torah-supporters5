@@ -17816,8 +17816,8 @@
         let googleSheetsSyncEnabled = false;
         let saveToGoogleSheetsTimeout = null;
         
-        // סנכרון אוטומטי לגליון - כל 30 שניות (מאוזן בין עדכון לבין חסכון ב-API)
-        const LIVE_VIEW_SYNC_INTERVAL_MS = 30000;
+        // סנכרון אוטומטי לגליון - כל שנייה (עדכון תמידי לתצוגת לייב)
+        const LIVE_VIEW_SYNC_INTERVAL_MS = 1000;
         let liveViewSyncIntervalId = null;
         
         // שמירת הגדרות Google Sheets
@@ -18073,7 +18073,7 @@
                 if (!document.hidden) doSyncFromSheet().catch(() => {});
             });
             
-            console.log('🔄 [סנכרון] סנכרון לגליון הופעל (כל ' + (LIVE_VIEW_SYNC_INTERVAL_MS/1000) + ' שניות, חוסך API כשהטאב מוסתר)');
+            console.log('🔄 [סנכרון] סנכרון לגליון הופעל (כל שנייה)');
         }
         
         function stopLiveViewSyncPolling() {
