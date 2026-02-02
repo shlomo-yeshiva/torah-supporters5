@@ -17813,8 +17813,8 @@
         let googleSheetsSyncEnabled = false;
         let saveToGoogleSheetsTimeout = null;
         
-        // סנכרון אוטומטי לגליון - כל 10 שניות (לעדכון מיידי במסכי תצוגת לייב)
-        const LIVE_VIEW_SYNC_INTERVAL_MS = 10000;
+        // סנכרון אוטומטי לגליון - כל 5 שניות (לעדכון מיידי במסכי תצוגת לייב)
+        const LIVE_VIEW_SYNC_INTERVAL_MS = 5000;
         let liveViewSyncIntervalId = null;
         
         // שמירת הגדרות Google Sheets
@@ -18025,6 +18025,8 @@
                     console.error('❌ [Google Sheets] שגיאה בטעינה:', error);
                     showNotification('❌ שגיאה בטעינה: ' + error.message, 'error');
                     showGoogleSheetsStatus('❌ שגיאה בטעינה: ' + error.message, 'error');
+                } else {
+                    console.warn('⚠️ [סנכרון] שגיאה בטעינה שקטה:', error.message);
                 }
                 return { success: false };
             }
@@ -18034,10 +18036,24 @@
         function startLiveViewSyncPolling() {
             if (liveViewSyncIntervalId) return;
             const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
-            if (!url) return;
+            if (!url) {
+                console.warn('⚠️ [סנכרון] אין URL - סנכרון תקופתי לא הופעל');
+                return;
+            }
             
+            // טעינה מיידית ראשונה
+            loadFromGoogleSheets(true).then(r => {
+                if (r && r.success) console.log('🔄 [סנכרון] טעינה ראשונה מהגליון הושלמה');
+            }).catch(err => console.warn('⚠️ [סנכרון] שגיאה בטעינה ראשונה:', err));
+            
+            // ואז כל 5 שניות
             liveViewSyncIntervalId = setInterval(async () => {
-                await loadFromGoogleSheets(true);
+                try {
+                    const r = await loadFromGoogleSheets(true);
+                    if (!r || !r.success) console.warn('⚠️ [סנכרון] טעינה מהגליון נכשלה');
+                } catch (err) {
+                    console.warn('⚠️ [סנכרון] שגיאה בטעינה תקופתית:', err);
+                }
             }, LIVE_VIEW_SYNC_INTERVAL_MS);
             console.log('🔄 [סנכרון] סנכרון תקופתי לגליון הופעל (כל ' + (LIVE_VIEW_SYNC_INTERVAL_MS/1000) + ' שניות)');
         }
@@ -18588,11 +18604,13 @@
             await new Promise(resolve => setTimeout(resolve, 500));
             
             // בדיקה אם יש Google Sheets מוגדר
-            const hasSheetsUrl = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL;
-            if (hasSheetsUrl && googleSheetsSyncEnabled) {
+            const hasSheetsUrl = !!(googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL);
+            
+            if (hasSheetsUrl) {
+                // תמיד טוענים מהגליון בפתיחה - גם במחשבים שלא הגדירו סנכרון
                 console.log('🔄 [אתחול] נמצא Google Sheets URL, טוען נתונים מהגליון...');
                 const sheetsStatusEl = document.getElementById('googleSheetsSyncStatus');
-                if (sheetsStatusEl) {
+                if (sheetsStatusEl && googleSheetsSyncEnabled) {
                     sheetsStatusEl.style.display = 'block';
                     sheetsStatusEl.style.background = '#cce5ff';
                     sheetsStatusEl.style.color = '#004085';
@@ -18600,15 +18618,13 @@
                 }
                 
                 try {
-                    await loadFromGoogleSheets();
+                    await loadFromGoogleSheets(!googleSheetsSyncEnabled);
                     console.log('✅ [אתחול] הנתונים נטענו בהצלחה מ-Google Sheets');
                 } catch (error) {
                     console.error('❌ [אתחול] שגיאה בטעינה מ-Google Sheets:', error);
                 }
-            }
-            
-            // הפעלת סנכרון תקופתי - כל המסכים (כולל תצוגת לייב) יקבלו עדכונים אוטומטית כל 10 שניות
-            if (hasSheetsUrl) {
+                
+                // הפעלת סנכרון תקופתי - כל המסכים יקבלו עדכונים אוטומטית כל 5 שניות
                 startLiveViewSyncPolling();
             }
             // אחרת, בדיקה אם יש Gist ID
