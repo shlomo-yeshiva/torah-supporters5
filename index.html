@@ -1884,6 +1884,75 @@
             color: var(--primary-gold);
         }
 
+        /* כפתור הפעלה/כיבוי לתצוגת לייב */
+        .group-live-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background: rgba(240, 245, 250, 0.8);
+            border-radius: 8px;
+        }
+        
+        .group-live-toggle-label {
+            font-size: 13px;
+            color: var(--text);
+            flex: 1;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            cursor: pointer;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #ccc;
+            border-radius: 26px;
+            transition: 0.3s;
+            border: 2px solid rgba(100, 120, 180, 0.3);
+        }
+        
+        .toggle-slider::before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 2px;
+            bottom: 2px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .toggle-switch input:checked + .toggle-slider {
+            background: linear-gradient(135deg, #4a7dff, #6b9bff);
+            border-color: rgba(74, 125, 255, 0.5);
+        }
+        
+        .toggle-switch input:checked + .toggle-slider::before {
+            transform: translateX(24px);
+        }
+        
+        .group-card.hidden-in-live {
+            opacity: 0.6;
+            border-style: dashed;
+        }
+
         .group-card.dragging {
             opacity: 0.65;
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
@@ -3331,7 +3400,7 @@
             margin-bottom: 18px;
             text-align: center;
             padding-bottom: 12px;
-            border-bottom: 2px solid rgba(212, 175, 55, 0.6);
+            border-bottom: none !important;
             font-weight: 700;
         }
 
@@ -11491,14 +11560,22 @@
                     const groupDonors = donors.filter(d => d.groupId === group.id);
                     const groupTotal = groupDonors.reduce((sum, d) => sum + d.amount, 0);
                     const groupProgress = group.goal > 0 ? (groupTotal / group.goal) * 100 : 0;
+                    const showInLive = group.showInLiveView !== false; // ברירת מחדל: מוצג
                     
                     const card = document.createElement('div');
-                card.className = 'group-card';
+                card.className = 'group-card' + (showInLive ? '' : ' hidden-in-live');
                     card.innerHTML = `
                     <div class="group-header">
                         <input type="text" class="group-name-input" value="${group.name}" 
                                onchange="updateGroupName('${group.id}', this.value)">
                         <button class="btn btn-danger btn-small" onclick="deleteGroup('${group.id}')">מחק</button>
+                        </div>
+                        <div class="group-live-toggle">
+                            <span class="group-live-toggle-label">הצג בתצוגת לייב:</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" ${showInLive ? 'checked' : ''} onchange="toggleGroupLiveView('${group.id}', this.checked)">
+                                <span class="toggle-slider"></span>
+                            </label>
                         </div>
                         <div style="margin-bottom: 10px;">
                         <label style="display: block; margin-bottom: 5px; color: var(--muted); font-size: 12px;">מספר קבוצה (סדר בתצוגת לייב):</label>
@@ -11590,6 +11667,19 @@
                 updateGroupsDisplay();
                 updateLiveView();
                 showNotification('מספר הקבוצה עודכן');
+            }
+        }
+        
+        // הפעלה/כיבוי תצוגת קבוצה בלייב
+        function toggleGroupLiveView(groupId, show) {
+            const group = groups.find(g => g.id == groupId);
+            if (group) {
+                group.showInLiveView = show;
+                saveData();
+                updateGroupsDisplay();
+                updateLiveView();
+                updateLeadersList();
+                showNotification(show ? 'הקבוצה תוצג בתצוגת לייב' : 'הקבוצה הוסרה מתצוגת לייב');
             }
         }
             // עדכון יעד קבוצה
@@ -12781,7 +12871,8 @@
             });
 
             // מיון קבוצות לפי מספר קבוצה (orderNumber) - הקבוצה עם המספר הנמוך ביותר תוצג ראשונה
-            let sortedGroups = [...groups];
+            // סינון קבוצות שמוסתרות מתצוגת לייב
+            let sortedGroups = [...groups].filter(g => g.showInLiveView !== false);
             sortedGroups.sort((a, b) => {
                 const aOrder = a.orderNumber || 999;
                 const bOrder = b.orderNumber || 999;
@@ -13130,9 +13221,12 @@
             const leadersList = document.getElementById('leadersList');
             if (!leadersList) return;
             
-            // מיון מתרימים לפי סכום
+            // קבוצות שמוצגות בלייב
+            const visibleGroupIds = new Set(groups.filter(g => g.showInLiveView !== false).map(g => g.id));
+            
+            // מיון מתרימים לפי סכום - רק מקבוצות שמוצגות בלייב
             const sortedDonors = [...donors]
-                .filter(d => d.name && d.name.trim() && d.amount > 0)
+                .filter(d => d.name && d.name.trim() && d.amount > 0 && visibleGroupIds.has(d.groupId))
                 .sort((a, b) => b.amount - a.amount)
                 .slice(0, 5);
             
@@ -13159,8 +13253,8 @@
                 : `₪${totalCollected.toLocaleString()} | ללא יעד מוגדר`;
             const totalDonorsCount = donors.filter(d => d.name && d.name.trim()).length;
             
-            // יצירת כרטיסיות לכל קבוצה
-            const groupsCardsHtml = groups.map(group => {
+            // יצירת כרטיסיות לכל קבוצה - רק קבוצות שמוצגות בלייב
+            const groupsCardsHtml = groups.filter(g => g.showInLiveView !== false).map(group => {
                 const groupDonors = donors.filter(d => d.groupId === group.id);
                 const collected = groupDonors.reduce((sum, donor) => sum + (donor.amount || 0), 0);
                 const groupGoal = group.goal || 0;
