@@ -217,92 +217,75 @@ function getPublicConfig() {
  */
 function getNedarimTotalDonations() {
   try {
-    // ניסיון 1: MatchPlus API עם ShowGoal (הכי מדויק)
-    var url1 = NEDARIM_CONFIG.MATCH_PLUS_API_URL + 
-      '?Action=ShowGoal&MosadId=' + NEDARIM_CONFIG.MOSAD_ID + 
-      '&GoalId=' + NEDARIM_CONFIG.MATCHING_ID;
+    var totalFromRecruiters = 0;
+    var goalFromAPI = 0;
     
-    Logger.log('מנסה URL: ' + url1);
+    // ניסיון 1: חישוב הסכום האמיתי מכל המתרימים (הכי מדויק!)
+    Logger.log('מחשב סכום כולל מכל המתרימים...');
     
-    var response1 = UrlFetchApp.fetch(url1, {
-      method: 'GET',
-      muteHttpExceptions: true
-    });
+    // מחפש את כל המתרימים עם חיפושים מרובים
+    var hebrewLetters = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י', 'כ', 'ל', 'מ', 'נ', 'ס', 'ע', 'פ', 'צ', 'ק', 'ר', 'ש', 'ת'];
+    var allRecruiters = {};
     
-    if (response1.getResponseCode() === 200) {
-      var text = response1.getContentText();
-      Logger.log('תגובה מ-ShowGoal: ' + text);
-      try {
-        var data = JSON.parse(text);
-        // בודק שדות שונים שיכולים להכיל את הסכום
-        var donated = parseFloat(data.Donated) || parseFloat(data.DSum) || parseFloat(data.TotalDonated) || 0;
-        var goal = parseFloat(data.Goal) || parseFloat(data.TargetSum) || 0;
-        
-        if (donated > 0 || goal > 0) {
-          return {
-            success: true,
-            totalDonated: donated,
-            goal: goal,
-            goalId: data.GoalId || NEDARIM_CONFIG.MATCHING_ID,
-            source: 'MatchPlus-ShowGoal'
-          };
-        }
-      } catch (e) {
-        Logger.log('שגיאת פרסור ShowGoal: ' + e.message);
-      }
-    }
-    
-    // ניסיון 2: Reports API
-    var url2 = NEDARIM_CONFIG.API_URL + 
-      '?Action=GetMatchingDetails&MosadId=' + NEDARIM_CONFIG.MOSAD_ID + 
-      '&MatchingId=' + NEDARIM_CONFIG.MATCHING_ID +
-      '&Password=' + NEDARIM_CONFIG.API_PASSWORD;
-    
-    Logger.log('מנסה URL: ' + url2);
-    
-    var response2 = UrlFetchApp.fetch(url2, {
-      method: 'GET',
-      muteHttpExceptions: true
-    });
-    
-    if (response2.getResponseCode() === 200) {
-      var text2 = response2.getContentText();
-      Logger.log('תגובה מ-GetMatchingDetails: ' + text2);
-      try {
-        var data2 = JSON.parse(text2);
-        var donated2 = parseFloat(data2.TotalDonated) || parseFloat(data2.Donated) || parseFloat(data2.DSum) || 0;
-        var goal2 = parseFloat(data2.Goal) || parseFloat(data2.TargetSum) || 0;
-        
-        if (donated2 > 0 || goal2 > 0) {
-          return {
-            success: true,
-            totalDonated: donated2,
-            goal: goal2,
-            source: 'Reports-GetMatchingDetails'
-          };
-        }
-      } catch (e) {
-        Logger.log('שגיאת פרסור GetMatchingDetails: ' + e.message);
-      }
-    }
-    
-    // ניסיון 3: חישוב מהמתרימים
-    Logger.log('מנסה לחשב סכום מהמתרימים...');
-    var recruitersResult = searchNedarimRecruiters('');
-    if (recruitersResult && recruitersResult.success && recruitersResult.recruiters) {
-      var total = 0;
-      recruitersResult.recruiters.forEach(function(r) {
-        total += parseFloat(r.Amount) || parseFloat(r.Collected) || 0;
+    // חיפוש ריק קודם
+    var emptyResult = searchNedarimRecruiters('');
+    if (emptyResult && emptyResult.success && emptyResult.recruiters) {
+      emptyResult.recruiters.forEach(function(r) {
+        var id = r.Id || r.MatrimId || r.Name;
+        if (id) allRecruiters[id] = r;
       });
-      if (total > 0) {
-        return {
-          success: true,
-          totalDonated: total,
-          goal: 0,
-          source: 'Calculated-FromRecruiters',
-          recruitersCount: recruitersResult.recruiters.length
-        };
+    }
+    
+    // חיפוש לפי אותיות עבריות
+    hebrewLetters.forEach(function(letter) {
+      try {
+        var result = searchNedarimRecruiters(letter);
+        if (result && result.success && result.recruiters) {
+          result.recruiters.forEach(function(r) {
+            var id = r.Id || r.MatrimId || r.Name;
+            if (id) allRecruiters[id] = r;
+          });
+        }
+      } catch (e) {
+        // ממשיך לאות הבאה
       }
+    });
+    
+    // חישוב הסכום הכולל
+    var recruitersArray = Object.values(allRecruiters);
+    recruitersArray.forEach(function(r) {
+      var amount = parseFloat(r.Cumule) || parseFloat(r.Amount) || parseFloat(r.Collected) || 0;
+      totalFromRecruiters += amount;
+    });
+    
+    Logger.log('סכום כולל מ-' + recruitersArray.length + ' מתרימים: ' + totalFromRecruiters);
+    
+    // ניסיון 2: קבלת היעד מ-ShowGoal API
+    try {
+      var url1 = NEDARIM_CONFIG.MATCH_PLUS_API_URL + 
+        '?Action=ShowGoal&MosadId=' + NEDARIM_CONFIG.MOSAD_ID + 
+        '&GoalId=' + NEDARIM_CONFIG.MATCHING_ID;
+      
+      var response1 = UrlFetchApp.fetch(url1, { method: 'GET', muteHttpExceptions: true });
+      
+      if (response1.getResponseCode() === 200) {
+        var data = JSON.parse(response1.getContentText());
+        goalFromAPI = parseFloat(data.Goal) || parseFloat(data.TargetSum) || 0;
+        Logger.log('יעד מ-API: ' + goalFromAPI);
+      }
+    } catch (e) {
+      Logger.log('שגיאה בקבלת יעד: ' + e.message);
+    }
+    
+    // מחזיר את הסכום האמיתי שחושב מהמתרימים
+    if (totalFromRecruiters > 0) {
+      return {
+        success: true,
+        totalDonated: totalFromRecruiters,
+        goal: goalFromAPI,
+        source: 'Calculated-FromAllRecruiters',
+        recruitersCount: recruitersArray.length
+      };
     }
     
     return {
