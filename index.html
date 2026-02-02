@@ -11086,8 +11086,25 @@
         }
 
             // הצגת הודעה
-            function showNotification(message) {
-            const notification = document.getElementById('notification');
+            // suppressNotifications - משתנה גלובלי לדיכוי הודעות בתצוגת לייב או בעדכון אוטומטי
+            let suppressNotifications = false;
+            
+            function showNotification(message, force = false) {
+                // אם ההודעות מדוכאות ולא נכפה - לא מציג
+                if (suppressNotifications && !force) {
+                    console.log('📢 [הודעה מדוכאת]:', message);
+                    return;
+                }
+                
+                // לא מציג הודעות בתצוגת לייב (אלא אם נכפה)
+                if (typeof isLiveViewActive === 'function' && isLiveViewActive() && !force) {
+                    console.log('📢 [הודעה מדוכאת בלייב]:', message);
+                    return;
+                }
+                
+                const notification = document.getElementById('notification');
+                if (!notification) return;
+                
                 notification.textContent = message;
                 notification.classList.add('show');
                 setTimeout(() => {
@@ -18024,7 +18041,8 @@
         // ========== סנכרון Google Sheets ==========
         
         // ⚠️ הכתובת הקבועה של ה-Web App - שנה רק אם יצרת פריסה חדשה!
-        const DEFAULT_GOOGLE_SHEETS_URL = ''; // הכנס כאן את ה-URL שקיבלת מהפריסה
+        // הכתובת הזו תישמר אוטומטית ולקוחות לא יצטרכו להזין אותה
+        const DEFAULT_GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbz2tU9NnoLx4oNgSKvdGT_w93pWy3sOjtV32BTUR7mK2qWqCXFgT33rYg7QMTVh0ZHX/exec';
         
         let googleSheetsWebAppUrl = DEFAULT_GOOGLE_SHEETS_URL;
         let googleSheetsSyncEnabled = false;
