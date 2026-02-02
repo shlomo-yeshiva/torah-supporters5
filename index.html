@@ -18000,13 +18000,13 @@
                     }
                 }
                 
-                // שמירה מקומית ועדכון תצוגה
+                // שמירה מקומית ועדכון תצוגה - immediate=true לעדכון מיידי בתצוגת לייב
                 ensureDonorsNormalized();
                 saveData();
                 updateDonorsList();
                 updateGroupsDisplay();
                 updateHomeStats();
-                updateLiveView();
+                updateLiveView(true);
                 updateLeadersList();
                 updateLiveTargets();
                 
