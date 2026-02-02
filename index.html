@@ -6179,6 +6179,9 @@
             </section>
             <!-- תצוגה בלייב -->
             <section class="content-section live-view-section" id="liveviewSection">
+                <button class="fullscreen-btn live-refresh-btn" onclick="showNotification('מרענן...','info');doSyncFromSheet().then(r=>{showNotification(r&&r.success?'✅ עודכן מהגליון':'לא התאפשר לרענן',r&&r.success?'success':'error');}).catch(()=>showNotification('שגיאה ברענון','error'));" aria-label="רענן מהגליון" title="רענן מהגליון" style="right: 55px; left: auto;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                </button>
                 <button class="fullscreen-btn" onclick="toggleFullscreen()" aria-label="מסך מלא" id="fullscreenBtn">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" id="fullscreenIcon">
                         <path d="M8 3H5C3.89543 3 3 3.89543 3 5V8M21 8V5C21 3.89543 20.1046 3 19 3H16M16 21H19C20.1046 21 21 20.1046 21 19V16M3 16V19C3 20.1046 3.89543 21 5 21H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -17813,8 +17816,8 @@
         let googleSheetsSyncEnabled = false;
         let saveToGoogleSheetsTimeout = null;
         
-        // סנכרון אוטומטי לגליון - כל 5 שניות (לעדכון מיידי במסכי תצוגת לייב)
-        const LIVE_VIEW_SYNC_INTERVAL_MS = 5000;
+        // סנכרון אוטומטי לגליון - כל 30 שניות (מאוזן בין עדכון לבין חסכון ב-API)
+        const LIVE_VIEW_SYNC_INTERVAL_MS = 30000;
         let liveViewSyncIntervalId = null;
         
         // שמירת הגדרות Google Sheets
@@ -18032,7 +18035,17 @@
             }
         }
         
-        // הפעלת סנכרון תקופתי לגליון - עבור עדכון מיידי במסכי תצוגת לייב
+        // הפעלת סנכרון תקופתי לגליון - עבור עדכון במסכי תצוגת לייב (חסכוני ב-API)
+        async function doSyncFromSheet() {
+            const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
+            if (!url) return { success: false };
+            const r = await loadFromGoogleSheets(true);
+            if (r && r.success && typeof notifyDataChanged === 'function') {
+                notifyDataChanged();
+            }
+            return r;
+        }
+        
         function startLiveViewSyncPolling() {
             if (liveViewSyncIntervalId) return;
             const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
@@ -18042,20 +18055,25 @@
             }
             
             // טעינה מיידית ראשונה
-            loadFromGoogleSheets(true).then(r => {
+            doSyncFromSheet().then(r => {
                 if (r && r.success) console.log('🔄 [סנכרון] טעינה ראשונה מהגליון הושלמה');
             }).catch(err => console.warn('⚠️ [סנכרון] שגיאה בטעינה ראשונה:', err));
             
-            // ואז כל 5 שניות
+            // ואז כל 30 שניות - רק כשהטאב גלוי (חסכון ב-API)
             liveViewSyncIntervalId = setInterval(async () => {
+                if (document.hidden) return; // חוסך API כשהטאב מוסתר
                 try {
-                    const r = await loadFromGoogleSheets(true);
-                    if (!r || !r.success) console.warn('⚠️ [סנכרון] טעינה מהגליון נכשלה');
+                    await doSyncFromSheet();
                 } catch (err) {
                     console.warn('⚠️ [סנכרון] שגיאה בטעינה תקופתית:', err);
                 }
             }, LIVE_VIEW_SYNC_INTERVAL_MS);
-            console.log('🔄 [סנכרון] סנכרון תקופתי לגליון הופעל (כל ' + (LIVE_VIEW_SYNC_INTERVAL_MS/1000) + ' שניות)');
+            
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) doSyncFromSheet().catch(() => {});
+            });
+            
+            console.log('🔄 [סנכרון] סנכרון לגליון הופעל (כל ' + (LIVE_VIEW_SYNC_INTERVAL_MS/1000) + ' שניות, חוסך API כשהטאב מוסתר)');
         }
         
         function stopLiveViewSyncPolling() {
@@ -18291,7 +18309,7 @@
                 clearTimeout(saveToGoogleSheetsTimeout);
             }
             
-            // שמירה אחרי 3 שניות ללא שינויים נוספים (הקטנו מ-5 ל-3)
+            // שמירה אחרי 2 שניות ללא שינויים נוספים (מאוזן בין מהירות לחסכון)
             saveToGoogleSheetsTimeout = setTimeout(async () => {
                 try {
                     await saveToGoogleSheets();
@@ -18299,7 +18317,7 @@
                 } catch (err) {
                     console.warn('⚠️ שגיאה בשמירה אוטומטית ל-Google Sheets:', err);
                 }
-            }, 3000);
+            }, 2000);
         }
         
         // ========== סוף סנכרון Google Sheets ==========
