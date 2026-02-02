@@ -46,7 +46,7 @@ const SHEET_NAMES = {
 };
 
 // עמודות למתרימים
-const DONOR_COLUMNS = ['id', 'name', 'displayName', 'originalName', 'groupId', 'amount', 'personalGoal', 'history', 'nedarimMatrimId', 'createdAt', 'updatedAt'];
+const DONOR_COLUMNS = ['id', 'name', 'displayName', 'originalName', 'groupId', 'groupName', 'amount', 'personalGoal', 'history', 'nedarimMatrimId', 'createdAt', 'updatedAt'];
 
 // עמודות לקבוצות
 const GROUP_COLUMNS = ['id', 'name', 'goal', 'orderNumber', 'showInLiveView', 'createdAt', 'updatedAt'];
@@ -688,7 +688,7 @@ function getAllData() {
   }
 }
 
-function saveDonors(donors) {
+function saveDonors(donors, groups) {
   try {
     ensureSheetsExist();
     var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -700,6 +700,26 @@ function saveDonors(donors) {
     
     if (!donors || donors.length === 0) {
       return { success: true, message: 'אין מתרימים לשמירה' };
+    }
+    
+    // אם לא קיבלנו קבוצות, ננסה לקרוא אותן מהגליון
+    var groupsMap = {};
+    if (groups && groups.length > 0) {
+      for (var g = 0; g < groups.length; g++) {
+        groupsMap[groups[g].id] = groups[g].name || '';
+      }
+    } else {
+      // ניסיון לקרוא קבוצות מהגליון הקיים
+      try {
+        var groupsResult = getAllGroups();
+        if (groupsResult.groups) {
+          for (var g = 0; g < groupsResult.groups.length; g++) {
+            groupsMap[groupsResult.groups[g].id] = groupsResult.groups[g].name || '';
+          }
+        }
+      } catch (e) {
+        Logger.log('לא ניתן לקרוא קבוצות: ' + e.toString());
+      }
     }
     
     var rows = [];
@@ -715,6 +735,11 @@ function saveDonors(donors) {
         
         if (col === 'history') {
           row.push(JSON.stringify(value || []));
+        }
+        else if (col === 'groupName') {
+          // חיפוש שם הקבוצה לפי groupId
+          var groupName = groupsMap[donor.groupId] || '';
+          row.push(groupName);
         }
         else if (col === 'updatedAt') {
           row.push(now);
@@ -838,12 +863,14 @@ function saveAllData(data) {
       settings: { success: false }
     };
     
-    if (data.donors) {
-      results.donors = saveDonors(data.donors);
-    }
-    
+    // שומרים קבוצות קודם כדי שהן יהיו זמינות למתרימים
     if (data.groups) {
       results.groups = saveGroups(data.groups);
+    }
+    
+    if (data.donors) {
+      // מעבירים את הקבוצות לפונקציה כדי שתוכל למצוא שמות קבוצות
+      results.donors = saveDonors(data.donors, data.groups);
     }
     
     if (data.settings) {
