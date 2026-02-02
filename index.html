@@ -11671,6 +11671,7 @@
             const group = groups.find(g => g.id === groupId);
             if (group && newName.trim()) {
                 group.name = newName.trim();
+                group.updatedAt = new Date().toISOString();
                 saveData();
                 // עדכון כל המדורים - מדור ניהול הוא המקור האמתי
                 updateGroupsDisplay();
@@ -11680,6 +11681,17 @@
                 updateLiveView();
                 updateHomeDonorBreakdown();
                 updateHomeStats();
+                
+                // שמירה מיידית לגליון
+                const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
+                if (url) {
+                    saveToGoogleSheets().then(() => {
+                        console.log('✅ שם קבוצה עודכן גם בגליון');
+                    }).catch(err => {
+                        console.warn('⚠️ שגיאה בשמירת קבוצה לגליון:', err);
+                    });
+                }
+                
                 showNotification('✅ שם הקבוצה עודכן: ' + newName.trim(), true);
             }
         }
@@ -11985,7 +11997,7 @@
             }
             
             // שומר את השם המקורי אם זה הפעם הראשונה
-            if (!donor.originalName && donor.fromNedarimPlus) {
+            if (!donor.originalName) {
                 donor.originalName = donor.name;
             }
             
@@ -12003,15 +12015,32 @@
                 return;
             }
             
+            // עדכון שם התצוגה
             donor.displayName = trimmed;
+            donor.updatedAt = new Date().toISOString();
+            
+            // שמירה מקומית
             saveData();
+            
+            // עדכון תצוגות
             updateDonorsList();
             updateGroupsDisplay();
             updateHomeStats();
             updateLiveView();
             updateLeadersList();
             updateLiveTargets();
-            showNotification('✅ שם התצוגה עודכן: ' + trimmed, true); // force=true כדי להציג תמיד
+            
+            // שמירה מיידית לגליון (לא ממתינה ל-debounce)
+            const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
+            if (url) {
+                saveToGoogleSheets().then(() => {
+                    console.log('✅ שם תצוגה עודכן גם בגליון');
+                }).catch(err => {
+                    console.warn('⚠️ שגיאה בשמירת שם לגליון:', err);
+                });
+            }
+            
+            showNotification('✅ שם התצוגה עודכן: ' + trimmed, true);
         }
 
         // פונקציה ישנה - משאירה לתאימות
@@ -12346,6 +12375,16 @@
                 updateLiveView();
                 updateLeadersList();
                 updateLiveTargets();
+                
+                // שמירה מיידית לגליון
+                const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
+                if (url) {
+                    saveToGoogleSheets().then(() => {
+                        console.log('✅ העברת מתרימים עודכנה בגליון');
+                    }).catch(err => {
+                        console.warn('⚠️ שגיאה בשמירת העברה לגליון:', err);
+                    });
+                }
                 
                 // מנקה את הבחירה
                 deselectAllDonors();
@@ -17941,12 +17980,15 @@
         
         // שמירת נתונים ל-Google Sheets
         async function saveToGoogleSheets() {
+            // משתמש ב-URL מכל מקור אפשרי
             const urlInput = document.getElementById('googleSheetsWebAppUrl');
-            const url = urlInput ? urlInput.value.trim() : googleSheetsWebAppUrl;
+            const url = (urlInput ? urlInput.value.trim() : '') || 
+                        googleSheetsWebAppUrl || 
+                        localStorage.getItem('googleSheetsWebAppUrl') || 
+                        DEFAULT_GOOGLE_SHEETS_URL || '';
             
             if (!url) {
-                showNotification('❌ נא להגדיר את כתובת ה-Web App קודם', 'error');
-                showGoogleSheetsStatus('❌ נא להגדיר את כתובת ה-Web App', 'error');
+                console.warn('⚠️ אין URL לשמירה ל-Google Sheets');
                 return;
             }
             
@@ -18139,13 +18181,15 @@
 
         // שמירה אוטומטית ל-Google Sheets (debounced)
         function autoSaveToGoogleSheets() {
-            if (!googleSheetsWebAppUrl || !googleSheetsSyncEnabled) return;
+            // שמירה אוטומטית תמיד כשיש URL מוגדר (לא תלוי בסימון)
+            const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
+            if (!url) return;
             
             if (saveToGoogleSheetsTimeout) {
                 clearTimeout(saveToGoogleSheetsTimeout);
             }
             
-            // שמירה אחרי 5 שניות ללא שינויים נוספים
+            // שמירה אחרי 3 שניות ללא שינויים נוספים (הקטנו מ-5 ל-3)
             saveToGoogleSheetsTimeout = setTimeout(async () => {
                 try {
                     await saveToGoogleSheets();
@@ -18153,7 +18197,7 @@
                 } catch (err) {
                     console.warn('⚠️ שגיאה בשמירה אוטומטית ל-Google Sheets:', err);
                 }
-            }, 5000);
+            }, 3000);
         }
         
         // ========== סוף סנכרון Google Sheets ==========
