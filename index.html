@@ -3283,10 +3283,13 @@
             position: relative;
             opacity: 1;
             filter: brightness(1) saturate(1);
-            transition: opacity 0.6s ease-in-out, filter 0.6s ease-in-out;
             /* הסתרת scrollbar בעמודת המובילים */
             scrollbar-width: none; /* Firefox */
             -ms-overflow-style: none; /* IE and Edge */
+            /* גלילה חלקה */
+            scroll-behavior: auto; /* לא smooth כי אנחנו שולטים ידנית */
+            -webkit-overflow-scrolling: touch;
+            will-change: scroll-position;
         }
         
         .live-leaders-scroll-wrapper::-webkit-scrollbar {
@@ -10909,13 +10912,13 @@
             // יצירת קלון לגלילה אינסופית
             const primaryContent = primary.querySelector('.live-leaders-content');
             if (!primaryContent) {
-            clone.innerHTML = '';
-            clone.style.display = 'none';
+                clone.innerHTML = '';
+                clone.style.display = 'none';
                 stopAutoScroll('leaders');
                 return;
             }
             
-            // העתקת התוכן לקלון
+            // העתקת התוכן לקלון - כפול לגלילה חלקה יותר
             clone.innerHTML = primaryContent.outerHTML;
             clone.style.display = 'block';
 
@@ -10927,7 +10930,6 @@
             }
 
             const cloneContent = clone.querySelector('.live-leaders-content');
-            const totalHeight = contentHeight * 2; // primary + clone
 
             const showContent = () => {
                 wrapper.style.opacity = '1';
@@ -10936,102 +10938,35 @@
                 if (cloneContent) cloneContent.classList.remove('hidden');
             };
             
-            let offset = immediate ? 0 : 0;
+            // שומר את המיקום הנוכחי אם הגלילה כבר רצה
+            let offset = (state.offset && state.offset > 0) ? state.offset : 0;
             state.distance = contentHeight;
-            state.offset = offset;
+            
+            showContent();
+            wrapper.scrollTop = offset;
 
-            const startScroll = ({ fromTop = false } = {}) => {
-                showContent();
-                if (fromTop) {
-                    offset = 0;
-                    state.offset = 0;
-                    wrapper.scrollTop = 0;
-                } else {
-                    wrapper.scrollTop = offset;
+            let last = performance.now();
+
+            function step(timestamp) {
+                const delta = (timestamp - last) / 1000;
+                last = timestamp;
+                
+                // מהירות קבועה למובילים - 30 פיקסלים לשנייה
+                const speed = 30;
+                offset += speed * delta;
+                
+                // גלילה אינסופית חלקה: כשמגיעים לסוף התוכן המקורי, מאפסים בצורה חלקה
+                // הקלון מציג את אותו תוכן, אז המעבר בלתי נראה
+                if (offset >= contentHeight) {
+                    offset = offset - contentHeight; // מעבר חלק, לא קפיצה ל-0
                 }
-
-                let last = performance.now();
-
-                function step(timestamp) {
-                    const delta = (timestamp - last) / 1000;
-                    last = timestamp;
-                    // מהירות קבועה למובילים
-                    const speed = 25;
-                    offset += speed * delta;
-                    
-                    // כשמגיעים לסוף התוכן המקורי, מתחילים מההתחלה (הקלון)
-                    if (offset >= contentHeight) {
-                        offset = 0;
-                        initiateTransition();
-                        return;
-                    }
-                    
-                    state.offset = offset;
-                    wrapper.scrollTop = offset;
-                    state.handle = requestAnimationFrame(step);
-                }
-
+                
+                state.offset = offset;
+                wrapper.scrollTop = offset;
                 state.handle = requestAnimationFrame(step);
-            };
-
-            const initiateTransition = () => {
-                if (state.isInCooldown) return;
-                if (state.handle) {
-                    cancelAnimationFrame(state.handle);
-                    state.handle = null;
-                }
-                state.isInCooldown = true;
-                
-                // אפקט הורדת בהירות ואז עליית בהירות
-                let opacity = 1;
-                let brightness = 1;
-                const fadeOutDuration = 600;
-                const fadeInDuration = 600;
-                const startTime = performance.now();
-                
-                function fadeStep(timestamp) {
-                    const elapsed = timestamp - startTime;
-                    
-                    if (elapsed < fadeOutDuration) {
-                        // הורדת בהירות
-                        const progress = elapsed / fadeOutDuration;
-                        opacity = 1 - progress;
-                        brightness = 1 - (progress * 0.5);
-                        wrapper.style.opacity = opacity;
-                        wrapper.style.filter = `brightness(${brightness}) saturate(${brightness})`;
-                        state.handle = requestAnimationFrame(fadeStep);
-                    } else if (elapsed < fadeOutDuration + fadeInDuration) {
-                        // עליית בהירות - חזרה להתחלה
-                        wrapper.scrollTop = 0;
-                        state.offset = 0;
-                        const progress = (elapsed - fadeOutDuration) / fadeInDuration;
-                        opacity = progress;
-                        brightness = 0.5 + (progress * 0.5);
-                        wrapper.style.opacity = opacity;
-                        wrapper.style.filter = `brightness(${brightness}) saturate(${brightness})`;
-                        state.handle = requestAnimationFrame(fadeStep);
-                    } else {
-                        // סיום - חזרה לרמה רגילה והתחלת גלילה חדשה
-                        wrapper.style.opacity = '1';
-                        wrapper.style.filter = 'brightness(1) saturate(1)';
-                        state.isInCooldown = false;
-                        state.offset = 0;
-                        state.distance = contentHeight;
-                        showContent();
-                        startScroll({ fromTop: true });
-                    }
-                }
-                
-                state.handle = requestAnimationFrame(fadeStep);
-            };
-
-            if (immediate) {
-                showContent();
-                startScroll();
-            } else {
-                // התחלה עם אפקט מעבר
-                initiateTransition();
             }
+
+            state.handle = requestAnimationFrame(step);
         }
 
         const donorSearchInput = document.getElementById('donorSearchInput');
