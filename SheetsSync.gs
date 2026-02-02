@@ -589,6 +589,18 @@ function getAllDonors() {
     var headers = data[0];
     var donors = [];
     
+    // קודם טוען את הקבוצות כדי שנוכל למצוא groupId לפי שם
+    var groupsResult = getAllGroups();
+    var groupsMap = {}; // name -> id
+    var groupsById = {}; // id -> name
+    if (groupsResult.groups) {
+      for (var g = 0; g < groupsResult.groups.length; g++) {
+        var group = groupsResult.groups[g];
+        groupsMap[group.name] = group.id;
+        groupsById[group.id] = group.name;
+      }
+    }
+    
     for (var i = 1; i < data.length; i++) {
       var row = data[i];
       var donor = {};
@@ -600,8 +612,12 @@ function getAllDonors() {
         if (key === 'amount' || key === 'personalGoal') {
           donor[key] = value ? Number(value) : 0;
         }
-        else if (key === 'id' || key === 'groupId') {
+        else if (key === 'id') {
           donor[key] = value || '';
+        }
+        else if (key === 'groupId') {
+          // נשמור כמספר אם אפשר
+          donor[key] = value !== '' && value !== null ? Number(value) || value : '';
         }
         else if (key === 'history') {
           try {
@@ -612,6 +628,15 @@ function getAllDonors() {
         }
         else {
           donor[key] = value || '';
+        }
+      }
+      
+      // אם יש groupName אבל אין groupId תקין - מחפש את הקבוצה לפי שם
+      if (donor.groupName && (!donor.groupId || donor.groupId === '' || !groupsById[donor.groupId])) {
+        var foundGroupId = groupsMap[donor.groupName];
+        if (foundGroupId) {
+          donor.groupId = foundGroupId;
+          Logger.log('מצאתי קבוצה לפי שם: ' + donor.groupName + ' -> ' + foundGroupId);
         }
       }
       
