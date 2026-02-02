@@ -77,6 +77,11 @@ function doGet(e) {
     var action = e && e.parameter ? e.parameter.action : '';
     
     switch(action) {
+      // בדיקת חיבור
+      case 'ping':
+        output = { success: true, message: 'החיבור תקין', timestamp: new Date().toISOString() };
+        break;
+        
       // פעולות נדרים פלוס
       case 'getNedarimTotal':
         output = getNedarimTotalDonations();
