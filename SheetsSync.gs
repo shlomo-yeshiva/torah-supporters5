@@ -48,6 +48,9 @@ const SHEET_NAMES = {
 // עמודות למתרימים
 const DONOR_COLUMNS = ['id', 'name', 'displayName', 'originalName', 'groupId', 'groupName', 'amount', 'personalGoal', 'history', 'nedarimMatrimId', 'createdAt', 'updatedAt'];
 
+// עמודות ישנות (לתאימות אחורה)
+const OLD_DONOR_COLUMNS = ['id', 'name', 'displayName', 'groupId', 'amount', 'personalGoal', 'history', 'nedarimMatrimId', 'createdAt', 'updatedAt'];
+
 // עמודות לקבוצות
 const GROUP_COLUMNS = ['id', 'name', 'goal', 'orderNumber', 'showInLiveView', 'createdAt', 'updatedAt'];
 
@@ -573,6 +576,138 @@ function formatHeaderRow(sheet) {
   headerRange.setBackground('#D4AF37');
   headerRange.setFontColor('#FFFFFF');
   sheet.setFrozenRows(1);
+}
+
+// פונקציה לתיקון מבנה הגליון - קוראת בפורמט הישן ושומרת בחדש
+function migrateOldFormat() {
+  try {
+    var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    var sheet = ss.getSheetByName(SHEET_NAMES.DONORS);
+    
+    if (!sheet || sheet.getLastRow() <= 1) {
+      return { success: false, error: 'אין נתונים בגליון' };
+    }
+    
+    var data = sheet.getDataRange().getValues();
+    var headers = data[0];
+    var donors = [];
+    
+    // בדיקה אם זה הפורמט הישן (אין originalName ו-groupName)
+    var hasOriginalName = headers.indexOf('originalName') >= 0;
+    var hasGroupName = headers.indexOf('groupName') >= 0;
+    
+    Logger.log('מבנה נוכחי - יש originalName: ' + hasOriginalName + ', יש groupName: ' + hasGroupName);
+    
+    // קריאת הנתונים לפי המבנה הנוכחי
+    for (var i = 1; i < data.length; i++) {
+      var row = data[i];
+      var donor = {};
+      
+      for (var j = 0; j < headers.length; j++) {
+        var value = row[j];
+        var key = headers[j];
+        
+        if (!key || key === '') continue;
+        
+        if (key === 'amount' || key === 'personalGoal') {
+          donor[key] = value ? Number(value) : 0;
+        }
+        else if (key === 'id') {
+          donor[key] = value || '';
+        }
+        else if (key === 'groupId') {
+          donor[key] = value !== '' && value !== null ? value : '';
+        }
+        else if (key === 'history') {
+          try {
+            donor[key] = value ? JSON.parse(value) : [];
+          } catch (e) {
+            donor[key] = [];
+          }
+        }
+        else {
+          donor[key] = value || '';
+        }
+      }
+      
+      if (donor.id && donor.name) {
+        donors.push(donor);
+      }
+    }
+    
+    Logger.log('נקראו ' + donors.length + ' מתרימים');
+    
+    // שמירה בפורמט החדש
+    if (donors.length > 0) {
+      // מחיקת הנתונים הישנים
+      if (sheet.getLastRow() > 1) {
+        sheet.deleteRows(2, sheet.getLastRow() - 1);
+      }
+      
+      // עדכון הכותרות לפורמט החדש
+      sheet.getRange(1, 1, 1, DONOR_COLUMNS.length).setValues([DONOR_COLUMNS]);
+      formatHeaderRow(sheet);
+      
+      // קריאת קבוצות לשמות
+      var groupsResult = getAllGroups();
+      var groupsMap = {};
+      if (groupsResult.groups) {
+        for (var g = 0; g < groupsResult.groups.length; g++) {
+          var group = groupsResult.groups[g];
+          groupsMap[group.id] = group.name || '';
+        }
+      }
+      
+      // שמירת הנתונים בפורמט החדש
+      var rows = [];
+      var now = new Date().toISOString();
+      
+      for (var i = 0; i < donors.length; i++) {
+        var donor = donors[i];
+        var row = [];
+        
+        for (var j = 0; j < DONOR_COLUMNS.length; j++) {
+          var col = DONOR_COLUMNS[j];
+          
+          if (col === 'history') {
+            row.push(JSON.stringify(donor.history || []));
+          }
+          else if (col === 'groupName') {
+            var groupName = groupsMap[donor.groupId] || '';
+            row.push(groupName);
+          }
+          else if (col === 'originalName') {
+            row.push(donor.originalName || '');
+          }
+          else if (col === 'updatedAt') {
+            row.push(now);
+          }
+          else if (col === 'createdAt') {
+            row.push(donor.createdAt || now);
+          }
+          else {
+            row.push(donor[col] !== undefined ? donor[col] : '');
+          }
+        }
+        
+        rows.push(row);
+      }
+      
+      sheet.getRange(2, 1, rows.length, DONOR_COLUMNS.length).setValues(rows);
+      
+      return { 
+        success: true, 
+        message: 'הועברו ' + donors.length + ' מתרימים לפורמט החדש',
+        count: donors.length
+      };
+    }
+    
+    return { success: false, error: 'לא נמצאו מתרימים להעברה' };
+    
+  } catch (error) {
+    Logger.log('שגיאה בהעברת פורמט: ' + error.toString());
+    return { success: false, error: error.toString() };
+  }
 }
 
 function getAllDonors() {
