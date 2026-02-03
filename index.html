@@ -6018,6 +6018,9 @@
                                 <button class="btn btn-primary" onclick="loadMatrimFromNedarim()" id="nedarimLoadMatrimBtn">
                                     📥 טען מתרימים מנדרים פלוס
                                 </button>
+                                <button class="btn btn-warning" onclick="cleanupAndReloadDonorsWithInvalidMatrimId()" id="cleanupDonorsBtn" style="background: #ffc107; color: #000;">
+                                    🧹 נקה וטען מחדש מתרים ללא מספר מתרים תקין
+                                </button>
                                 <button class="btn btn-info" onclick="checkTotalAmountFromAPI()" id="checkTotalBtn" style="background: #17a2b8; color: white;">
                                     🔍 בדוק סכום כולל מ-API
                                 </button>
@@ -16426,6 +16429,156 @@
                 // אבל אם המשתמש רוצה, אפשר ליצור מתרים חדש
                 console.log(`מתרים "${matrimName}" לא נמצא במערכת, מדלג על תרומה של ${amount} ש"ח`);
                 return null;
+            }
+        }
+
+        // פונקציה לניקוי וטעינה מחדש של מתרים ללא מספר מתרים תקין
+        // מוחקת מתרים עם תאריכים במקום מספר מתרים, ואז טוענת אותם מחדש מנדרים פלוס
+        async function cleanupAndReloadDonorsWithInvalidMatrimId() {
+            const btn = document.getElementById('cleanupDonorsBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = '⏳ מנקה וטוען מחדש...';
+            }
+            
+            showNedarimStatus('מנקה מתרים ללא מספר מתרים תקין...', 'loading');
+            
+            try {
+                ensureDonorsNormalized();
+                
+                // מוצא מתרים עם תאריכים במקום מספר מתרים
+                const donorsWithInvalidMatrimId = donors.filter(donor => {
+                    const matrimId = donor.nedarimMatrimId;
+                    if (!matrimId) return false; // אין מספר מתרים בכלל
+                    
+                    const matrimIdStr = String(matrimId).trim();
+                    const isDate = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(matrimIdStr) || 
+                                 matrimIdStr.includes('T') || 
+                                 matrimIdStr.includes('Z');
+                    const isNumeric = /^\d+$/.test(matrimIdStr);
+                    
+                    return isDate || !isNumeric; // תאריך או לא מספר תקין
+                });
+                
+                if (donorsWithInvalidMatrimId.length === 0) {
+                    showNedarimStatus('✅ אין מתרים עם מספר מתרים לא תקין', 'success');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.textContent = '🧹 נקה וטען מחדש מתרים ללא מספר מתרים תקין';
+                    }
+                    showNotification('✅ אין מתרים עם מספר מתרים לא תקין', 'success');
+                    return;
+                }
+                
+                console.log(`🔍 נמצאו ${donorsWithInvalidMatrimId.length} מתרים עם מספר מתרים לא תקין:`);
+                donorsWithInvalidMatrimId.forEach(donor => {
+                    console.log(`   - ${donor.name}: ${donor.nedarimMatrimId}`);
+                });
+                
+                // שואל את המשתמש אם הוא בטוח
+                const confirmMessage = `נמצאו ${donorsWithInvalidMatrimId.length} מתרים עם מספר מתרים לא תקין.\n\n` +
+                    `המתרים האלה יימחקו מהגליון והתוכנה, ואז יטענו מחדש מנדרים פלוס עם המספרים הנכונים.\n\n` +
+                    `האם אתה בטוח שברצונך להמשיך?`;
+                
+                if (!confirm(confirmMessage)) {
+                    showNedarimStatus('בוטל על ידי המשתמש', 'info');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.textContent = '🧹 נקה וטען מחדש מתרים ללא מספר מתרים תקין';
+                    }
+                    return;
+                }
+                
+                // שומר את השמות של המתרים למחיקה
+                const donorNamesToReload = donorsWithInvalidMatrimId.map(d => d.name.trim());
+                
+                // מוחק את המתרים מהתוכנה
+                const originalDonorsCount = donors.length;
+                donors = donors.filter(donor => {
+                    const matrimId = donor.nedarimMatrimId;
+                    if (!matrimId) return true; // שומר מתרים ללא מספר מתרים בכלל
+                    
+                    const matrimIdStr = String(matrimId).trim();
+                    const isDate = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(matrimIdStr) || 
+                                 matrimIdStr.includes('T') || 
+                                 matrimIdStr.includes('Z');
+                    const isNumeric = /^\d+$/.test(matrimIdStr);
+                    
+                    return !(isDate || !isNumeric); // שומר רק מתרים עם מספר מתרים תקין או ללא מספר מתרים בכלל
+                });
+                
+                const deletedCount = originalDonorsCount - donors.length;
+                console.log(`🗑️ נמחקו ${deletedCount} מתרים מהתוכנה`);
+                
+                // שומר את השינויים מקומית
+                saveData();
+                
+                // שומר את השינויים לגליון
+                showNedarimStatus('שומר שינויים לגליון...', 'loading');
+                await saveToGoogleSheets();
+                console.log('✅ נשמרו השינויים לגליון');
+                
+                // מעדכן את התצוגה
+                updateDonorsList();
+                updateHomeStats();
+                updateLiveView();
+                updateLeadersList();
+                updateLiveTargets();
+                
+                // ממתין קצת כדי שהגליון יעדכן
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // טוען את המתרים מחדש מנדרים פלוס
+                showNedarimStatus('טוען מתרים מחדש מנדרים פלוס...', 'loading');
+                console.log('📥 טוען מתרים מחדש מנדרים פלוס...');
+                
+                // משתמש בפונקציה הקיימת לטעינת מתרים מנדרים פלוס
+                await loadMatrimFromNedarim(true); // silent mode
+                
+                // בודק כמה מתרים נטענו מחדש
+                const reloadedDonors = donors.filter(donor => {
+                    const name = donor.name.trim();
+                    return donorNamesToReload.includes(name);
+                });
+                
+                const reloadedWithValidMatrimId = reloadedDonors.filter(donor => {
+                    const matrimId = donor.nedarimMatrimId;
+                    if (!matrimId) return false;
+                    const matrimIdStr = String(matrimId).trim();
+                    return /^\d+$/.test(matrimIdStr) && !matrimIdStr.includes('T') && !matrimIdStr.includes('Z');
+                });
+                
+                console.log(`✅ נטענו מחדש ${reloadedWithValidMatrimId.length} מתרים עם מספר מתרים תקין`);
+                
+                // שומר את המתרים החדשים
+                saveData();
+                await saveToGoogleSheets();
+                
+                // מעדכן את התצוגה שוב
+                updateDonorsList();
+                updateHomeStats();
+                updateLiveView();
+                updateLeadersList();
+                updateLiveTargets();
+                
+                const message = `✅ הושלם! נמחקו ${deletedCount} מתרים ונטענו מחדש ${reloadedWithValidMatrimId.length} מתרים עם מספר מתרים תקין`;
+                showNedarimStatus(message, 'success');
+                showNotification(message, 'success');
+                
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = '🧹 נקה וטען מחדש מתרים ללא מספר מתרים תקין';
+                }
+                
+            } catch (error) {
+                console.error('❌ שגיאה בניקוי וטעינה מחדש:', error);
+                showNedarimStatus('❌ שגיאה: ' + error.message, 'error');
+                showNotification('❌ שגיאה בניקוי וטעינה מחדש: ' + error.message, 'error');
+                
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = '🧹 נקה וטען מחדש מתרים ללא מספר מתרים תקין';
+                }
             }
         }
 
