@@ -16673,8 +16673,8 @@
                     
                     if (!matrimName) return;
 
-                    // ⚠️ חשוב: חיפוש רק לפי מספר מתרים (MatrimId) - לא לפי שם או קבוצה!
-                    // זה מבטיח שהקשר בין התוכנה לנדרים פלוס הוא יציב ולא משתנה
+                    // ⚠️ חשוב: חיפוש לפי מספר מתרים (MatrimId) - זה המזהה היציב!
+                    // אבל אם אין למתרים מספר מתרים, ננסה לקשר אותו לפי שם (רק פעם אחת)
                     let donor = null;
                     const matrimIdStr = matrimId !== null && matrimId !== undefined ? String(matrimId) : null;
                     
@@ -16684,23 +16684,52 @@
                         return; // מדלג על מתרים זה
                     }
                     
-                    // חיפוש רק לפי מספר מתרים (הזיהוי היחיד והיציב!)
+                    // חיפוש ראשוני לפי מספר מתרים (הזיהוי היציב!)
                     donor = donors.find(d => {
-                        // בודק רק את השדה nedarimMatrimId - זה המזהה היחיד
                         const donorMatrimId = d.nedarimMatrimId;
                         if (donorMatrimId !== null && donorMatrimId !== undefined) {
-                            return String(donorMatrimId) === matrimIdStr;
+                            const donorMatrimIdStr = String(donorMatrimId).trim();
+                            // בודק אם זה מספר אמיתי
+                            if (/^\d+$/.test(donorMatrimIdStr)) {
+                                return donorMatrimIdStr === matrimIdStr;
+                            }
                         }
                         return false;
                     });
                     
+                    // אם לא נמצא לפי מספר מתרים, מחפש לפי שם (רק כדי לקשר אותו למספר מתרים)
+                    if (!donor) {
+                        donor = donors.find(d => {
+                            const donorName = (d.name || d.displayName || '').trim();
+                            const donorMatrimId = d.nedarimMatrimId;
+                            // בודק אם למתרים אין מספר מתרים תקין (או אין בכלל)
+                            const hasInvalidMatrimId = !donorMatrimId || 
+                                /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(String(donorMatrimId)) ||
+                                String(donorMatrimId).includes('T') ||
+                                String(donorMatrimId).includes('Z') ||
+                                !/^\d+$/.test(String(donorMatrimId).trim());
+                            
+                            // מחפש לפי שם רק אם אין לו מספר מתרים תקין
+                            if (hasInvalidMatrimId && donorName === matrimName) {
+                                return true;
+                            }
+                            return false;
+                        });
+                        
+                        if (donor) {
+                            console.log(`🔗 מקשר מתרים "${donor.name}" למספר מתרים ${matrimIdStr} לפי שם`);
+                            // מעדכן את מספר המתרים למתרים שנמצא לפי שם
+                            donor.nedarimMatrimId = matrimIdStr;
+                            updatedDonors++;
+                        }
+                    }
+                    
                     if (donor) {
-                        console.log(`🔍 נמצא מתרים לפי מספר מתרים ${matrimIdStr}: ${donor.name}`);
+                        console.log(`✅ נמצא מתרים: ${donor.name} (מספר מתרים: ${matrimIdStr})`);
                     } else {
-                        // אם לא נמצא לפי מספר מתרים, לא יוצרים מתרים חדש ולא מעדכנים
-                        // זה מבטיח שהקשר הוא רק לפי מספר מתרים
-                        console.log(`ℹ️ מתרים "${matrimName}" (מספר מתרים: ${matrimIdStr}) לא נמצא בתוכנה - לא יוצר מתרים חדש (קשר רק לפי מספר מתרים)`);
-                        return; // מדלג - לא יוצר מתרים חדש ללא קשר לפי מספר מתרים
+                        // אם לא נמצא לפי מספר מתרים או לפי שם, לא יוצרים מתרים חדש
+                        console.log(`ℹ️ מתרים "${matrimName}" (מספר מתרים: ${matrimIdStr}) לא נמצא בתוכנה - לא יוצר מתרים חדש`);
+                        return; // מדלג - לא יוצר מתרים חדש
                     }
                     
                     if (donor) {
@@ -16786,6 +16815,17 @@
 
                 // שומר את השינויים
                 saveData();
+                
+                // שומר לגליון כדי שהמספר מתרים יישמר שם
+                const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
+                if (url) {
+                    try {
+                        await saveToGoogleSheets();
+                        console.log('✅ נשמר לגליון - מספרי מתרים נשמרו');
+                    } catch (e) {
+                        console.warn('⚠️ לא הצלחתי לשמור לגליון:', e);
+                    }
+                }
                 
                 // מרענן תצוגה - בלי להפריע לגלילה בתצוגת לייב
                 if (typeof renderDonorsTable === 'function') {
