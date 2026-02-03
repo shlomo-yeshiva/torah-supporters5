@@ -18466,6 +18466,9 @@
                     }
                 } else {
                     console.log('🔄 [סנכרון] עדכון שקט מהגליון:', loadedDonors, 'מתרימים', `(${finalDonorsWithMatrimId} עם מספר מתרים תקין)`);
+                    if (loadedDonors > 0 && finalDonorsWithMatrimId === 0) {
+                        console.warn('⚠️ [סנכרון] אין מתרימים עם מספר מתרים תקין! כדי לעדכן סכומים לנדרים פלוס, יש לקשר מתרימים למספר מתרים מנדרים פלוס דרך כפתור "סנכרון תרומות"');
+                    }
                 }
                 
                 return { success: true, donors: loadedDonors, groups: loadedGroups };
