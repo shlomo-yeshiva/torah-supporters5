@@ -6070,6 +6070,32 @@
                             <p id="nedarimCorrectionResult" style="margin-top: 10px; font-size: 12px; min-height: 20px;"></p>
                         </div>
 
+                        <div class="nedarim-update-by-api-box" style="margin-top: 15px; padding: 15px; background: #e8f5e9; border: 2px solid #2e7d32; border-radius: 10px;">
+                            <h4 style="margin-bottom: 10px; color: #1b5e20;">📤 עדכן סכום לפי API (שליחה מאובטחת לנדרים פלוס)</h4>
+                            <p style="margin-bottom: 12px; font-size: 13px; color: #333;">שליחת עדכון תרומה ישירות לנדרים פלוס דרך השרת המאובטח. סכום חיובי = תוספת, סכום שלילי = הפחתה.</p>
+                            <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 4px; font-size: 12px;">מתרים:</label>
+                                    <select id="updateByApiDonorSelect" style="min-width: 220px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;">
+                                        <option value="">-- בחר מתרים --</option>
+                                    </select>
+                                    <input type="text" id="updateByApiMatrimIdManual" placeholder="או הזן מספר מתרים" style="margin-top: 6px; width: 120px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 4px; font-size: 12px;">סכום (₪, חיובי=תוספת, שלילי=הפחתה):</label>
+                                    <input type="number" id="updateByApiAmount" step="1" placeholder="למשל 500 או -200" style="width: 140px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;">
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 4px; font-size: 12px;">הערה (אופציונלי):</label>
+                                    <input type="text" id="updateByApiComments" placeholder="הערה" style="width: 160px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;">
+                                </div>
+                                <button type="button" class="btn btn-success" onclick="updateAmountByAPI()" id="updateByApiBtn" style="background: #2e7d32; color: white;">
+                                    📤 עדכן סכום ב-API
+                                </button>
+                            </div>
+                            <p id="updateByApiResult" style="margin-top: 10px; font-size: 12px; min-height: 20px;"></p>
+                        </div>
+
                         <div class="auto-sync-control" style="margin-top: 15px; padding: 15px; background: rgba(255, 255, 255, 0.6); border-radius: 10px; border: 1px solid var(--border);">
                             <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 500;">
                                 <input type="checkbox" id="autoSyncNedarimCheckbox" onchange="saveAutoSyncNedarimSetting()" style="width: 20px; height: 20px; cursor: pointer;">
@@ -14434,6 +14460,7 @@
                 updateAutoSyncIntervalDisplay();
             }
             fillNedarimCorrectionDonorSelect();
+            fillUpdateByApiDonorSelect();
             if (typeof updateNedarimFixCurrentSumLabel === 'function') updateNedarimFixCurrentSumLabel();
             // סנכרון ראשוני של הנתונים הקיימים
             syncAllDataToDatabase();
@@ -19769,6 +19796,81 @@
                 sel.appendChild(opt);
             });
             if (currentValue) sel.value = currentValue;
+        }
+        
+        // ממלא את רשימת המתרימים בתיבת "עדכן סכום לפי API"
+        function fillUpdateByApiDonorSelect() {
+            const sel = document.getElementById('updateByApiDonorSelect');
+            if (!sel) return;
+            const currentValue = sel.value;
+            sel.innerHTML = '<option value="">-- בחר מתרים --</option>';
+            (donors || []).filter(d => {
+                const id = d.nedarimMatrimId ? String(d.nedarimMatrimId).trim() : '';
+                return id && /^\d+$/.test(id) && !/^\d{4}-\d{2}-\d{2}T/.test(id);
+            }).forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.id;
+                opt.textContent = (d.displayName || d.name || '') + ' (מס\' מתרים ' + d.nedarimMatrimId + ')';
+                sel.appendChild(opt);
+            });
+            if (currentValue) sel.value = currentValue;
+        }
+        
+        // עדכון סכום בנדרים פלוס ישירות דרך API (Netlify proxy)
+        async function updateAmountByAPI() {
+            const resultEl = document.getElementById('updateByApiResult');
+            const btn = document.getElementById('updateByApiBtn');
+            const setResult = (msg, isError) => {
+                if (resultEl) {
+                    resultEl.textContent = msg;
+                    resultEl.style.color = isError ? '#c62828' : '#2e7d32';
+                }
+            };
+            const donorSelect = document.getElementById('updateByApiDonorSelect');
+            const manualIdInput = document.getElementById('updateByApiMatrimIdManual');
+            const amountInput = document.getElementById('updateByApiAmount');
+            const commentsInput = document.getElementById('updateByApiComments');
+            const amount = Math.round(parseFloat(amountInput && amountInput.value) || 0);
+            if (amount === 0) {
+                setResult('נא להזין סכום (שונה מ-0). חיובי = תוספת, שלילי = הפחתה.', true);
+                return;
+            }
+            let donor = null;
+            const selectedId = donorSelect && donorSelect.value;
+            const manualId = manualIdInput && manualIdInput.value ? String(manualIdInput.value).trim() : '';
+            if (selectedId) {
+                donor = (donors || []).find(d => d.id === selectedId || String(d.id) === String(selectedId));
+                if (!donor || !donor.nedarimMatrimId || !/^\d+$/.test(String(donor.nedarimMatrimId).trim())) {
+                    setResult('נא לבחור מתרים עם מספר מתרים תקין.', true);
+                    return;
+                }
+            } else if (manualId && /^\d+$/.test(manualId)) {
+                donor = { nedarimMatrimId: manualId, name: 'עדכון ידני (מס\' ' + manualId + ')' };
+            } else {
+                setResult('נא לבחור מתרים מהרשימה או להזין מספר מתרים.', true);
+                return;
+            }
+            const matrimId = String(donor.nedarimMatrimId).trim();
+            const donorName = (donor.displayName || donor.name || donor).toString().trim();
+            const comments = (commentsInput && commentsInput.value) ? String(commentsInput.value).trim() : 'עדכון מהמערכת';
+            const confirmMsg = amount > 0
+                ? 'לשלוח תוספת של ' + Math.abs(amount).toLocaleString() + ' ₪ למתרים "' + donorName + '" (מס\' ' + matrimId + ')?'
+                : 'לשלוח הפחתה של ' + Math.abs(amount).toLocaleString() + ' ₪ ממתרים "' + donorName + '" (מס\' ' + matrimId + ')?';
+            if (!confirm(confirmMsg)) return;
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ שולח...'; }
+            setResult('שולח לנדרים פלוס...', false);
+            try {
+                await uploadOfflineDonation(donorName, 'תורם מהמערכת', amount, comments, '', matrimId);
+                setResult('✅ העדכון נשלח בהצלחה לנדרים פלוס.', false);
+                if (amountInput) amountInput.value = '';
+                if (commentsInput) commentsInput.value = '';
+                showNotification('עדכון הסכום נשלח בהצלחה. אפשר להריץ "סנכרון תרומות" כדי לרענן את הנתונים.', 'success');
+            } catch (e) {
+                setResult('❌ ' + (e.message || e), true);
+                showNotification('שגיאה בשליחה: ' + (e.message || e), 'error');
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = '📤 עדכן סכום ב-API'; }
+            }
         }
         
         // הפחתת סכום מנדרים פלוס (תיקון סכום שנוסף בטעות)
