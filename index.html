@@ -11543,8 +11543,9 @@
             step();
         }
         function updateHomeStats() {
-            // סכום שנאסף = תמיד סכום המתרימים במערכת (מקור אמין, ללא תלות ב-API)
-            const totalCollected = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
+            // סכום שנאסף = מ-API אם נטען (מקור האמת מנדרים פלוס), אחרת סכום המתרימים במערכת
+            const fromApi = (NEDARIM_CONFIG.apiDataLoaded && NEDARIM_CONFIG.totalDonatedFromAPI != null && NEDARIM_CONFIG.totalDonatedFromAPI >= 0);
+            const totalCollected = fromApi ? NEDARIM_CONFIG.totalDonatedFromAPI : donors.reduce((sum, d) => sum + (d.amount || 0), 0);
             
             // יעד המצינג – מ-API אם נטען וערכו סביר, אחרת מהיעד המקומי
             const currentGoal = (NEDARIM_CONFIG.apiDataLoaded && 
@@ -13570,8 +13571,9 @@
                 .sort((a, b) => b.amount - a.amount)
                 .slice(0, 5);
             
-            // סכום כולל = תמיד סכום המתרימים במערכת (מקור אמין)
-            const totalCollected = donors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0);
+            // סכום כולל = מ-API אם נטען (מקור האמת מנדרים פלוס), אחרת סכום המתרימים
+            const fromApi = (NEDARIM_CONFIG.apiDataLoaded && NEDARIM_CONFIG.totalDonatedFromAPI != null && NEDARIM_CONFIG.totalDonatedFromAPI >= 0);
+            const totalCollected = fromApi ? NEDARIM_CONFIG.totalDonatedFromAPI : donors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0);
             const goal = (NEDARIM_CONFIG.apiDataLoaded && 
                          NEDARIM_CONFIG.goalFromAPI !== null && 
                          NEDARIM_CONFIG.goalFromAPI > 0)
@@ -13702,10 +13704,11 @@
                 const text = overallContainer.querySelector('.leaders-overall-progress-text');
                 const note = overallContainer.querySelector('.leaders-overall-progress-note');
 
-                // סכום כולל = תמיד סכום המתרימים במערכת (מקור אמין)
-                const totalCollected = donors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0);
-                const goal = (NEDARIM_CONFIG.apiDataLoaded && 
-                             NEDARIM_CONFIG.goalFromAPI !== null && 
+                // סכום כולל = מ-API אם נטען (מקור האמת מנדרים פלוס), אחרת סכום המתרימים
+                const fromApi = (NEDARIM_CONFIG.apiDataLoaded && NEDARIM_CONFIG.totalDonatedFromAPI != null && NEDARIM_CONFIG.totalDonatedFromAPI >= 0);
+                const totalCollected = fromApi ? NEDARIM_CONFIG.totalDonatedFromAPI : donors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0);
+                const goal = (NEDARIM_CONFIG.apiDataLoaded &&
+                             NEDARIM_CONFIG.goalFromAPI !== null &&
                              NEDARIM_CONFIG.goalFromAPI > 0)
                     ? NEDARIM_CONFIG.goalFromAPI 
                     : Math.max(0, Math.round(parseFloat(matchingGoal) || 0));
@@ -17848,6 +17851,11 @@
                 if (totalData && totalData.Donated >= 0) {
                     console.log('✅ [בדיקה] הסכום מ-API:', totalData.Donated.toLocaleString(), 'ש"ח');
                     console.log('📊 [API - חדש] יעד:', totalData.Goal.toLocaleString(), 'ש"ח');
+                    // מיד מרעננים את כל התצוגות עם הסכום מנדרים (מקור האמת) – כולל תצוגת לייב
+                    updateHomeStats();
+                    updateLeadersList();
+                    updateLiveTargets();
+                    if (typeof updateLiveView === 'function') updateLiveView();
                     const diff = totalData.Donated - totalFromDonors;
                     if (Math.abs(diff) > 0) {
                         if (!isAutoCall) {
@@ -17858,12 +17866,13 @@
                         if (!isAutoCall) {
                             showNedarimStatus('התוכנה מסונכרנת עם נדרים פלוס', 'success');
                         }
-                        const newTotal = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
-                        showNotification(`✅ סונכרן עם נדרים פלוס: הסכום בתוכנה עודכן ל־${newTotal.toLocaleString()} ש"ח`, 'success');
-                    } else {
+                        // רענון אחרי סנכרון (התצוגות כבר משתמשות ב-API total כשיש)
                         updateHomeStats();
                         updateLeadersList();
                         updateLiveTargets();
+                        if (typeof updateLiveView === 'function') updateLiveView();
+                        showNotification(`✅ סונכרן עם נדרים פלוס: הסכום עודכן ל־${totalData.Donated.toLocaleString()} ש"ח`, 'success');
+                    } else {
                         showNotification(`✅ הסכום כבר תואם: ${totalData.Donated.toLocaleString()} ש"ח`, 'success');
                     }
                 } else {
