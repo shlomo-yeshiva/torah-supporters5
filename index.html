@@ -14854,23 +14854,33 @@
             if (url) {
                 saveToGoogleSheets().then(() => {
                     console.log('✅ פרטי מתרים עודכנו בגליון');
-                    // אחרי שמירה מוצלחת, מסיר את ההגנה (אבל רק אחרי כמה שניות כדי שהסנכרון יטען את הערך החדש)
+                    
+                    // אם יש מספר מתרים בנדרים פלוס, מעדכן גם שם דרך Google Sheets
+                    // זה עובד אוטומטית - לא צריך אישור מהמשתמש
+                    if (donor.nedarimMatrimId && actualDelta !== 0) {
+                        syncDonorToNedarimViaSheets(donor, oldAmount, newAmount, note).catch(err => {
+                            console.warn('⚠️ שגיאה בעדכון נדרים פלוס דרך Google Sheets:', err);
+                        });
+                    }
+                    
+                    // אחרי שמירה מוצלחת, מסיר את ההגנה (אבל רק אחרי זמן מספיק כדי שהסנכרון יטען את הערך החדש)
+                    // ⚠️ חשוב: זמן ארוך יותר כדי למנוע race conditions במחשבים מרובים
                     setTimeout(() => {
                         recentlyUpdatedDonors.delete(donorId);
                         console.log(`🔓 [סנכרון] הסרת הגנה על מתרים ${donorId} אחרי שמירה מוצלחת`);
-                    }, 5000); // 5 שניות אחרי השמירה
+                    }, 70000); // 70 שניות אחרי השמירה - זמן ארוך יותר למניעת race conditions
                 }).catch(err => {
                     console.warn('⚠️ שגיאה בשמירת פרטי מתרים לגליון:', err);
-                    // אם השמירה נכשלה, מסיר את ההגנה אחרי זמן קצר יותר
+                    // אם השמירה נכשלה, מסיר את ההגנה אחרי זמן קצר יותר (אבל עדיין מספיק זמן)
                     setTimeout(() => {
                         recentlyUpdatedDonors.delete(donorId);
-                    }, 10000);
+                    }, 60000); // 60 שניות גם אם השמירה נכשלה
                 });
             } else {
-                // אם אין URL, מסיר את ההגנה אחרי זמן קצר
+                // אם אין URL, מסיר את ההגנה אחרי זמן קצר (אבל עדיין מספיק זמן)
                 setTimeout(() => {
                     recentlyUpdatedDonors.delete(donorId);
-                }, 15000);
+                }, 60000); // 60 שניות גם אם אין URL
             }
             
             updateDonorsList();
@@ -14895,7 +14905,7 @@
                 source: 'manual'
             });
 
-            // מעלה לנדרים פלוס אם נבחר (תוספת או הפחתה)
+            // מעלה לנדרים פלוס אם נבחר (תוספת או הפחתה) - דרך ישירה (לא דרך Google Sheets)
             // משתמש בשם המקורי מ-נדרים פלוס (לא שם התצוגה)
             if (uploadToNedarim && actualDelta !== 0 && donor.fromNedarimPlus) {
                 const originalName = donor.originalName || donor.name;
@@ -14997,23 +15007,32 @@
             if (url) {
                 saveToGoogleSheets().then(() => {
                     console.log('✅ פרטי מתרים עודכנו בגליון');
-                    // אחרי שמירה מוצלחת, מסיר את ההגנה (אבל רק אחרי כמה שניות כדי שהסנכרון יטען את הערך החדש)
+                    
+                    // אם יש מספר מתרים בנדרים פלוס, מעדכן גם שם דרך Google Sheets
+                    if (donor.nedarimMatrimId && actualDelta !== 0) {
+                        syncDonorToNedarimViaSheets(donor, oldAmount, newAmount, actualDelta > 0 ? 'עדכון מהיר (+)' : 'עדכון מהיר (-)').catch(err => {
+                            console.warn('⚠️ שגיאה בעדכון נדרים פלוס דרך Google Sheets:', err);
+                        });
+                    }
+                    
+                    // אחרי שמירה מוצלחת, מסיר את ההגנה (אבל רק אחרי זמן מספיק כדי שהסנכרון יטען את הערך החדש)
+                    // ⚠️ חשוב: זמן ארוך יותר כדי למנוע race conditions במחשבים מרובים
                     setTimeout(() => {
                         recentlyUpdatedDonors.delete(donorId);
                         console.log(`🔓 [סנכרון] הסרת הגנה על מתרים ${donorId} אחרי שמירה מוצלחת`);
-                    }, 5000); // 5 שניות אחרי השמירה
+                    }, 70000); // 70 שניות אחרי השמירה - זמן ארוך יותר למניעת race conditions
                 }).catch(err => {
                     console.warn('⚠️ שגיאה בשמירת פרטי מתרים לגליון:', err);
-                    // אם השמירה נכשלה, מסיר את ההגנה אחרי זמן קצר יותר
+                    // אם השמירה נכשלה, מסיר את ההגנה אחרי זמן קצר יותר (אבל עדיין מספיק זמן)
                     setTimeout(() => {
                         recentlyUpdatedDonors.delete(donorId);
-                    }, 10000);
+                    }, 60000); // 60 שניות גם אם השמירה נכשלה
                 });
             } else {
-                // אם אין URL, מסיר את ההגנה אחרי זמן קצר
+                // אם אין URL, מסיר את ההגנה אחרי זמן קצר (אבל עדיין מספיק זמן)
                 setTimeout(() => {
                     recentlyUpdatedDonors.delete(donorId);
-                }, 15000);
+                }, 60000); // 60 שניות גם אם אין URL
             }
             
             updateDonorsList();
@@ -15465,15 +15484,18 @@
                 // משתמש במספר מתרים אם יש, אחרת בשם
                 let finalMatrimId = null;
                 let finalMatrimName = null;
-                if (matrimId !== null && matrimId !== undefined) {
-                    finalMatrimId = String(matrimId);
-                    finalMatrimName = `מספר מתרים: ${matrimId}`;
+                if (matrimId !== null && matrimId !== undefined && String(matrimId).trim() !== '') {
+                    // יש מספר מתרים - משתמש בו
+                    finalMatrimId = String(matrimId).trim();
+                    finalMatrimName = matrimName ? matrimName.trim() : `מספר מתרים: ${matrimId}`;
                 } else {
+                    // אין מספר מתרים - מנסה להשתמש בשם (זה יכול לא לעבוד עם ה-API)
                     finalMatrimName = matrimName.trim();
                     if (groupName && groupName.trim() !== '') {
                         finalMatrimName = `${finalMatrimName} - ${groupName.trim()}`;
                     }
                     finalMatrimId = finalMatrimName;
+                    console.warn('⚠️ אין מספר מתרים (nedarimMatrimId) - מנסה לשלוח עם שם. זה עלול לא לעבוד עם ה-API של נדרים פלוס.');
                 }
 
                 console.log('🔐 שולח תרומה לנדרים פלוס דרך השרת המאובטח:', {
@@ -15514,13 +15536,19 @@
                 // ✅ שליחה דרך Netlify Function מאובטחת
                 try {
                     const proxyUrl = '/.netlify/functions/nedarim-proxy';
+                    const mosadIdToSend = NEDARIM_CONFIG.mosadId || '1000642'; // ברירת מחדל
                     const requestBody = {
                         matrimId: finalMatrimId,
                         clientName: (clientName || 'תורם אנונימי').trim(),
                         amount: validAmount,
                         comments: (comments || '').trim(),
-                        mosadId: NEDARIM_CONFIG.mosadId || ''
+                        mosadId: mosadIdToSend
                     };
+
+                    console.log('📤 שולח ל-proxy:', {
+                        url: proxyUrl,
+                        body: requestBody
+                    });
 
                     const response = await fetch(proxyUrl, {
                         method: 'POST',
@@ -15530,8 +15558,16 @@
                         body: JSON.stringify(requestBody)
                     });
 
+                    console.log('📥 תגובה מ-proxy:', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        ok: response.ok
+                    });
+
                     if (!response.ok) {
-                        throw new Error(`Proxy error: ${response.status}`);
+                        const errorText = await response.text();
+                        console.error('❌ שגיאה ב-proxy:', errorText);
+                        throw new Error(`Proxy error: ${response.status} - ${errorText.substring(0, 200)}`);
                     }
 
                     const responseData = await response.json();
@@ -15539,7 +15575,8 @@
                     console.log('📦 תגובה משרת Proxy:', {
                         status: response.status,
                         success: responseData.success,
-                        message: responseData.message || responseData.error
+                        message: responseData.message || responseData.error,
+                        fullResponse: responseData
                     });
 
                     if (responseData.success) {
@@ -15549,18 +15586,42 @@
                         throw new Error(responseData.error || 'שגיאה לא ידועה מה-proxy');
                     }
                 } catch (proxyError) {
-                    console.warn('⚠️ שגיאה ב-proxy, מנסה לשלוח ישירות:', proxyError);
+                    console.error('❌ שגיאה ב-proxy:', proxyError);
+                    console.error('❌ פרטי השגיאה:', {
+                        message: proxyError.message,
+                        stack: proxyError.stack,
+                        url: proxyUrl,
+                        body: requestBody
+                    });
+                    
+                    // אם זו שגיאת CORS או network, נציג הודעה ברורה
+                    if (proxyError.message && (proxyError.message.includes('Failed to fetch') || 
+                        proxyError.message.includes('NetworkError') || 
+                        proxyError.message.includes('CORS'))) {
+                        throw new Error('לא ניתן להתחבר לשרת. ודא שהאתר פרוס ב-Netlify או שהפונקציה nedarim-proxy פעילה.');
+                    }
+                    
                     // Fallback - שליחה ישירה (רק אם יש סיסמה מוגדרת)
                     if (NEDARIM_CONFIG.apiPassword && NEDARIM_CONFIG.apiUrl) {
+                        console.warn('⚠️ מנסה לשלוח ישירות ל-API (לא מומלץ - חושף סיסמה)...');
+                        console.log('🔄 מנסה שליחה ישירה ל-API...');
                         const formData = new FormData();
+                        const mosadIdToSend = NEDARIM_CONFIG.mosadId || '1000642';
                         formData.append('Action', 'MatchingOffLine');
-                        formData.append('MosadNumber', NEDARIM_CONFIG.mosadId || '');
+                        formData.append('MosadNumber', mosadIdToSend);
                         formData.append('ApiPassword', NEDARIM_CONFIG.apiPassword);
                         formData.append('MatrimId', finalMatrimId);
                         formData.append('ClientName', (clientName || 'תורם אנונימי').trim());
                         formData.append('Amount', validAmount.toString());
                         formData.append('Comments', (comments || '').trim());
                         formData.append('AjaxId', Date.now().toString());
+                        
+                        console.log('📤 שולח ישירות ל-API:', {
+                            url: NEDARIM_CONFIG.apiUrl,
+                            mosadId: mosadIdToSend,
+                            matrimId: finalMatrimId,
+                            amount: validAmount
+                        });
 
                         const directResponse = await fetch(NEDARIM_CONFIG.apiUrl, {
                             method: 'POST',
@@ -15605,8 +15666,18 @@
                     }
                 }
             } catch (error) {
-                console.error('שגיאה בהעלאת תרומה לנדרים פלוס:', error);
-                throw error;
+                console.error('❌ שגיאה בהעלאת תרומה לנדרים פלוס:', error);
+                console.error('❌ פרטי השגיאה:', {
+                    message: error.message,
+                    stack: error.stack,
+                    matrimId: matrimId,
+                    matrimName: matrimName,
+                    amount: amount
+                });
+                
+                // הודעה ברורה יותר למשתמש
+                const errorMessage = error.message || 'שגיאה לא ידועה';
+                throw new Error(`שגיאה בהעלאת תרומה לנדרים פלוס: ${errorMessage}`);
             }
         }
 
@@ -18161,14 +18232,14 @@
                     const updatedDonors = [];
                     const existingIds = new Set();
                     const now = Date.now();
-                    const PROTECTION_WINDOW_MS = 15000; // 15 שניות - זמן הגנה מפני עדכון מהגליון אחרי שינוי מקומי
+                    const PROTECTION_WINDOW_MS = 60000; // 60 שניות - זמן הגנה מפני עדכון מהגליון אחרי שינוי מקומי (הוגדל כדי למנוע race conditions)
                     
                     // עדכון מתרימים קיימים
                     donors.forEach(existingDonor => {
                         const id = existingDonor.id;
                         existingIds.add(id);
                         
-                        // בודק אם המתרים שונה לאחרונה (פחות מ-15 שניות)
+                        // בודק אם המתרים שונה לאחרונה (פחות מ-60 שניות)
                         const lastUpdateTime = recentlyUpdatedDonors.get(id);
                         const isRecentlyUpdated = lastUpdateTime && (now - lastUpdateTime < PROTECTION_WINDOW_MS);
                         
@@ -18176,7 +18247,11 @@
                         if ((editingDonorId === id && editingDonorLocalChanges) || isRecentlyUpdated) {
                             const sheetDonor = donorsFromSheet.get(id);
                             if (sheetDonor) {
-                                // מעדכן מהגליון אבל שומר את השינויים המקומיים
+                                // ⚠️ חשוב: לא מעדכן את הסכום אם המתרים שונה לאחרונה - שומר את השינויים המקומיים
+                                if (isRecentlyUpdated) {
+                                    console.log(`🔒 [סנכרון] מגן על מתרים ${id} - שונה לאחרונה (${Math.round((now - lastUpdateTime) / 1000)} שניות לפני)`);
+                                }
+                                // מעדכן מהגליון אבל שומר את השינויים המקומיים (בעיקר סכום)
                                 updatedDonors.push({
                                     ...sheetDonor,
                                     amount: existingDonor.amount, // שומר את הסכום המקומי
@@ -18547,6 +18622,87 @@
                     console.warn('⚠️ שגיאה בשמירה אוטומטית ל-Google Sheets:', err);
                 }
             }, 2000);
+        }
+        
+        /**
+         * סנכרון מתרים לנדרים פלוס דרך Google Sheets
+         * מעדכן את נדרים פלוס כשמעדכנים סכום בתוכנה
+         */
+        async function syncDonorToNedarimViaSheets(donor, oldAmount, newAmount, note = '') {
+            try {
+                const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
+                
+                if (!url) {
+                    console.warn('⚠️ אין URL לעדכון נדרים פלוס דרך Google Sheets');
+                    return { success: false, error: 'אין URL' };
+                }
+                
+                if (!donor.nedarimMatrimId) {
+                    console.log('ℹ️ למתרים זה אין מספר מתרים בנדרים פלוס - מדלג על עדכון');
+                    return { success: true, skipped: true, message: 'אין מספר מתרים' };
+                }
+                
+                const group = groups.find(g => g.id === donor.groupId);
+                const groupName = group ? group.name : '';
+                const donorDisplayName = getDonorDisplayName(donor);
+                
+                console.log('🔄 מעדכן נדרים פלוס דרך Google Sheets:', {
+                    matrimId: donor.nedarimMatrimId,
+                    donorName: donorDisplayName,
+                    oldAmount: oldAmount,
+                    newAmount: newAmount,
+                    delta: newAmount - oldAmount
+                });
+                
+                const requestData = {
+                    action: 'syncDonorToNedarim',
+                    matrimId: donor.nedarimMatrimId,
+                    donorId: donor.id,
+                    donorName: donorDisplayName,
+                    groupName: groupName,
+                    oldAmount: oldAmount,
+                    newAmount: newAmount,
+                    note: note || ''
+                };
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    redirect: 'follow',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (result.skipped) {
+                        console.log('ℹ️ עדכון נדרים פלוס דולג:', result.message);
+                    } else {
+                        console.log('✅ נדרים פלוס עודכן בהצלחה דרך Google Sheets:', result.message);
+                        
+                        // ⚠️ חשוב: הנתונים הכלליים (יעד, סכום כולל) מתעדכנים בנדרים פלוס ברקע
+                        // השינויים יראו רק אחרי רענון הדף בנדרים פלוס
+                        // זה לא ישפיע על התצוגה הנוכחית - רק על הסכומים של המתרימים
+                        showNotification('✅ נדרים פלוס עודכן בהצלחה. השינויים יראו אחרי רענון הדף בנדרים פלוס.', 'success');
+                        
+                        // אם יש נתונים שמורים, מציג אותם
+                        if (result.cachedTotalData) {
+                            console.log('📊 נתונים כלליים שמורים:', result.cachedTotalData);
+                        }
+                    }
+                } else {
+                    console.error('❌ שגיאה בעדכון נדרים פלוס:', result.error);
+                    showNotification('⚠️ שגיאה בעדכון נדרים פלוס: ' + (result.error || 'שגיאה לא ידועה'), 'error');
+                }
+                
+                return result;
+                
+            } catch (error) {
+                console.error('❌ שגיאה בעדכון נדרים פלוס דרך Google Sheets:', error);
+                return { success: false, error: error.message };
+            }
         }
         
         // ========== סוף סנכרון Google Sheets ==========
