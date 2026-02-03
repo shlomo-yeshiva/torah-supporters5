@@ -6021,6 +6021,9 @@
                                 <button class="btn btn-warning" onclick="cleanupAndReloadDonorsWithInvalidMatrimId()" id="cleanupDonorsBtn" style="background: #ffc107; color: #000;">
                                     🧹 נקה וטען מחדש מתרים ללא מספר מתרים תקין
                                 </button>
+                                <button class="btn btn-secondary" onclick="loadMatrimIdsByNameFromNedarim()" id="loadMatrimIdsBtn" style="background: #6c757d; color: white;">
+                                    🔗 טען מספרי מתרים לפי שם (עמודה B)
+                                </button>
                                 <button class="btn btn-info" onclick="checkTotalAmountFromAPI()" id="checkTotalBtn" style="background: #17a2b8; color: white;">
                                     🔍 בדוק סכום כולל מ-API
                                 </button>
@@ -16700,6 +16703,190 @@
                 if (btn) {
                     btn.disabled = false;
                     btn.textContent = '🧹 נקה וטען מחדש מתרים ללא מספר מתרים תקין';
+                }
+            }
+        }
+
+        // פונקציה לטעינת מספרי מתרים לפי השם מעמודה B (name)
+        // לוקחת את השם מעמודה B בגליון ומחפשת אותו בנדרים פלוס כדי למצוא את מספר המתרים
+        async function loadMatrimIdsByNameFromNedarim() {
+            const btn = document.getElementById('loadMatrimIdsBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = '⏳ טוען מספרי מתרים...';
+            }
+            
+            showNedarimStatus('טוען מספרי מתרים לפי שם...', 'loading');
+            
+            try {
+                ensureDonorsNormalized();
+                
+                // מושך את כל המתרים מנדרים פלוס
+                console.log('📥 מושך את כל המתרים מנדרים פלוס...');
+                let matrimList = [];
+                try {
+                    matrimList = await fetchMatrimFromMatchPlus();
+                    console.log(`✅ קיבלנו ${matrimList.length} מתרימים מנדרים פלוס`);
+                } catch (error) {
+                    console.error('❌ שגיאה במשיכת מתרים מנדרים פלוס:', error);
+                    showNedarimStatus('❌ שגיאה במשיכת מתרים מנדרים פלוס: ' + error.message, 'error');
+                    showNotification('❌ שגיאה במשיכת מתרים מנדרים פלוס: ' + error.message, 'error');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.textContent = '🔗 טען מספרי מתרים לפי שם (עמודה B)';
+                    }
+                    return;
+                }
+                
+                if (matrimList.length === 0) {
+                    showNedarimStatus('⚠️ לא נמצאו מתרים בנדרים פלוס', 'error');
+                    showNotification('⚠️ לא נמצאו מתרים בנדרים פלוס', 'error');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.textContent = '🔗 טען מספרי מתרים לפי שם (עמודה B)';
+                    }
+                    return;
+                }
+                
+                // יוצר מפה של מספרי מתרים לפי שם (השם המדויק מנדרים פלוס)
+                const matrimIdsByNameMap = new Map();
+                matrimList.forEach(matrim => {
+                    const matrimName = (matrim.Name || matrim.name || '').trim();
+                    const matrimId = matrim.Id || matrim.MatrimId || matrim.id || matrim.MatrimNumber || null;
+                    
+                    if (matrimName && matrimId !== null && matrimId !== undefined) {
+                        const matrimIdStr = String(matrimId).trim();
+                        if (/^\d+$/.test(matrimIdStr)) {
+                            // שומר את מספר המתרים לפי השם המדויק
+                            matrimIdsByNameMap.set(matrimName, matrimIdStr);
+                        }
+                    }
+                });
+                
+                console.log(`📋 יצרנו מפה של ${matrimIdsByNameMap.size} מתרים עם מספרי מתרים תקינים`);
+                
+                // עובר על כל המתרים בתוכנה ומעדכן את מספר המתרים לפי השם מעמודה B (name)
+                let updatedCount = 0;
+                let notFoundCount = 0;
+                let alreadyValidCount = 0;
+                
+                donors.forEach(donor => {
+                    const donorName = (donor.name || '').trim(); // השם מעמודה B (name)
+                    
+                    if (!donorName) {
+                        return; // אין שם - מדלג
+                    }
+                    
+                    // בודק אם יש כבר מספר מתרים תקין
+                    const currentMatrimId = donor.nedarimMatrimId;
+                    if (currentMatrimId) {
+                        const currentMatrimIdStr = String(currentMatrimId).trim();
+                        const isDate = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(currentMatrimIdStr) || 
+                                     currentMatrimIdStr.includes('T') || 
+                                     currentMatrimIdStr.includes('Z');
+                        const isNumeric = /^\d+$/.test(currentMatrimIdStr);
+                        
+                        if (!isDate && isNumeric) {
+                            // יש כבר מספר מתרים תקין
+                            alreadyValidCount++;
+                            return;
+                        }
+                    }
+                    
+                    // מחפש את מספר המתרים לפי השם המדויק
+                    const matrimIdFromNedarim = matrimIdsByNameMap.get(donorName);
+                    
+                    if (matrimIdFromNedarim) {
+                        // נמצא מספר מתרים לפי השם - מעדכן
+                        const oldMatrimId = donor.nedarimMatrimId;
+                        donor.nedarimMatrimId = matrimIdFromNedarim;
+                        donor.updatedAt = new Date().toISOString();
+                        console.log(`✅ עודכן מספר מתרים למתרים "${donorName}": ${oldMatrimId || 'ללא'} → ${matrimIdFromNedarim}`);
+                        updatedCount++;
+                    } else {
+                        // לא נמצא לפי השם המדויק - מנסה חיפוש גמיש
+                        let foundMatrimId = null;
+                        for (const [nedarimName, nedarimId] of matrimIdsByNameMap.entries()) {
+                            const normalizedDonorName = donorName.replace(/\s+/g, ' ').trim();
+                            const normalizedNedarimName = nedarimName.replace(/\s+/g, ' ').trim();
+                            
+                            // התאמה מדויקת
+                            if (normalizedDonorName === normalizedNedarimName) {
+                                foundMatrimId = nedarimId;
+                                break;
+                            }
+                            
+                            // התאמה חלקית
+                            if (normalizedDonorName.includes(normalizedNedarimName) || 
+                                normalizedNedarimName.includes(normalizedDonorName)) {
+                                const shorterName = normalizedDonorName.length < normalizedNedarimName.length 
+                                    ? normalizedDonorName 
+                                    : normalizedNedarimName;
+                                const longerName = normalizedDonorName.length >= normalizedNedarimName.length 
+                                    ? normalizedDonorName 
+                                    : normalizedNedarimName;
+                                
+                                if (shorterName.length >= 10 && longerName.includes(shorterName)) {
+                                    foundMatrimId = nedarimId;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (foundMatrimId) {
+                            // נמצא לפי חיפוש גמיש - מעדכן
+                            const oldMatrimId = donor.nedarimMatrimId;
+                            donor.nedarimMatrimId = foundMatrimId;
+                            donor.updatedAt = new Date().toISOString();
+                            console.log(`✅ עודכן מספר מתרים למתרים "${donorName}" (חיפוש גמיש): ${oldMatrimId || 'ללא'} → ${foundMatrimId}`);
+                            updatedCount++;
+                        } else {
+                            // לא נמצא בכלל
+                            console.warn(`⚠️ לא נמצא מספר מתרים למתרים "${donorName}" בנדרים פלוס`);
+                            notFoundCount++;
+                        }
+                    }
+                });
+                
+                console.log(`📊 סיכום: עודכנו ${updatedCount} מתרים, ${alreadyValidCount} כבר היו תקינים, ${notFoundCount} לא נמצאו`);
+                
+                // שומר את השינויים מקומית
+                saveData();
+                
+                // שומר את השינויים לגליון
+                showNedarimStatus('שומר שינויים לגליון...', 'loading');
+                await saveToGoogleSheets();
+                console.log('✅ נשמרו השינויים לגליון');
+                
+                // מעדכן את התצוגה
+                updateDonorsList();
+                updateHomeStats();
+                updateLiveView();
+                updateLeadersList();
+                updateLiveTargets();
+                
+                const message = `✅ הושלם! עודכנו ${updatedCount} מתרים עם מספרי מתרים תקינים`;
+                if (notFoundCount > 0) {
+                    showNedarimStatus(`${message}, ${notFoundCount} לא נמצאו בנדרים פלוס`, 'warning');
+                    showNotification(`${message}\n⚠️ ${notFoundCount} מתרים לא נמצאו בנדרים פלוס`, 'warning');
+                } else {
+                    showNedarimStatus(message, 'success');
+                    showNotification(message, 'success');
+                }
+                
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = '🔗 טען מספרי מתרים לפי שם (עמודה B)';
+                }
+                
+            } catch (error) {
+                console.error('❌ שגיאה בטעינת מספרי מתרים:', error);
+                showNedarimStatus('❌ שגיאה: ' + error.message, 'error');
+                showNotification('❌ שגיאה בטעינת מספרי מתרים: ' + error.message, 'error');
+                
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = '🔗 טען מספרי מתרים לפי שם (עמודה B)';
                 }
             }
         }
