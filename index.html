@@ -16672,7 +16672,8 @@
                                 ? normalizedReloadName 
                                 : normalizedMatrimName;
                             
-                            if (shorterName.length >= 10 && longerName.includes(shorterName)) {
+                            // דרישה מינימלית 5 תווים כדי לאפשר התאמה גם לשמות קצרים כמו "שלמה כהן"
+                            if (shorterName.length >= 5 && longerName.includes(shorterName)) {
                                 return true;
                             }
                         }
@@ -16705,7 +16706,8 @@
                                 ? normalizedDonorName 
                                 : normalizedMatrimName;
                             
-                            if (shorterName.length >= 10 && longerName.includes(shorterName)) {
+                            // דרישה מינימלית 5 תווים כדי לאפשר התאמה גם לשמות קצרים כמו "שלמה כהן"
+                            if (shorterName.length >= 5 && longerName.includes(shorterName)) {
                                 return true;
                             }
                         }
@@ -16905,8 +16907,8 @@
                                 const longerName = normalizedDonorName.length >= normalizedNedarimName.length 
                                     ? normalizedDonorName 
                                     : normalizedNedarimName;
-                                
-                                if (shorterName.length >= 10 && longerName.includes(shorterName)) {
+                                // דרישה מינימלית 5 תווים כדי לאפשר התאמה גם לשמות קצרים כמו "שלמה כהן"
+                                if (shorterName.length >= 5 && longerName.includes(shorterName)) {
                                     foundMatrimId = nedarimId;
                                     break;
                                 }
@@ -17402,7 +17404,8 @@
                                             ? normalizedDonorName 
                                             : normalizedMatrimName;
                                         
-                                        if (shorterName.length >= 10 && longerName.includes(shorterName)) {
+                                        // דרישה מינימלית 5 תווים כדי לאפשר התאמה גם לשמות קצרים כמו "שלמה כהן" (9 תווים)
+                                        if (shorterName.length >= 5 && longerName.includes(shorterName)) {
                                             return true;
                                         }
                                     }
