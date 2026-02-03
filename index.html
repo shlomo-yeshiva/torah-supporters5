@@ -19864,7 +19864,26 @@
                 setResult('✅ העדכון נשלח בהצלחה לנדרים פלוס.', false);
                 if (amountInput) amountInput.value = '';
                 if (commentsInput) commentsInput.value = '';
-                showNotification('עדכון הסכום נשלח בהצלחה. אפשר להריץ "סנכרון תרומות" כדי לרענן את הנתונים.', 'success');
+                // עדכון הסכום גם בתוכנה ובגליון כדי שיתאים לנדרים פלוס
+                if (selectedId && donor && typeof donor.id !== 'undefined') {
+                    const d = (donors || []).find(x => x.id === donor.id || String(x.id) === String(donor.id));
+                    if (d) {
+                        const prev = d.amount || 0;
+                        d.amount = Math.max(0, prev + amount);
+                        d.updatedAt = new Date().toISOString();
+                        saveData();
+                        try { await saveToGoogleSheets(); } catch (e) { console.warn('שמירה לגליון:', e); }
+                        updateDonorsList();
+                        updateHomeStats();
+                        updateLeadersList();
+                        updateLiveTargets();
+                        updateLiveView();
+                        if (resultEl) resultEl.textContent = '✅ העדכון נשלח בהצלחה. הסכום בתוכנה ובגליון עודכן בהתאם.';
+                    }
+                } else {
+                    setTimeout(() => syncWithNedarimPlus(true), 1500);
+                }
+                showNotification('עדכון הסכום נשלח בהצלחה והתוכנה עודכנה בהתאם.', 'success');
             } catch (e) {
                 setResult('❌ ' + (e.message || e), true);
                 showNotification('שגיאה בשליחה: ' + (e.message || e), 'error');
@@ -19911,6 +19930,26 @@
                 if (res && res.success && !res.skipped) {
                     setResult('✅ הופחתו ' + amount.toLocaleString() + ' ₪ מנדרים פלוס בהצלחה.', false);
                     if (amountInput) amountInput.value = '';
+                    // עדכון הסכום גם בתוכנה ובגליון כדי שיתאים לנדרים פלוס
+                    if (selectedId && donor && typeof donor.id !== 'undefined') {
+                        const d = (donors || []).find(x => x.id === donor.id || String(x.id) === String(donor.id));
+                        if (d) {
+                            const prev = d.amount || 0;
+                            d.amount = Math.max(0, prev - amount);
+                            d.updatedAt = new Date().toISOString();
+                            saveData();
+                            try { await saveToGoogleSheets(); } catch (e) { console.warn('שמירה לגליון:', e); }
+                            updateDonorsList();
+                            updateHomeStats();
+                            updateLeadersList();
+                            updateLiveTargets();
+                            updateLiveView();
+                            setResult('✅ הופחתו ' + amount.toLocaleString() + ' ₪ מנדרים פלוס. הסכום בתוכנה ובגליון עודכן בהתאם.', false);
+                        }
+                    } else {
+                        // מתרים ידני – מרענן מנדרים כדי שהסיכום יתעדכן
+                        setTimeout(() => syncWithNedarimPlus(true), 1500);
+                    }
                 } else {
                     setResult('❌ ' + (res && res.error ? res.error : 'ההפחתה נכשלה.'), true);
                 }
