@@ -12661,8 +12661,20 @@
                 changed = true;
             }
             const previousBreakdown = getDonorDailyBreakdown(donor).slice();
+            
+            // עדכון הסכום עם לוגים לניפוי באגים
+            console.log(`🔧 [עדכון מתרים] מתרים ID: ${donorId}, שם: ${donor.name || donor.displayName}`);
+            console.log(`🔧 [עדכון מתרים] סכום ישן: ${oldAmount}, סכום חדש: ${finalAmount}, דלתא: ${amountDelta}`);
+            
             donor.amount = finalAmount;
             alignBreakdownToAmount(donor, donor.amount);
+            
+            // וידוא שהסכום נשמר
+            if (donor.amount !== finalAmount) {
+                console.error(`❌ [עדכון מתרים] שגיאה: הסכום לא נשמר! donor.amount=${donor.amount}, finalAmount=${finalAmount}`);
+                donor.amount = finalAmount; // כופה עדכון
+            }
+            
             const afterBreakdown = donor.dailyBreakdown;
             const breakdownChanged = afterBreakdown.some((val, index) => val !== previousBreakdown[index]);
             if (breakdownChanged) changed = true;
@@ -12721,6 +12733,15 @@
             }
 
             ensureDonorsNormalized();
+            
+            // וידוא סופי שהסכום נשמר אחרי normalize
+            const donorAfterNormalize = donors.find(d => d.id === donorId);
+            if (donorAfterNormalize && donorAfterNormalize.amount !== finalAmount) {
+                console.warn(`⚠️ [עדכון מתרים] הסכום השתנה אחרי normalize! מתקן... donor.amount=${donorAfterNormalize.amount}, finalAmount=${finalAmount}`);
+                donorAfterNormalize.amount = finalAmount;
+                alignBreakdownToAmount(donorAfterNormalize, finalAmount);
+            }
+            
             saveData();
             if (deltaInput) deltaInput.value = '';
             editingDonorId = null;
@@ -18020,13 +18041,78 @@
                     if (!silent) console.log('📥 [Google Sheets] קבוצות נטענו:', groups.map(g => ({ id: g.id, name: g.name })));
                 }
                 
-                // טעינת מתרימים
+                // טעינת מתרימים - merge חכם במקום החלפה מלאה
                 if (result.donors && Array.isArray(result.donors) && result.donors.length > 0) {
-                    donors = result.donors;
+                    // שומר את המתרים שנמצא כרגע בעריכה כדי לא לדרוס את השינויים שלו
+                    const currentlyEditingDonor = editingDonorId ? donors.find(d => d.id === editingDonorId) : null;
+                    const editingDonorLocalChanges = currentlyEditingDonor ? {
+                        amount: currentlyEditingDonor.amount,
+                        displayName: currentlyEditingDonor.displayName,
+                        groupId: currentlyEditingDonor.groupId,
+                        personalGoal: currentlyEditingDonor.personalGoal
+                    } : null;
+                    
+                    // יוצר מפה של מתרימים מהגליון לפי ID
+                    const donorsFromSheet = new Map();
+                    result.donors.forEach(d => {
+                        if (d.id) {
+                            donorsFromSheet.set(d.id, { ...d });
+                        }
+                    });
+                    
+                    // מעדכן מתרימים קיימים לפי ID, מוסיף חדשים, אבל לא דורס מתרימים בעריכה
+                    const updatedDonors = [];
+                    const existingIds = new Set();
+                    
+                    // עדכון מתרימים קיימים
+                    donors.forEach(existingDonor => {
+                        const id = existingDonor.id;
+                        existingIds.add(id);
+                        
+                        // אם המתרים נמצא בעריכה, שומר את השינויים המקומיים
+                        if (editingDonorId === id && editingDonorLocalChanges) {
+                            const sheetDonor = donorsFromSheet.get(id);
+                            if (sheetDonor) {
+                                // מעדכן מהגליון אבל שומר את השינויים המקומיים
+                                updatedDonors.push({
+                                    ...sheetDonor,
+                                    amount: editingDonorLocalChanges.amount,
+                                    displayName: editingDonorLocalChanges.displayName,
+                                    groupId: editingDonorLocalChanges.groupId,
+                                    personalGoal: editingDonorLocalChanges.personalGoal
+                                });
+                            } else {
+                                // אם לא נמצא בגליון, שומר את המתרים המקומי
+                                updatedDonors.push(existingDonor);
+                            }
+                        } else {
+                            // מתרים לא בעריכה - מעדכן מהגליון
+                            const sheetDonor = donorsFromSheet.get(id);
+                            if (sheetDonor) {
+                                updatedDonors.push(sheetDonor);
+                            } else {
+                                updatedDonors.push(existingDonor);
+                            }
+                        }
+                    });
+                    
+                    // הוספת מתרימים חדשים מהגליון שלא קיימים מקומית
+                    donorsFromSheet.forEach((sheetDonor, id) => {
+                        if (!existingIds.has(id)) {
+                            updatedDonors.push(sheetDonor);
+                        }
+                    });
+                    
+                    donors = updatedDonors;
                     loadedDonors = donors.length;
+                    
                     if (!silent) {
                         const donorsWithDisplayName = donors.filter(d => d.displayName && d.displayName !== d.name);
                         console.log('📥 [Google Sheets] מתרימים עם שם תצוגה מותאם:', donorsWithDisplayName.length);
+                    }
+                    
+                    if (editingDonorId && editingDonorLocalChanges) {
+                        console.log('🔒 [סנכרון] נשמרו שינויים מקומיים של מתרים בעריכה:', editingDonorId);
                     }
                 }
                 
