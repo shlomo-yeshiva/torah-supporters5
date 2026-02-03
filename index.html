@@ -6640,9 +6640,9 @@
             apiUrl: 'https://matara.pro/nedarimplus/Reports/Manage3.aspx', // API ניהול
             onlineApiUrl: 'https://www.matara.pro/nedarimplus/online/Files/Manage.aspx', // API דף אונליין
             matchPlusApiUrl: 'https://www.matara.pro/nedarimplus/V6/MatchPlus.aspx', // API MatchPlus - קריאות ישירות!
-            // הגדרות זמנים - מוגדלו למניעת קפיצות
-            autoSyncInterval: 60 * 1000, // 60 שניות (דקה) במילישניות - מונע קפיצות
-            dataCheckInterval: 30 * 1000, // 30 שניות - מונע קפיצות
+            // הגדרות זמנים - סנכרון אוטומטי רק מושך (pull), לא דוחף. מרווח 5 דקות למניעת אינפלציה.
+            autoSyncInterval: 5 * 60 * 1000, // 5 דקות - סנכרון אוטומטי רק משיכה מנדרים
+            dataCheckInterval: 60 * 1000, // דקה - בדיקת שינויים מקומיים
             // מצב נתונים
             lastTransactionId: 0,
             totalDonatedFromAPI: null,
@@ -16975,7 +16975,8 @@
 
         // פונקציה ראשית לסנכרון עם נדרים פלוס (משתמש ב-MatchPlus API)
         // 🔄 סנכרון דו-כיווני: מעדכן סכומים לנדרים פלוס וגם מושך נתונים משם
-        async function syncWithNedarimPlus(silent = false) {
+        // pullOnly = true: רק מושך מנדרים (לסנכרון אוטומטי) - לא דוחף לנדרים! מונע אינפלציה וחסימת עמותה.
+        async function syncWithNedarimPlus(silent = false, pullOnly = false) {
             const btn = document.getElementById('nedarimSyncBtn');
             if (!silent && btn) {
                 btn.disabled = true;
@@ -16988,12 +16989,14 @@
 
             try {
                 ensureDonorsNormalized();
+                let updatedToNedarim = 0; // pullOnly=true לא מעדכנים לנדרים
 
                 console.log('═══════════════════════════════════════════════════════');
-                console.log('🔄 מתחיל סנכרון דו-כיווני עם נדרים פלוס...');
+                console.log(pullOnly ? '🔄 מתחיל משיכה מנדרים פלוס (ללא דחיפה לנדרים)...' : '🔄 מתחיל סנכרון דו-כיווני עם נדרים פלוס...');
                 console.log('═══════════════════════════════════════════════════════');
 
-                // ========== שלב 1: עדכון סכומים לנדרים פלוס ==========
+                // ========== שלב 1: עדכון סכומים לנדרים פלוס (מדולג בסנכרון אוטומטי!) ==========
+                if (!pullOnly) {
                 if (!silent) {
                 showNedarimStatus('מעדכן סכומים לנדרים פלוס...', 'loading');
                 }
@@ -17223,6 +17226,7 @@
                 
                 // ממתין קצת כדי שנדרים פלוס יעדכן את הנתונים
                 await new Promise(resolve => setTimeout(resolve, 2000));
+                } // סוף if (!pullOnly) - סנכרון אוטומטי לא דוחף לנדרים!
 
                 // ========== שלב 2: משיכת נתונים מנדרים פלוס ==========
                 console.log('📥 שלב 2: מושך נתונים מנדרים פלוס...');
@@ -17705,10 +17709,10 @@
                 clearInterval(totalCheckTimer);
             }
 
-            // מפעיל סנכרון אוטומטי עם נדרים פלוס כל 15 שניות
+            // סנכרון אוטומטי: רק מושך מנדרים (pullOnly) - לא דוחף! מונע אינפלציה וחסימת עמותה במיליון.
             nedarimSyncTimer = setInterval(() => {
-                console.log('🔄 מבצע סנכרון אוטומטי עם נדרים פלוס...');
-                syncWithNedarimPlus();
+                console.log('🔄 [אוטומטי] מושך נתונים מנדרים פלוס (ללא דחיפה לנדרים)...');
+                syncWithNedarimPlus(true, true); // silent + pullOnly
             }, NEDARIM_CONFIG.autoSyncInterval);
 
             // מפעיל בדיקת שינויים בנתונים מקומיים כל 10 שניות
@@ -17740,10 +17744,10 @@
             // מאתחל את ה-hash הראשוני
             lastDataHash = calculateDataHash();
 
-            console.log('✅ סנכרון אוטומטי הופעל:');
-            console.log(`   - סנכרון עם נדרים פלוס: כל ${NEDARIM_CONFIG.autoSyncInterval / 1000} שניות`);
+            console.log('✅ סנכרון אוטומטי הופעל (רק משיכה מנדרים - לא דחיפה!):');
+            console.log(`   - משיכה מנדרים פלוס: כל ${NEDARIM_CONFIG.autoSyncInterval / 60000} דקות`);
             console.log(`   - בדיקת שינויים מקומיים: כל ${NEDARIM_CONFIG.dataCheckInterval / 1000} שניות`);
-            console.log(`   - עדכון סכום כולל: כל 20 שניות`);
+            console.log(`   - עדכון סכום כולל: כל 60 שניות`);
         }
 
         // פונקציה לעצירת סנכרון אוטומטי
