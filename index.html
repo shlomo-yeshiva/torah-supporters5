@@ -14890,19 +14890,24 @@
             ensureDonorsNormalized();
             saveData();
             
-            // עדכון מיידי לנדרים פלוס (אם יש nedarimMatrimId) - לפני שמירה לגליון
+            // עדכון מיידי לנדרים פלוס (אם יש nedarimMatrimId) - קורה מיד, לא ממתין לשמירה לגליון
             if (donor.nedarimMatrimId && actualDelta !== 0) {
                 console.log(`🔄 מעדכן מיידית לנדרים פלוס: ${donorDisplayName}, דלתה: ${actualDelta}`);
+                // עדכון אסינכרוני - לא חוסם את המשך הקוד
                 updateNedarimAmountViaSheets(donor, actualDelta, note).then(result => {
                     if (result && result.success && !result.skipped) {
                         console.log(`✅ עודכן בהצלחה בנדרים פלוס: ${donorDisplayName}`);
+                        // הודעה ברורה למשתמש שהעדכון הצליח
+                        showNotification(`✅ עודכן בנדרים פלוס: ${donorDisplayName} - ${Math.abs(actualDelta).toLocaleString()} ₪`, 'success');
                     } else if (result && result.skipped) {
                         console.log(`ℹ️ עדכון נדלג בנדרים פלוס: ${donorDisplayName} - ${result.message || 'אין צורך בעדכון'}`);
                     } else {
                         console.warn(`⚠️ עדכון נכשל בנדרים פלוס: ${donorDisplayName} - ${result?.error || 'שגיאה לא ידועה'}`);
+                        showNotification(`⚠️ עדכון נדרים פלוס נכשל: ${result?.error || 'שגיאה לא ידועה'}`, 'error');
                     }
                 }).catch(err => {
                     console.error('❌ שגיאה בעדכון נדרים פלוס:', err);
+                    showNotification(`❌ שגיאה בעדכון נדרים פלוס: ${err.message}`, 'error');
                 });
             }
             
@@ -18332,7 +18337,8 @@
                                     personalGoal: existingDonor.personalGoal || sheetDonor.personalGoal
                                 });
                                 if (isRecentlyUpdated) {
-                                    console.log(`🔒 [סנכרון] נשמרו שינויים מקומיים של מתרים ששונה לאחרונה (${Math.round((now - lastUpdateTime) / 1000)} שניות):`, id);
+                                    // לא מציגים הודעה בקונסול - זה תקין וצפוי כשמעדכנים מתרים
+                                    // console.log(`🔒 [סנכרון] נשמרו שינויים מקומיים של מתרים ששונה לאחרונה (${Math.round((now - lastUpdateTime) / 1000)} שניות):`, id);
                                 }
                             } else {
                                 // אם לא נמצא בגליון, שומר את המתרים המקומי
@@ -18756,18 +18762,7 @@
                 const result = await response.json();
                 console.log('📦 תוצאה מהשרת:', result);
                 
-                // מציג הודעות רק אם העדכון הצליח בפועל (לא skipped)
-                if (result.success && !result.skipped) {
-                    console.log('✅ נדרים פלוס עודכן בהצלחה:', result.message || 'העדכון בוצע');
-                    // לא מציגים הודעה כאן - זה יוצג בפונקציית הסנכרון הכללית
-                } else if (result.skipped) {
-                    console.log('ℹ️ עדכון נדלג:', result.message || 'אין צורך בעדכון');
-                    // לא מציגים הודעה על דילוג
-                } else {
-                    console.error('❌ שגיאה בעדכון נדרים פלוס:', result.error || 'שגיאה לא ידועה');
-                    // לא מציגים הודעה כאן - זה יוצג בפונקציית הסנכרון הכללית
-                }
-                
+                // מחזיר את התוצאה - ההודעות יוצגו בפונקציה הקוראת
                 return result;
                 
             } catch (error) {
