@@ -11490,18 +11490,10 @@
             step();
         }
         function updateHomeStats() {
-            // משתמש בסכום מ-API אם יש, אחרת בסכום מהתרימים
-            const totalCollectedFromDonors = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
+            // סכום שנאסף = תמיד סכום המתרימים במערכת (מקור אמין, ללא תלות ב-API)
+            const totalCollected = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
             
-            // משתמש בסכום מ-API רק אם הוא נטען וגדול מ-0
-            // אם ה-API מחזיר 0, זה אומר שהוא לא עובד - נשתמש בסכום מהתרימים
-            const totalCollected = (NEDARIM_CONFIG.apiDataLoaded && 
-                                   NEDARIM_CONFIG.totalDonatedFromAPI !== null && 
-                                   NEDARIM_CONFIG.totalDonatedFromAPI > 0)
-                ? NEDARIM_CONFIG.totalDonatedFromAPI 
-                : totalCollectedFromDonors;
-            
-            // משתמש ביעד מ-API רק אם הוא גדול מ-0, אחרת ביעד המקומי
+            // יעד המצינג – מ-API אם נטען וערכו סביר, אחרת מהיעד המקומי
             const currentGoal = (NEDARIM_CONFIG.apiDataLoaded && 
                                 NEDARIM_CONFIG.goalFromAPI !== null && 
                                 NEDARIM_CONFIG.goalFromAPI > 0)
@@ -13511,13 +13503,8 @@
                 .sort((a, b) => b.amount - a.amount)
                 .slice(0, 5);
             
-            // חישוב סכום כולל - משתמש ב-API אם יש, אחרת מהתרימים
-            const totalCollectedFromDonors = donors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0);
-            const totalCollected = (NEDARIM_CONFIG.apiDataLoaded && 
-                                   NEDARIM_CONFIG.totalDonatedFromAPI !== null && 
-                                   NEDARIM_CONFIG.totalDonatedFromAPI > 0)
-                ? NEDARIM_CONFIG.totalDonatedFromAPI 
-                : totalCollectedFromDonors;
+            // סכום כולל = תמיד סכום המתרימים במערכת (מקור אמין)
+            const totalCollected = donors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0);
             const goal = (NEDARIM_CONFIG.apiDataLoaded && 
                          NEDARIM_CONFIG.goalFromAPI !== null && 
                          NEDARIM_CONFIG.goalFromAPI > 0)
@@ -13648,13 +13635,8 @@
                 const text = overallContainer.querySelector('.leaders-overall-progress-text');
                 const note = overallContainer.querySelector('.leaders-overall-progress-note');
 
-                // חישוב סכום כולל - משתמש ב-API אם יש, אחרת מהתרימים
-                const totalCollectedFromDonors = donors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0);
-                const totalCollected = (NEDARIM_CONFIG.apiDataLoaded && 
-                                       NEDARIM_CONFIG.totalDonatedFromAPI !== null && 
-                                       NEDARIM_CONFIG.totalDonatedFromAPI > 0)
-                    ? NEDARIM_CONFIG.totalDonatedFromAPI 
-                    : totalCollectedFromDonors;
+                // סכום כולל = תמיד סכום המתרימים במערכת (מקור אמין)
+                const totalCollected = donors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0);
                 const goal = (NEDARIM_CONFIG.apiDataLoaded && 
                              NEDARIM_CONFIG.goalFromAPI !== null && 
                              NEDARIM_CONFIG.goalFromAPI > 0)
