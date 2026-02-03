@@ -14855,59 +14855,30 @@
                 saveToGoogleSheets().then(() => {
                     console.log('✅ פרטי מתרים עודכנו בגליון');
                     
-                    // אם יש מספר מתרים בנדרים פלוס, מעדכן גם שם דרך Google Sheets
-                    // זה עובד אוטומטית - לא צריך אישור מהמשתמש
+                    // עדכון אוטומטי לנדרים פלוס דרך Google Sheets (אם יש nedarimMatrimId)
                     if (donor.nedarimMatrimId && actualDelta !== 0) {
-                        console.log('🔄 [נדרים פלוס] מתחיל עדכון:', {
-                            matrimId: donor.nedarimMatrimId,
-                            donorName: getDonorDisplayName(donor),
-                            oldAmount: oldAmount,
-                            newAmount: newAmount,
-                            delta: actualDelta
-                        });
-                        syncDonorToNedarimViaSheets(donor, oldAmount, newAmount, note).then(result => {
-                            if (result && result.success) {
-                                console.log('✅ [נדרים פלוס] עדכון הושלם:', result);
-                            } else {
-                                console.error('❌ [נדרים פלוס] עדכון נכשל:', result);
-                            }
-                        }).catch(err => {
-                            console.error('❌ [נדרים פלוס] שגיאה בעדכון:', err);
-                            showNotification('⚠️ שגיאה בעדכון נדרים פלוס: ' + (err.message || 'שגיאה לא ידועה'), 'error');
-                        });
-                } else {
-                    if (!donor.nedarimMatrimId) {
-                        console.warn('⚠️ [נדרים פלוס] למתרים זה אין nedarimMatrimId - מדלג על עדכון');
-                        console.warn('⚠️ [נדרים פלוס] פרטי המתרים:', {
-                            id: donor.id,
-                            name: donor.name,
-                            displayName: donor.displayName,
-                            nedarimMatrimId: donor.nedarimMatrimId
+                        updateNedarimAmountViaSheets(donor, actualDelta, note).catch(err => {
+                            console.error('❌ שגיאה בעדכון נדרים פלוס:', err);
                         });
                     }
-                    if (actualDelta === 0) {
-                        console.log('ℹ️ [נדרים פלוס] אין שינוי בסכום - מדלג על עדכון');
-                    }
-                }
                     
-                    // אחרי שמירה מוצלחת, מסיר את ההגנה (אבל רק אחרי זמן מספיק כדי שהסנכרון יטען את הערך החדש)
-                    // ⚠️ חשוב: זמן ארוך יותר כדי למנוע race conditions במחשבים מרובים
+                    // אחרי שמירה מוצלחת, מסיר את ההגנה (אבל רק אחרי כמה שניות כדי שהסנכרון יטען את הערך החדש)
                     setTimeout(() => {
                         recentlyUpdatedDonors.delete(donorId);
                         console.log(`🔓 [סנכרון] הסרת הגנה על מתרים ${donorId} אחרי שמירה מוצלחת`);
-                    }, 70000); // 70 שניות אחרי השמירה - זמן ארוך יותר למניעת race conditions
+                    }, 5000); // 5 שניות אחרי השמירה
                 }).catch(err => {
                     console.warn('⚠️ שגיאה בשמירת פרטי מתרים לגליון:', err);
-                    // אם השמירה נכשלה, מסיר את ההגנה אחרי זמן קצר יותר (אבל עדיין מספיק זמן)
+                    // אם השמירה נכשלה, מסיר את ההגנה אחרי זמן קצר יותר
                     setTimeout(() => {
                         recentlyUpdatedDonors.delete(donorId);
-                    }, 60000); // 60 שניות גם אם השמירה נכשלה
+                    }, 10000);
                 });
             } else {
-                // אם אין URL, מסיר את ההגנה אחרי זמן קצר (אבל עדיין מספיק זמן)
+                // אם אין URL, מסיר את ההגנה אחרי זמן קצר
                 setTimeout(() => {
                     recentlyUpdatedDonors.delete(donorId);
-                }, 60000); // 60 שניות גם אם אין URL
+                }, 15000);
             }
             
             updateDonorsList();
@@ -14931,13 +14902,6 @@
                 amount: actualDelta,
                 source: 'manual'
             });
-
-            // מעלה לנדרים פלוס אם נבחר (תוספת או הפחתה) - דרך ישירה (לא דרך Google Sheets)
-            // משתמש בשם המקורי מ-נדרים פלוס (לא שם התצוגה)
-            if (uploadToNedarim && actualDelta !== 0 && donor.fromNedarimPlus) {
-                const originalName = donor.originalName || donor.name;
-                uploadDonorPaymentToNedarim(originalName, actualDelta, note, donor.id);
-            }
         }
 
         // פונקציה להעלאת תשלום לנדרים פלוס
@@ -15035,58 +14999,30 @@
                 saveToGoogleSheets().then(() => {
                     console.log('✅ פרטי מתרים עודכנו בגליון');
                     
-                    // אם יש מספר מתרים בנדרים פלוס, מעדכן גם שם דרך Google Sheets
+                    // עדכון אוטומטי לנדרים פלוס דרך Google Sheets (אם יש nedarimMatrimId)
                     if (donor.nedarimMatrimId && actualDelta !== 0) {
-                        console.log('🔄 [נדרים פלוס] מתחיל עדכון מהיר:', {
-                            matrimId: donor.nedarimMatrimId,
-                            donorName: getDonorDisplayName(donor),
-                            oldAmount: oldAmount,
-                            newAmount: newAmount,
-                            delta: actualDelta
+                        updateNedarimAmountViaSheets(donor, actualDelta, actualDelta > 0 ? 'עדכון מהיר (+)' : 'עדכון מהיר (-)').catch(err => {
+                            console.error('❌ שגיאה בעדכון נדרים פלוס:', err);
                         });
-                        syncDonorToNedarimViaSheets(donor, oldAmount, newAmount, actualDelta > 0 ? 'עדכון מהיר (+)' : 'עדכון מהיר (-)').then(result => {
-                            if (result && result.success) {
-                                console.log('✅ [נדרים פלוס] עדכון מהיר הושלם:', result);
-                            } else {
-                                console.error('❌ [נדרים פלוס] עדכון מהיר נכשל:', result);
-                            }
-                        }).catch(err => {
-                            console.error('❌ [נדרים פלוס] שגיאה בעדכון מהיר:', err);
-                            showNotification('⚠️ שגיאה בעדכון נדרים פלוס: ' + (err.message || 'שגיאה לא ידועה'), 'error');
-                        });
-                    } else {
-                        if (!donor.nedarimMatrimId) {
-                            console.warn('⚠️ [נדרים פלוס] למתרים זה אין nedarimMatrimId - מדלג על עדכון מהיר');
-                            console.warn('⚠️ [נדרים פלוס] פרטי המתרים:', {
-                                id: donor.id,
-                                name: donor.name,
-                                displayName: donor.displayName,
-                                nedarimMatrimId: donor.nedarimMatrimId
-                            });
-                        }
-                        if (actualDelta === 0) {
-                            console.log('ℹ️ [נדרים פלוס] אין שינוי בסכום - מדלג על עדכון מהיר');
-                        }
                     }
                     
-                    // אחרי שמירה מוצלחת, מסיר את ההגנה (אבל רק אחרי זמן מספיק כדי שהסנכרון יטען את הערך החדש)
-                    // ⚠️ חשוב: זמן ארוך יותר כדי למנוע race conditions במחשבים מרובים
+                    // אחרי שמירה מוצלחת, מסיר את ההגנה (אבל רק אחרי כמה שניות כדי שהסנכרון יטען את הערך החדש)
                     setTimeout(() => {
                         recentlyUpdatedDonors.delete(donorId);
                         console.log(`🔓 [סנכרון] הסרת הגנה על מתרים ${donorId} אחרי שמירה מוצלחת`);
-                    }, 70000); // 70 שניות אחרי השמירה - זמן ארוך יותר למניעת race conditions
+                    }, 5000); // 5 שניות אחרי השמירה
                 }).catch(err => {
                     console.warn('⚠️ שגיאה בשמירת פרטי מתרים לגליון:', err);
-                    // אם השמירה נכשלה, מסיר את ההגנה אחרי זמן קצר יותר (אבל עדיין מספיק זמן)
+                    // אם השמירה נכשלה, מסיר את ההגנה אחרי זמן קצר יותר
                     setTimeout(() => {
                         recentlyUpdatedDonors.delete(donorId);
-                    }, 60000); // 60 שניות גם אם השמירה נכשלה
+                    }, 10000);
                 });
             } else {
-                // אם אין URL, מסיר את ההגנה אחרי זמן קצר (אבל עדיין מספיק זמן)
+                // אם אין URL, מסיר את ההגנה אחרי זמן קצר
                 setTimeout(() => {
                     recentlyUpdatedDonors.delete(donorId);
-                }, 60000); // 60 שניות גם אם אין URL
+                }, 15000);
             }
             
             updateDonorsList();
@@ -18286,7 +18222,7 @@
                     const updatedDonors = [];
                     const existingIds = new Set();
                     const now = Date.now();
-                    const PROTECTION_WINDOW_MS = 60000; // 60 שניות - זמן הגנה מפני עדכון מהגליון אחרי שינוי מקומי (הוגדל כדי למנוע race conditions)
+                    const PROTECTION_WINDOW_MS = 15000; // 15 שניות - זמן הגנה מפני עדכון מהגליון אחרי שינוי מקומי
                     
                     // עדכון מתרימים קיימים
                     donors.forEach(existingDonor => {
@@ -18301,11 +18237,7 @@
                         if ((editingDonorId === id && editingDonorLocalChanges) || isRecentlyUpdated) {
                             const sheetDonor = donorsFromSheet.get(id);
                             if (sheetDonor) {
-                                // ⚠️ חשוב: לא מעדכן את הסכום אם המתרים שונה לאחרונה - שומר את השינויים המקומיים
-                                if (isRecentlyUpdated) {
-                                    console.log(`🔒 [סנכרון] מגן על מתרים ${id} - שונה לאחרונה (${Math.round((now - lastUpdateTime) / 1000)} שניות לפני)`);
-                                }
-                                // מעדכן מהגליון אבל שומר את השינויים המקומיים (בעיקר סכום)
+                                // מעדכן מהגליון אבל שומר את השינויים המקומיים
                                 updatedDonors.push({
                                     ...sheetDonor,
                                     amount: existingDonor.amount, // שומר את הסכום המקומי
@@ -18657,6 +18589,97 @@
             }
         }
 
+        /**
+         * עדכון סכום בנדרים פלוס דרך Google Sheets
+         * משתמש רק בפרמטרים בסיסיים ללא MatchingId
+         */
+        async function updateNedarimAmountViaSheets(donor, delta, note = '') {
+            try {
+                const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
+                
+                if (!url) {
+                    console.warn('⚠️ אין URL לעדכון נדרים פלוס דרך Google Sheets');
+                    return { success: false, error: 'אין URL' };
+                }
+                
+                if (!donor.nedarimMatrimId) {
+                    console.log('ℹ️ למתרים זה אין מספר מתרים בנדרים פלוס (nedarimMatrimId) - מדלג על עדכון');
+                    return { success: true, skipped: true, message: 'אין מספר מתרים' };
+                }
+                
+                if (delta === 0) {
+                    console.log('ℹ️ אין שינוי בסכום - מדלג על עדכון');
+                    return { success: true, skipped: true, message: 'אין שינוי בסכום' };
+                }
+                
+                const group = groups.find(g => g.id === donor.groupId);
+                const groupName = group ? group.name : '';
+                const donorDisplayName = getDonorDisplayName(donor);
+                
+                // בונה שם תורם
+                let clientName = donorDisplayName;
+                if (groupName) {
+                    clientName = clientName + ' - ' + groupName;
+                }
+                
+                // בונה הערה
+                let comments = note || '';
+                if (delta > 0) {
+                    comments = 'תוספת: ' + Math.abs(delta).toLocaleString() + ' ש"ח' + (comments ? ' | ' + comments : '');
+                } else {
+                    comments = 'הפחתה: ' + Math.abs(delta).toLocaleString() + ' ש"ח' + (comments ? ' | ' + comments : '');
+                }
+                
+                console.log('🔄 מעדכן נדרים פלוס דרך Google Sheets:', {
+                    matrimId: donor.nedarimMatrimId,
+                    donorName: donorDisplayName,
+                    delta: delta,
+                    clientName: clientName
+                });
+                
+                const requestData = {
+                    action: 'updateNedarimAmount',
+                    matrimId: donor.nedarimMatrimId,
+                    amount: delta, // שולח את השינוי, לא את הסכום הכולל
+                    clientName: clientName,
+                    comments: comments
+                };
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    redirect: 'follow',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ שגיאת שרת:', errorText);
+                    throw new Error(`שגיאת שרת: ${response.status} - ${errorText.substring(0, 200)}`);
+                }
+                
+                const result = await response.json();
+                console.log('📦 תוצאה מהשרת:', result);
+                
+                if (result.success) {
+                    console.log('✅ נדרים פלוס עודכן בהצלחה:', result.message);
+                    showNotification('✅ נדרים פלוס עודכן בהצלחה', 'success');
+                } else {
+                    console.error('❌ שגיאה בעדכון נדרים פלוס:', result.error);
+                    showNotification('⚠️ שגיאה בעדכון נדרים פלוס: ' + (result.error || 'שגיאה לא ידועה'), 'error');
+                }
+                
+                return result;
+                
+            } catch (error) {
+                console.error('❌ שגיאה בעדכון נדרים פלוס דרך Google Sheets:', error);
+                showNotification('⚠️ שגיאה בעדכון נדרים פלוס: ' + error.message, 'error');
+                return { success: false, error: error.message };
+            }
+        }
+        
         // שמירה אוטומטית ל-Google Sheets (debounced)
         function autoSaveToGoogleSheets() {
             // שמירה אוטומטית תמיד כשיש URL מוגדר (לא תלוי בסימון)
@@ -18676,120 +18699,6 @@
                     console.warn('⚠️ שגיאה בשמירה אוטומטית ל-Google Sheets:', err);
                 }
             }, 2000);
-        }
-        
-        /**
-         * סנכרון מתרים לנדרים פלוס דרך Google Sheets
-         * מעדכן את נדרים פלוס כשמעדכנים סכום בתוכנה
-         */
-        async function syncDonorToNedarimViaSheets(donor, oldAmount, newAmount, note = '') {
-            try {
-                const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
-                
-                if (!url) {
-                    console.warn('⚠️ אין URL לעדכון נדרים פלוס דרך Google Sheets');
-                    return { success: false, error: 'אין URL' };
-                }
-                
-                if (!donor.nedarimMatrimId) {
-                    console.warn('⚠️ [נדרים פלוס] למתרים זה אין מספר מתרים בנדרים פלוס (nedarimMatrimId) - מדלג על עדכון');
-                    console.warn('⚠️ [נדרים פלוס] פרטי המתרים:', {
-                        id: donor.id,
-                        name: donor.name,
-                        displayName: donor.displayName,
-                        nedarimMatrimId: donor.nedarimMatrimId,
-                        fromNedarimPlus: donor.fromNedarimPlus
-                    });
-                    showNotification('⚠️ למתרים זה אין מספר מתרים בנדרים פלוס - לא ניתן לעדכן', 'warning');
-                    return { success: true, skipped: true, message: 'אין מספר מתרים' };
-                }
-                
-                const group = groups.find(g => g.id === donor.groupId);
-                const groupName = group ? group.name : '';
-                const donorDisplayName = getDonorDisplayName(donor);
-                
-                console.log('🔄 מעדכן נדרים פלוס דרך Google Sheets:', {
-                    matrimId: donor.nedarimMatrimId,
-                    donorName: donorDisplayName,
-                    oldAmount: oldAmount,
-                    newAmount: newAmount,
-                    delta: newAmount - oldAmount
-                });
-                
-                const requestData = {
-                    action: 'syncDonorToNedarim',
-                    matrimId: donor.nedarimMatrimId,
-                    donorId: donor.id,
-                    donorName: donorDisplayName,
-                    groupName: groupName,
-                    oldAmount: oldAmount,
-                    newAmount: newAmount,
-                    note: note || ''
-                };
-                
-                console.log('📤 [נדרים פלוס] שולח בקשה ל-Google Sheets:', {
-                    url: url.substring(0, 80) + '...',
-                    action: requestData.action,
-                    matrimId: requestData.matrimId,
-                    delta: newAmount - oldAmount
-                });
-                
-                const response = await fetch(url, {
-                    method: 'POST',
-                    redirect: 'follow',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=utf-8'
-                    },
-                    body: JSON.stringify(requestData)
-                });
-                
-                console.log('📥 [נדרים פלוס] תגובה מהשרת:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    ok: response.ok
-                });
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('❌ [נדרים פלוס] שגיאת שרת:', errorText);
-                    throw new Error(`שגיאת שרת: ${response.status} - ${errorText.substring(0, 200)}`);
-                }
-                
-                const result = await response.json();
-                console.log('📦 [נדרים פלוס] תוצאה מהשרת:', result);
-                
-                if (result.success) {
-                    if (result.skipped) {
-                        console.log('ℹ️ עדכון נדרים פלוס דולג:', result.message);
-                    } else {
-                        console.log('✅ נדרים פלוס עודכן בהצלחה דרך Google Sheets:', result.message);
-                        
-                        // ⚠️ חשוב: הנתונים הכלליים (יעד, סכום כולל) מתעדכנים בנדרים פלוס ברקע
-                        // השינויים יראו רק אחרי רענון הדף בנדרים פלוס
-                        // זה לא ישפיע על התצוגה הנוכחית - רק על הסכומים של המתרימים
-                        var notificationMsg = '✅ נדרים פלוס עודכן בהצלחה. השינויים יראו אחרי רענון הדף בנדרים פלוס.';
-                        
-                        // אם יש נתונים שמורים, מציג אותם
-                        if (result.cachedTotalData) {
-                            console.log('📊 נתונים כלליים שמורים:', result.cachedTotalData);
-                            if (result.cachedTotalData.warning) {
-                                notificationMsg += ' ⚠️ ' + result.cachedTotalData.warning;
-                            }
-                        }
-                        
-                        showNotification(notificationMsg, 'success');
-                    }
-                } else {
-                    console.error('❌ שגיאה בעדכון נדרים פלוס:', result.error);
-                    showNotification('⚠️ שגיאה בעדכון נדרים פלוס: ' + (result.error || 'שגיאה לא ידועה'), 'error');
-                }
-                
-                return result;
-                
-            } catch (error) {
-                console.error('❌ שגיאה בעדכון נדרים פלוס דרך Google Sheets:', error);
-                return { success: false, error: error.message };
-            }
         }
         
         // ========== סוף סנכרון Google Sheets ==========
