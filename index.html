@@ -15978,61 +15978,60 @@
                     
                     if (!matrimName || matrimName.trim() === '') return;
 
-                    // מחפש מתרים קיים - מחפש לפי מספר מתרים (ID) אם יש, אחרת לפי שם
+                    // ⚠️ חשוב: חיפוש רק לפי מספר מתרים (MatrimId) - לא לפי שם או קבוצה!
+                    // זה מבטיח שהקשר בין התוכנה לנדרים פלוס הוא יציב ולא משתנה
                     let existingDonor = null;
-                    if (matrimId !== null && matrimId !== undefined) {
-                        // חיפוש לפי מספר מתרים (הזיהוי העיקרי)
-                        existingDonor = donors.find(d => {
-                            const donorMatrimId = d.nedarimMatrimId || d.matrimId;
-                            if (donorMatrimId !== null && donorMatrimId !== undefined) {
-                                // השוואה גמישה
-                                return String(donorMatrimId) === String(matrimId);
-                            }
-                            return false;
-                        });
+                    const matrimIdStr = matrimId !== null && matrimId !== undefined ? String(matrimId) : null;
+                    
+                    if (!matrimIdStr) {
+                        // אם אין מספר מתרים, מדלג על מתרים זה - לא ניתן לקשר אותו
+                        console.warn(`⚠️ מתרים "${matrimName}" מנדרים פלוס אין לו מספר מתרים - מדלג עליו (לא ניתן לקשר ללא מספר מתרים)`);
+                        return; // מדלג על מתרים זה
                     }
                     
-                    // אם לא נמצא לפי מספר מתרים, מחפש לפי שם (לתאימות לאחור)
-                    if (!existingDonor) {
-                        existingDonor = donors.find(d => {
-                            // מחפש לפי השם המקורי מ-נדרים פלוס
-                            const originalName = d.originalName || d.name || '';
-                            const dName = originalName.trim();
-                            const tName = matrimName.trim();
-                            // חיפוש מדויק
-                            if (dName === tName) return true;
-                            // חיפוש חלקי (אם השם מכיל את שם המתרים או להיפך)
-                            if (dName.includes(tName) || tName.includes(dName)) return true;
-                            return false;
-                        });
-                    }
-                    
-                    if (!existingDonor) {
-                        // מתרים חדש - יוצר
-                        const newDonor = {
-                            id: Date.now() + Math.random(),
-                            name: matrimName.trim(), // השם המקורי מ-נדרים פלוס
-                            originalName: matrimName.trim(), // שומר את השם המקורי
-                            displayName: null, // שם התצוגה (אם לא שונה, יוצג השם המקורי)
-                            nedarimMatrimId: matrimId, // מספר מתרים מ-נדרים פלוס (הזיהוי העיקרי)
-                            groupId: nedarimGroup.id,
-                            amount: matrimAmount, // הסכום הנוכחי מ-נדרים פלוס
-                            personalGoal: matrimGoal || null, // היעד האישי מ-נדרים פלוס
-                            history: [],
-                            createdAt: new Date().toISOString(),
-                            fromNedarimPlus: true,
-                            fromMatching: true // סימון שזה ממצינג
-                        };
-
-                        donors.push(newDonor);
-                        newMatrim++;
-                        console.log(`✅ נוסף מתרים חדש: ${matrimName} (מספר מתרים: ${matrimId}, יעד: ${matrimGoal}, סכום: ${matrimAmount})`);
-                    } else {
-                        // מתרים קיים - מעדכן את הסכום והיעד
-                        // מעדכן את מספר המתרים אם לא היה לו
-                        if (matrimId !== null && matrimId !== undefined && !existingDonor.nedarimMatrimId) {
-                            existingDonor.nedarimMatrimId = matrimId;
+                    // חיפוש רק לפי מספר מתרים (הזיהוי היחיד והיציב!)
+                    existingDonor = donors.find(d => {
+                        // בודק רק את השדה nedarimMatrimId - זה המזהה היחיד
+                        const donorMatrimId = d.nedarimMatrimId;
+                        if (donorMatrimId !== null && donorMatrimId !== undefined) {
+                            return String(donorMatrimId) === matrimIdStr;
                         }
+                        return false;
+                    });
+                    
+                    if (existingDonor) {
+                        console.log(`🔍 נמצא מתרים לפי מספר מתרים ${matrimIdStr}: ${existingDonor.name}`);
+                    } else {
+                        // אם לא נמצא לפי מספר מתרים, לא יוצרים מתרים חדש ולא מעדכנים
+                        // זה מבטיח שהקשר הוא רק לפי מספר מתרים
+                        console.log(`ℹ️ מתרים "${matrimName}" (מספר מתרים: ${matrimIdStr}) לא נמצא בתוכנה - לא יוצר מתרים חדש (קשר רק לפי מספר מתרים)`);
+                        return; // מדלג - לא יוצר מתרים חדש ללא קשר לפי מספר מתרים
+                    }
+                    
+                    // ⚠️ לא יוצרים מתרים חדש - הקשר הוא רק לפי מספר מתרים קיים!
+                    // אם מתרים לא נמצא לפי מספר מתרים, הוא לא קיים בתוכנה ולא נוצר
+                    if (!existingDonor) {
+                        console.log(`ℹ️ מתרים "${matrimName}" (מספר מתרים: ${matrimId}) לא נמצא בתוכנה - לא יוצר מתרים חדש (קשר רק לפי מספר מתרים)`);
+                        return; // מדלג - לא יוצר מתרים חדש
+                    // מתרים נמצא לפי מספר מתרים - מעדכן את הסכום והיעד
+                    // ⚠️ לא מעדכן את מספר המתרים כי הוא כבר נכון (הקשר הוא רק לפי מספר מתרים)
+                    // מעדכן רק אם יש בעיה (תאריך במקום מספר)
+                    if (matrimId !== null && matrimId !== undefined) {
+                        const currentMatrimId = existingDonor.nedarimMatrimId ? String(existingDonor.nedarimMatrimId).trim() : null;
+                        const isCurrentIdInvalid = currentMatrimId && (
+                            /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(currentMatrimId) || 
+                            currentMatrimId.includes('T') || 
+                            currentMatrimId.includes('Z') ||
+                            !/^\d+$/.test(currentMatrimId)
+                        );
+                        
+                        if (isCurrentIdInvalid) {
+                            // רק אם יש בעיה (תאריך), מתקן
+                            const oldId = existingDonor.nedarimMatrimId;
+                            existingDonor.nedarimMatrimId = matrimId;
+                            console.log(`✅ תוקן מספר מתרים למתרים ${existingDonor.name}: ${oldId} → ${matrimId}`);
+                        }
+                    }
                         // שומר את השם המקורי אם זה הפעם הראשונה
                         if (!existingDonor.originalName && existingDonor.fromNedarimPlus) {
                             existingDonor.originalName = existingDonor.name;
@@ -16674,71 +16673,54 @@
                     
                     if (!matrimName) return;
 
-                    // מחפש מתרים קיים - מחפש לפי מספר מתרים (ID) כזיהוי העיקרי!
+                    // ⚠️ חשוב: חיפוש רק לפי מספר מתרים (MatrimId) - לא לפי שם או קבוצה!
+                    // זה מבטיח שהקשר בין התוכנה לנדרים פלוס הוא יציב ולא משתנה
                     let donor = null;
                     const matrimIdStr = matrimId !== null && matrimId !== undefined ? String(matrimId) : null;
                     
-                    if (matrimIdStr) {
-                        // חיפוש לפי מספר מתרים (הזיהוי העיקרי והחשוב ביותר!)
-                        donor = donors.find(d => {
-                            // בודק כל השדות האפשריים שיכולים להכיל מספר מתרים
-                            const possibleIds = [
-                                d.nedarimMatrimId,
-                                d.matrimId,
-                                d.MatrimId,
-                                d.Id,
-                                d.id
-                            ];
-                            
-                            for (const pid of possibleIds) {
-                                if (pid !== null && pid !== undefined && String(pid) === matrimIdStr) {
-                                    return true;
-                                }
-                            }
-                            return false;
-                        });
-                        
-                        if (donor) {
-                            console.log(`🔍 נמצא מתרים לפי מספר מתרים ${matrimIdStr}: ${donor.name}`);
+                    if (!matrimIdStr) {
+                        // אם אין מספר מתרים, מדלג על מתרים זה - לא ניתן לקשר אותו
+                        console.warn(`⚠️ מתרים "${matrimName}" מנדרים פלוס אין לו מספר מתרים - מדלג עליו (לא ניתן לקשר ללא מספר מתרים)`);
+                        return; // מדלג על מתרים זה
+                    }
+                    
+                    // חיפוש רק לפי מספר מתרים (הזיהוי היחיד והיציב!)
+                    donor = donors.find(d => {
+                        // בודק רק את השדה nedarimMatrimId - זה המזהה היחיד
+                        const donorMatrimId = d.nedarimMatrimId;
+                        if (donorMatrimId !== null && donorMatrimId !== undefined) {
+                            return String(donorMatrimId) === matrimIdStr;
                         }
-                    }
+                        return false;
+                    });
                     
-                    // אם לא נמצא לפי מספר מתרים, מחפש לפי שם (לתאימות לאחור)
-                    if (!donor) {
-                        donor = donors.find(d => {
-                            // מחפש לפי השם המקורי מ-נדרים פלוס
-                            const originalName = d.originalName || d.name || '';
-                            const displayName = d.displayName || '';
-                            const dName = originalName.trim();
-                            const dDisplayName = displayName.trim();
-                            const tName = matrimName.trim();
-                            
-                            // חיפוש מדויק בשם המקורי או בשם התצוגה
-                            if (dName === tName || dDisplayName === tName) return true;
-                            // חיפוש חלקי (אם השם מכיל את שם המתרים או להיפך)
-                            if (dName.includes(tName) || tName.includes(dName)) return true;
-                            if (dDisplayName && (dDisplayName.includes(tName) || tName.includes(dDisplayName))) return true;
-                            return false;
-                        });
-                    }
-                    
-                    // אם עדיין לא נמצא, מחפש גם לפי שם רגיל (ללא originalName)
-                    if (!donor) {
-                        donor = donors.find(d => {
-                            const dName = (d.name || '').trim();
-                            const tName = matrimName.trim();
-                            if (dName === tName) return true;
-                            if (dName.includes(tName) || tName.includes(dName)) return true;
-                            return false;
-                        });
+                    if (donor) {
+                        console.log(`🔍 נמצא מתרים לפי מספר מתרים ${matrimIdStr}: ${donor.name}`);
+                    } else {
+                        // אם לא נמצא לפי מספר מתרים, לא יוצרים מתרים חדש ולא מעדכנים
+                        // זה מבטיח שהקשר הוא רק לפי מספר מתרים
+                        console.log(`ℹ️ מתרים "${matrimName}" (מספר מתרים: ${matrimIdStr}) לא נמצא בתוכנה - לא יוצר מתרים חדש (קשר רק לפי מספר מתרים)`);
+                        return; // מדלג - לא יוצר מתרים חדש ללא קשר לפי מספר מתרים
                     }
                     
                     if (donor) {
                         // מתרים קיים - מעדכן את הסכום והיעד
-                        // מעדכן את מספר המתרים אם לא היה לו או אם השתנה
+                        // ⚠️ לא מעדכן את מספר המתרים כי הוא כבר נכון (הקשר הוא רק לפי מספר מתרים)
+                        // מעדכן רק אם יש בעיה (תאריך במקום מספר)
                         if (matrimId !== null && matrimId !== undefined) {
-                            if (!donor.nedarimMatrimId) {
+                            const currentMatrimId = donor.nedarimMatrimId ? String(donor.nedarimMatrimId).trim() : null;
+                            const isCurrentIdInvalid = currentMatrimId && (
+                                /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(currentMatrimId) || 
+                                currentMatrimId.includes('T') || 
+                                currentMatrimId.includes('Z') ||
+                                !/^\d+$/.test(currentMatrimId)
+                            );
+                            
+                            if (isCurrentIdInvalid) {
+                                // רק אם יש בעיה (תאריך), מתקן
+                                const oldId = donor.nedarimMatrimId;
                                 donor.nedarimMatrimId = matrimId;
+                                console.log(`✅ תוקן מספר מתרים למתרים ${donor.name}: ${oldId} → ${matrimId}`);
                             }
                         }
                         // שומר את השם המקורי אם זה הפעם הראשונה
@@ -16781,44 +16763,12 @@
                         } else if (matrimGoal !== (donor.personalGoal || 0)) {
                             updatedDonors++;
                         }
-                    } else {
-                        // לפני יצירת מתרים חדש - בדיקה נוספת אם יש מתרים עם אותו מספר
-                        // זה מונע כפילויות גם אם השם השתנה
-                        if (matrimIdStr) {
-                            const existingById = donors.find(d => {
-                                const dId = d.nedarimMatrimId || d.matrimId;
-                                return dId && String(dId) === matrimIdStr;
-                            });
-                            if (existingById) {
-                                console.log(`⚠️ נמצא מתרים עם אותו מספר (${matrimIdStr}) אבל שם שונה: ${existingById.name} vs ${matrimName}`);
-                                // מעדכן את המתרים הקיים במקום ליצור חדש
-                                existingById.amount = matrimAmount;
-                                if (matrimGoal > 0) existingById.personalGoal = matrimGoal;
-                                existingById.originalName = matrimName.trim();
-                                if (!existingById.nedarimMatrimId) existingById.nedarimMatrimId = matrimId;
-                                updatedDonors++;
-                                return; // ממשיך למתרים הבא
-                            }
-                        }
+                    // ⚠️ לא יוצרים מתרים חדש - הקשר הוא רק לפי מספר מתרים קיים!
+                    // אם מתרים לא נמצא לפי מספר מתרים, הוא לא קיים בתוכנה ולא נוצר
                         
-                        // מתרים חדש - יוצר אותו (אם לא נמצא לפי שם או מספר)
-                        const newDonor = {
-                            id: Date.now() + Math.random(),
-                            name: matrimName.trim(),
-                            originalName: matrimName.trim(),
-                            displayName: null,
-                            nedarimMatrimId: matrimId,
-                            groupId: nedarimGroup.id,
-                            amount: matrimAmount,
-                            personalGoal: matrimGoal || null,
-                            history: [],
-                            createdAt: new Date().toISOString(),
-                            fromNedarimPlus: true,
-                            fromMatching: true
-                        };
-                        donors.push(newDonor);
-                        newDonors++;
-                        console.log(`✅ נוסף מתרים חדש: ${matrimName} (מספר מתרים: ${matrimIdStr || 'ללא'}, יעד: ${matrimGoal}, סכום: ${matrimAmount})`);
+                        // ⚠️ לא יוצרים מתרים חדש - הקשר הוא רק לפי מספר מתרים קיים!
+                        // אם מתרים לא נמצא לפי מספר מתרים, הוא לא קיים בתוכנה ולא נוצר
+                        console.log(`ℹ️ מתרים "${matrimName}" (מספר מתרים: ${matrimIdStr}) לא נמצא בתוכנה - לא יוצר מתרים חדש (קשר רק לפי מספר מתרים)`);
                     }
                 });
 
