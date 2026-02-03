@@ -5459,6 +5459,15 @@
                                     <button class="btn btn-primary btn-small" onclick="moveSelectedDonorsToGroup()" id="moveToGroupBtn" style="display: none;">העבר לקבוצה</button>
                                 </div>
                             </div>
+                            <div class="donors-bulk-remove-text" id="donorsBulkRemoveText" style="margin-top: 12px; padding: 12px 15px; background: #fff3e0; border-radius: 8px; border: 1px solid #ff9800;">
+                                <h4 style="margin: 0 0 8px 0; font-size: 14px; color: #e65100;">✂️ מחוק מירבי מכל השמות</h4>
+                                <p style="margin: 0 0 10px 0; font-size: 12px; color: #555;">הזן טקסט להסרה (למשל "המיליים וועד שני") – יוסר מכל שמות המתרימים. אחרי השמירה לגליון השמות יעודכנו גם בעמודה C.</p>
+                                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px;">
+                                    <input type="text" id="bulkRemoveTextInput" placeholder='למשל: המיליים וועד שני' style="min-width: 200px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;">
+                                    <button type="button" class="btn btn-small" onclick="removeTextFromAllDonorNames()" style="background: #ff9800; color: white;">הסר מכל השמות</button>
+                                </div>
+                                <p id="bulkRemoveTextResult" style="margin: 8px 0 0 0; font-size: 12px; min-height: 18px;"></p>
+                            </div>
                             <div class="donors-search-meta" id="donorsSearchMeta"></div>
                         </div>
                         <div class="donors-list" id="donorsListContainer">
@@ -12509,6 +12518,56 @@
             }
         }
 
+        // מחוק מירבי: הסרת טקסט מכל שמות המתרימים (name ו-displayName). אחרי שמירה לגליון – השמות בעמודה C מתעדכנים.
+        function removeTextFromAllDonorNames() {
+            const input = document.getElementById('bulkRemoveTextInput');
+            const resultEl = document.getElementById('bulkRemoveTextResult');
+            const textToRemove = (input && input.value) ? String(input.value).trim() : '';
+            if (!textToRemove) {
+                if (resultEl) { resultEl.textContent = 'נא להזין טקסט להסרה.'; resultEl.style.color = '#c62828'; }
+                showNotification('נא להזין טקסט להסרה (למשל: המיליים וועד שני)', 'warning');
+                return;
+            }
+            function escapeRegExp(s) {
+                return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            }
+            ensureDonorsNormalized();
+            let changedCount = 0;
+            let totalRemovals = 0;
+            (donors || []).forEach(d => {
+                let changed = false;
+                if (d.name && String(d.name).includes(textToRemove)) {
+                    d.name = String(d.name).replace(new RegExp(escapeRegExp(textToRemove), 'g'), '').replace(/\s+/g, ' ').trim();
+                    changed = true;
+                    totalRemovals++;
+                }
+                if (d.displayName && String(d.displayName).includes(textToRemove)) {
+                    d.displayName = String(d.displayName).replace(new RegExp(escapeRegExp(textToRemove), 'g'), '').replace(/\s+/g, ' ').trim();
+                    changed = true;
+                    totalRemovals++;
+                }
+                if (changed) {
+                    d.updatedAt = new Date().toISOString();
+                    changedCount++;
+                }
+            });
+            saveData();
+            updateDonorsList();
+            updateHomeStats();
+            updateLeadersList();
+            updateLiveTargets();
+            updateLiveView();
+            const msg = changedCount > 0
+                ? `הוסר "${textToRemove}" מ־${changedCount} מתרימים (סה"כ ${totalRemovals} הופעות). שמור לגליון כדי לעדכן גם את עמודה C.`
+                : `הטקסט "${textToRemove}" לא נמצא באף שם.`;
+            if (resultEl) {
+                resultEl.textContent = msg;
+                resultEl.style.color = changedCount > 0 ? '#2e7d32' : '#555';
+            }
+            showNotification(changedCount > 0 ? msg : 'לא נמצאה התאמה להסרה.', changedCount > 0 ? 'success' : 'info');
+            if (input && changedCount > 0) input.value = '';
+        }
+
         // מחיקת מתרים (מקומית בלבד - לא מוחק מנדרים פלוס)
         async function deleteDonor(donorId) {
             // מוצא את המתרים לפני המחיקה
@@ -17784,27 +17843,29 @@
                 console.log('⚠️ [API] עדיין לא נטען סכום מ-API');
             }
             
-            // מנסה למשוך את הסכום מ-API
+            // מנסה למשוך את הסכום מ-API ולסנכרן את התוכנה לנדרים פלוס (משיכת סכומים per-מתרים)
             try {
                 const totalData = await fetchTotalFromMatchPlus();
-                if (totalData && totalData.Donated > 0) {
-                    console.log('✅ [בדיקה] הסכום עודכן בהצלחה:', totalData);
-                    console.log('📊 [API - חדש] סכום:', totalData.Donated.toLocaleString(), 'ש"ח');
+                if (totalData && totalData.Donated >= 0) {
+                    console.log('✅ [בדיקה] הסכום מ-API:', totalData.Donated.toLocaleString(), 'ש"ח');
                     console.log('📊 [API - חדש] יעד:', totalData.Goal.toLocaleString(), 'ש"ח');
-                    console.log('📊 [השוואה] סכום מדף אונליין: 510,713 ש"ח');
-                    console.log('📊 [השוואה] סכום מ-API:', totalData.Donated.toLocaleString(), 'ש"ח');
-                    console.log('📊 [השוואה] ההפרש:', (510713 - totalData.Donated).toLocaleString(), 'ש"ח');
-                    
-                    // מעדכן את התצוגות
-                    updateHomeStats();
-                    updateLeadersList();
-                    updateLiveTargets();
-                    
-                    // מציג הודעה למשתמש
-                    if (totalData.Donated >= 510000) {
-                        showNotification(`✅ הסכום הכולל עודכן: ${totalData.Donated.toLocaleString()} ש"ח`);
+                    const diff = totalData.Donated - totalFromDonors;
+                    if (Math.abs(diff) > 0) {
+                        if (!isAutoCall) {
+                            showNedarimStatus('מסנכרן סכומים מנדרים פלוס לתוכנה...', 'loading');
+                        }
+                        // סנכרון מלא: משיכת רשימת מתרימים מנדרים ועדכון הסכום של כל מתרים בתוכנה
+                        await syncWithNedarimPlus(true, true);
+                        if (!isAutoCall) {
+                            showNedarimStatus('התוכנה מסונכרנת עם נדרים פלוס', 'success');
+                        }
+                        const newTotal = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
+                        showNotification(`✅ סונכרן עם נדרים פלוס: הסכום בתוכנה עודכן ל־${newTotal.toLocaleString()} ש"ח`, 'success');
                     } else {
-                        showNotification(`⚠️ הסכום עודכן אבל נמוך מהצפוי: ${totalData.Donated.toLocaleString()} ש"ח (צפוי: 510,713 ש"ח)`);
+                        updateHomeStats();
+                        updateLeadersList();
+                        updateLiveTargets();
+                        showNotification(`✅ הסכום כבר תואם: ${totalData.Donated.toLocaleString()} ש"ח`, 'success');
                     }
                 } else {
                     console.error('❌ [בדיקה] ה-API מחזיר 0 או לא עובד');
