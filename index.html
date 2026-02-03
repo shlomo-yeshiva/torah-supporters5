@@ -16478,13 +16478,46 @@
                 // מוצא מתרימים שיש להם nedarimMatrimId והסכום שלהם שונה מנדרים פלוס
                 const donorsToUpdate = donors.filter(donor => {
                     if (!donor.nedarimMatrimId) return false;
+                    
+                    // לוגים מפורטים למתרים ספציפי (שלמה כהן 118)
+                    if (donor.name && donor.name.includes('שלמה כהן') && String(donor.nedarimMatrimId).trim() === '118') {
+                        console.log('🔍 [דיבוג] בודק מתרים שלמה כהן 118:');
+                        console.log('   שם:', donor.name);
+                        console.log('   מספר מתרים:', donor.nedarimMatrimId);
+                        console.log('   סכום מקומי:', donor.amount || 0);
+                        console.log('   סכום מנדרים פלוס:', nedarimAmountsMap.get('118') || 0);
+                    }
+                    
                     const localAmount = donor.amount || 0;
                     const nedarimAmount = nedarimAmountsMap.get(String(donor.nedarimMatrimId)) || 0;
                     const delta = localAmount - nedarimAmount;
+                    
+                    // לוגים מפורטים למתרים ספציפי
+                    if (donor.name && donor.name.includes('שלמה כהן') && String(donor.nedarimMatrimId).trim() === '118') {
+                        console.log('   דלתה:', delta);
+                        console.log('   האם יש שינוי?', Math.abs(delta) > 0);
+                        console.log('   האם יועדכן?', Math.abs(delta) > 0);
+                    }
+                    
                     return Math.abs(delta) > 0; // יש שינוי
                 });
                 
                 console.log(`📋 נמצאו ${donorsToUpdate.length} מתרימים לעדכון בנדרים פלוס`);
+                
+                // בדיקה אם המתרים שלמה כהן 118 נמצא ברשימה
+                const shlomoCohen = donorsToUpdate.find(d => d.name && d.name.includes('שלמה כהן') && String(d.nedarimMatrimId).trim() === '118');
+                if (shlomoCohen) {
+                    console.log('✅ [דיבוג] מתרים שלמה כהן 118 נמצא ברשימת המתרים לעדכון!');
+                } else {
+                    console.warn('⚠️ [דיבוג] מתרים שלמה כהן 118 לא נמצא ברשימת המתרים לעדכון!');
+                    // בודק אם הוא בכלל ברשימת המתרים
+                    const allShlomoCohen = donors.filter(d => d.name && d.name.includes('שלמה כהן'));
+                    console.log('   מתרים בשם שלמה כהן בתוכנה:', allShlomoCohen.map(d => ({
+                        name: d.name,
+                        matrimId: d.nedarimMatrimId,
+                        amount: d.amount
+                    })));
+                }
                 
                 // מעדכן כל מתרים שיש לו שינוי
                 let updatedToNedarim = 0;
@@ -16500,9 +16533,9 @@
                     
                     if (isDate || !isNumeric) {
                         invalidMatrimIdCount++;
+                        skippedUpdates++; // זה נדלג, לא נכשל!
                         console.warn(`⚠️ מתרים ${donor.name} (ID: ${donor.id}) יש לו מספר מתרים לא תקין: ${matrimIdStr}`);
                         console.warn(`   יש לקשר את המתרים למספר מתרים אמיתי מנדרים פלוס דרך כפתור "סנכרון תרומות"`);
-                        failedUpdates++;
                         continue; // מדלג על מתרים זה
                     }
                     
@@ -16510,11 +16543,33 @@
                     const nedarimAmount = nedarimAmountsMap.get(String(donor.nedarimMatrimId)) || 0;
                     const delta = localAmount - nedarimAmount;
                     
+                    // לוגים מפורטים למתרים ספציפי (שלמה כהן 118)
+                    if (donor.name && donor.name.includes('שלמה כהן') && String(donor.nedarimMatrimId) === '118') {
+                        console.log('🔍 [דיבוג] נמצא מתרים שלמה כהן עם מספר מתרים 118:');
+                        console.log('   שם:', donor.name);
+                        console.log('   מספר מתרים:', donor.nedarimMatrimId);
+                        console.log('   סכום מקומי:', localAmount);
+                        console.log('   סכום מנדרים פלוס:', nedarimAmount);
+                        console.log('   דלתה:', delta);
+                        console.log('   האם יש שינוי?', Math.abs(delta) > 0);
+                    }
+                    
                     if (Math.abs(delta) > 0) {
                         console.log(`🔄 מעדכן מתרים ${donor.name}: ${nedarimAmount} → ${localAmount} (דלתה: ${delta > 0 ? '+' : ''}${delta})`);
                         
+                        // לוגים מפורטים למתרים ספציפי
+                        if (donor.name && donor.name.includes('שלמה כהן') && String(donor.nedarimMatrimId) === '118') {
+                            console.log('🔍 [דיבוג] מתחיל עדכון למתרים שלמה כהן 118...');
+                        }
+                        
                         try {
                             const result = await updateNedarimAmountViaSheets(donor, delta, 'סנכרון דו-כיווני');
+                            
+                            // לוגים מפורטים למתרים ספציפי
+                            if (donor.name && donor.name.includes('שלמה כהן') && String(donor.nedarimMatrimId) === '118') {
+                                console.log('🔍 [דיבוג] תוצאה מהעדכון:', result);
+                            }
+                            
                             if (result && result.success) {
                                 if (result.skipped) {
                                     skippedUpdates++;
@@ -16526,14 +16581,29 @@
                             } else {
                                 failedUpdates++;
                                 console.warn(`⚠️ לא עודכן: ${donor.name} - ${result?.error || result?.message || 'שגיאה לא ידועה'}`);
+                                
+                                // לוגים מפורטים למתרים ספציפי
+                                if (donor.name && donor.name.includes('שלמה כהן') && String(donor.nedarimMatrimId) === '118') {
+                                    console.error('🔍 [דיבוג] עדכון נכשל למתרים שלמה כהן 118:', result);
+                                }
                             }
                         } catch (error) {
                             failedUpdates++;
                             console.error(`❌ שגיאה בעדכון ${donor.name}:`, error);
+                            
+                            // לוגים מפורטים למתרים ספציפי
+                            if (donor.name && donor.name.includes('שלמה כהן') && String(donor.nedarimMatrimId) === '118') {
+                                console.error('🔍 [דיבוג] שגיאה בעדכון למתרים שלמה כהן 118:', error);
+                            }
                         }
                         
                         // ממתין קצת בין עדכונים כדי לא להעמיס על השרת
                         await new Promise(resolve => setTimeout(resolve, 500));
+                    } else {
+                        // לוגים למתרים ספציפי - אין שינוי
+                        if (donor.name && donor.name.includes('שלמה כהן') && String(donor.nedarimMatrimId) === '118') {
+                            console.log('ℹ️ [דיבוג] אין שינוי למתרים שלמה כהן 118 - הסכומים זהים:', localAmount, '===', nedarimAmount);
+                        }
                     }
                 }
                 
@@ -16556,11 +16626,17 @@
                     console.log(`ℹ️ ${skippedUpdates} עדכונים נדלגו (אין צורך בעדכון)`);
                 }
                 
+                // מציג הודעת שגיאה רק אם יש שגיאות אמיתיות (לא נדלגים בגלל מספר מתרים לא תקין)
                 if (failedUpdates > 0) {
-                    console.warn(`⚠️ ${failedUpdates} עדכונים נכשלו`);
+                    console.warn(`⚠️ ${failedUpdates} עדכונים נכשלו (שגיאות אמיתיות)`);
                     if (!silent) {
                         showNotification(`⚠️ ${failedUpdates} עדכונים נכשלו`, 'warning');
                     }
+                }
+                
+                // מציג סיכום כולל
+                if (invalidMatrimIdCount > 0 && !silent) {
+                    console.log(`ℹ️ סיכום: ${updatedToNedarim} עודכנו, ${invalidMatrimIdCount} נדלגו (ללא מספר מתרים תקין), ${failedUpdates} נכשלו`);
                 }
                 
                 // ממתין קצת כדי שנדרים פלוס יעדכן את הנתונים
