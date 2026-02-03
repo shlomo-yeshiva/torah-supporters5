@@ -18264,6 +18264,22 @@
                 
                 // טעינת מתרימים - merge חכם במקום החלפה מלאה
                 if (result.donors && Array.isArray(result.donors) && result.donors.length > 0) {
+                    // בדיקה כמה מתרים יש להם מספר מתרים תקין מהגליון
+                    const donorsWithMatrimId = result.donors.filter(d => {
+                        if (!d.nedarimMatrimId) return false;
+                        const idStr = String(d.nedarimMatrimId).trim();
+                        return /^\d+$/.test(idStr); // רק מספרים אמיתיים
+                    }).length;
+                    
+                    console.log('📥 [Google Sheets] סטטיסטיקה מהגליון:', {
+                        totalDonors: result.donors.length,
+                        donorsWithValidMatrimId: donorsWithMatrimId,
+                        percentage: result.donors.length > 0 ? Math.round((donorsWithMatrimId / result.donors.length) * 100) : 0
+                    });
+                    
+                    if (result.donorsWithValidMatrimId !== undefined) {
+                        console.log('📥 [Google Sheets] מספר מתרים תקינים מהגליון:', result.donorsWithValidMatrimId);
+                    }
                     // שומר את המתרים שנמצא כרגע בעריכה כדי לא לדרוס את השינויים שלו
                     const currentlyEditingDonor = editingDonorId ? donors.find(d => d.id === editingDonorId) : null;
                     const editingDonorLocalChanges = currentlyEditingDonor ? {
@@ -18273,32 +18289,69 @@
                         personalGoal: currentlyEditingDonor.personalGoal
                     } : null;
                     
-                    // יוצר מפה של מתרימים מהגליון לפי ID
-                    const donorsFromSheet = new Map();
+                    // יוצר מפה של מתרימים מהגליון לפי ID (id מקומי) ולפי מספר מתרים (nedarimMatrimId)
+                    const donorsFromSheetById = new Map(); // לפי id מקומי
+                    const donorsFromSheetByMatrimId = new Map(); // לפי מספר מתרים (הזיהוי העיקרי!)
                     result.donors.forEach(d => {
                         if (d.id) {
-                            donorsFromSheet.set(d.id, { ...d });
+                            donorsFromSheetById.set(d.id, { ...d });
+                        }
+                        // ⚠️ חשוב: גם מפה לפי מספר מתרים - זה המזהה היציב!
+                        if (d.nedarimMatrimId) {
+                            const matrimIdStr = String(d.nedarimMatrimId).trim();
+                            // רק אם זה מספר אמיתי (לא תאריך)
+                            if (/^\d+$/.test(matrimIdStr)) {
+                                donorsFromSheetByMatrimId.set(matrimIdStr, { ...d });
+                            }
                         }
                     });
                     
-                    // מעדכן מתרימים קיימים לפי ID, מוסיף חדשים, אבל לא דורס מתרימים בעריכה או ששונו לאחרונה
+                    console.log('📥 [Google Sheets] מפות מתרים:', {
+                        byId: donorsFromSheetById.size,
+                        byMatrimId: donorsFromSheetByMatrimId.size
+                    });
+                    
+                    // ⚠️ חשוב: עדכון מתרימים לפי מספר מתרים (MatrimId) - לא לפי שם או קבוצה!
+                    // זה מבטיח שהקשר בין התוכנה לנדרים פלוס הוא יציב ולא משתנה
                     const updatedDonors = [];
                     const existingIds = new Set();
+                    const existingMatrimIds = new Set(); // Set של מספרי מתרים קיימים
                     const now = Date.now();
                     const PROTECTION_WINDOW_MS = 15000; // 15 שניות - זמן הגנה מפני עדכון מהגליון אחרי שינוי מקומי
                     
-                    // עדכון מתרימים קיימים
+                    // אוסף את כל מספרי המתרים הקיימים
+                    donors.forEach(d => {
+                        existingIds.add(d.id);
+                        if (d.nedarimMatrimId) {
+                            const matrimIdStr = String(d.nedarimMatrimId).trim();
+                            if (/^\d+$/.test(matrimIdStr)) {
+                                existingMatrimIds.add(matrimIdStr);
+                            }
+                        }
+                    });
+                    
+                    // עדכון מתרימים קיימים - מחפש לפי מספר מתרים קודם, אחר כך לפי ID
                     donors.forEach(existingDonor => {
                         const id = existingDonor.id;
-                        existingIds.add(id);
+                        const matrimId = existingDonor.nedarimMatrimId ? String(existingDonor.nedarimMatrimId).trim() : null;
+                        const hasValidMatrimId = matrimId && /^\d+$/.test(matrimId);
                         
-                        // בודק אם המתרים שונה לאחרונה (פחות מ-60 שניות)
+                        // בודק אם המתרים שונה לאחרונה (פחות מ-15 שניות)
                         const lastUpdateTime = recentlyUpdatedDonors.get(id);
                         const isRecentlyUpdated = lastUpdateTime && (now - lastUpdateTime < PROTECTION_WINDOW_MS);
                         
+                        // מחפש מתרים מהגליון - קודם לפי מספר מתרים (הזיהוי העיקרי!)
+                        let sheetDonor = null;
+                        if (hasValidMatrimId && donorsFromSheetByMatrimId.has(matrimId)) {
+                            sheetDonor = donorsFromSheetByMatrimId.get(matrimId);
+                            console.log(`🔍 נמצא מתרים מהגליון לפי מספר מתרים ${matrimId}: ${sheetDonor.name || existingDonor.name}`);
+                        } else if (donorsFromSheetById.has(id)) {
+                            // fallback לפי ID מקומי
+                            sheetDonor = donorsFromSheetById.get(id);
+                        }
+                        
                         // אם המתרים נמצא בעריכה או שונה לאחרונה, שומר את השינויים המקומיים
                         if ((editingDonorId === id && editingDonorLocalChanges) || isRecentlyUpdated) {
-                            const sheetDonor = donorsFromSheet.get(id);
                             if (sheetDonor) {
                                 // מעדכן מהגליון אבל שומר את השינויים המקומיים
                                 updatedDonors.push({
@@ -18306,31 +18359,45 @@
                                     amount: existingDonor.amount, // שומר את הסכום המקומי
                                     displayName: existingDonor.displayName || sheetDonor.displayName,
                                     groupId: existingDonor.groupId || sheetDonor.groupId,
-                                    personalGoal: existingDonor.personalGoal || sheetDonor.personalGoal
+                                    personalGoal: existingDonor.personalGoal || sheetDonor.personalGoal,
+                                    // ⚠️ חשוב: שומר את מספר המתרים המקומי אם הוא תקין
+                                    nedarimMatrimId: hasValidMatrimId ? existingDonor.nedarimMatrimId : (sheetDonor.nedarimMatrimId || existingDonor.nedarimMatrimId)
                                 });
-                                if (isRecentlyUpdated) {
-                                    // לא מציגים הודעה בקונסול - זה תקין וצפוי כשמעדכנים מתרים
-                                    // console.log(`🔒 [סנכרון] נשמרו שינויים מקומיים של מתרים ששונה לאחרונה (${Math.round((now - lastUpdateTime) / 1000)} שניות):`, id);
-                                }
                             } else {
                                 // אם לא נמצא בגליון, שומר את המתרים המקומי
                                 updatedDonors.push(existingDonor);
                             }
                         } else {
                             // מתרים לא בעריכה ולא שונה לאחרונה - מעדכן מהגליון
-                            const sheetDonor = donorsFromSheet.get(id);
                             if (sheetDonor) {
-                                updatedDonors.push(sheetDonor);
+                                // ⚠️ חשוב: שומר את מספר המתרים המקומי אם הוא תקין
+                                updatedDonors.push({
+                                    ...sheetDonor,
+                                    nedarimMatrimId: hasValidMatrimId ? existingDonor.nedarimMatrimId : (sheetDonor.nedarimMatrimId || existingDonor.nedarimMatrimId)
+                                });
                             } else {
                                 updatedDonors.push(existingDonor);
                             }
                         }
                     });
                     
-                    // הוספת מתרימים חדשים מהגליון שלא קיימים מקומית
-                    donorsFromSheet.forEach((sheetDonor, id) => {
-                        if (!existingIds.has(id)) {
+                    // הוספת מתרימים חדשים מהגליון שלא קיימים מקומית (רק אם יש להם מספר מתרים תקין)
+                    donorsFromSheetByMatrimId.forEach((sheetDonor, matrimIdStr) => {
+                        if (!existingMatrimIds.has(matrimIdStr)) {
+                            // מתרים חדש מהגליון עם מספר מתרים תקין
                             updatedDonors.push(sheetDonor);
+                            console.log(`➕ נוסף מתרים חדש מהגליון לפי מספר מתרים ${matrimIdStr}: ${sheetDonor.name}`);
+                        }
+                    });
+                    
+                    // גם מתרים מהגליון לפי ID (אם אין להם מספר מתרים תקין)
+                    donorsFromSheetById.forEach((sheetDonor, id) => {
+                        if (!existingIds.has(id)) {
+                            const hasMatrimId = sheetDonor.nedarimMatrimId && /^\d+$/.test(String(sheetDonor.nedarimMatrimId).trim());
+                            if (!hasMatrimId) {
+                                // מתרים חדש מהגליון ללא מספר מתרים תקין - מוסיף רק אם אין לו מספר מתרים תקין
+                                updatedDonors.push(sheetDonor);
+                            }
                         }
                     });
                     
@@ -18373,13 +18440,32 @@
                 
                 const totalAmount = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
                 
+                // ספירת מתרים עם מספר מתרים תקין אחרי הטעינה
+                const finalDonorsWithMatrimId = donors.filter(d => {
+                    if (!d.nedarimMatrimId) return false;
+                    const idStr = String(d.nedarimMatrimId).trim();
+                    return /^\d+$/.test(idStr); // רק מספרים אמיתיים
+                }).length;
+                
                 if (!silent) {
                     const message = `✅ נטענו ${loadedDonors} מתרימים ו-${loadedGroups} קבוצות | סכום כולל: ${totalAmount.toLocaleString()} ש"ח`;
                     showNotification(message, 'success');
                     showGoogleSheetsStatus(message, 'success');
-                    console.log('📥 [Google Sheets] טעינה הושלמה:', { donors: loadedDonors, groups: loadedGroups, total: totalAmount });
+                    console.log('📥 [Google Sheets] טעינה הושלמה:', { 
+                        donors: loadedDonors, 
+                        groups: loadedGroups, 
+                        total: totalAmount,
+                        donorsWithValidMatrimId: finalDonorsWithMatrimId,
+                        percentage: loadedDonors > 0 ? Math.round((finalDonorsWithMatrimId / loadedDonors) * 100) : 0
+                    });
+                    
+                    // הודעה אם יש מתרים ללא מספר מתרים תקין
+                    if (finalDonorsWithMatrimId < loadedDonors) {
+                        const missingCount = loadedDonors - finalDonorsWithMatrimId;
+                        console.warn(`⚠️ ${missingCount} מתרימים ללא מספר מתרים תקין - יש להריץ "סנכרון תרומות" כדי לקשר אותם`);
+                    }
                 } else {
-                    console.log('🔄 [סנכרון] עדכון שקט מהגליון:', loadedDonors, 'מתרימים');
+                    console.log('🔄 [סנכרון] עדכון שקט מהגליון:', loadedDonors, 'מתרימים', `(${finalDonorsWithMatrimId} עם מספר מתרים תקין)`);
                 }
                 
                 return { success: true, donors: loadedDonors, groups: loadedGroups };
@@ -18463,12 +18549,26 @@
             console.log('💾 [Google Sheets] URL:', url.substring(0, 50) + '...');
             console.log('💾 [Google Sheets] מתרימים:', donors.length, ', קבוצות:', groups.length);
             
-            // דוגמה למתרים ראשון עם שם תצוגה
-            const sampleDonor = donors.find(d => d.displayName);
+            // בדיקה כמה מתרים יש להם מספר מתרים תקין
+            const donorsWithMatrimId = donors.filter(d => {
+                if (!d.nedarimMatrimId) return false;
+                const idStr = String(d.nedarimMatrimId).trim();
+                return /^\d+$/.test(idStr); // רק מספרים אמיתיים
+            }).length;
+            
+            console.log('💾 [Google Sheets] סטטיסטיקה:', {
+                totalDonors: donors.length,
+                donorsWithValidMatrimId: donorsWithMatrimId,
+                percentage: donors.length > 0 ? Math.round((donorsWithMatrimId / donors.length) * 100) : 0
+            });
+            
+            // דוגמה למתרים עם מספר מתרים תקין
+            const sampleDonor = donors.find(d => d.nedarimMatrimId && /^\d+$/.test(String(d.nedarimMatrimId).trim()));
             if (sampleDonor) {
-                console.log('💾 [Google Sheets] דוגמה למתרים:', {
+                console.log('💾 [Google Sheets] דוגמה למתרים עם מספר מתרים:', {
                     id: sampleDonor.id,
                     name: sampleDonor.name,
+                    nedarimMatrimId: sampleDonor.nedarimMatrimId,
                     displayName: sampleDonor.displayName,
                     groupId: sampleDonor.groupId
                 });
