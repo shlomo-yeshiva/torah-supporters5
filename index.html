@@ -12632,11 +12632,20 @@
         function toggleDonorEditor(donorId, focusName = false) {
             ensureDonorsNormalized();
             if (editingDonorId === donorId && !focusName) {
+                // סוגר עריכה - מסיר את הסימון למניעת עדכון מהגליון
                 editingDonorId = null;
                 editingShouldFocus = false;
+                // ממתין קצת לפני שמסיר את הסימון כדי שהשמירה תסתיים
+                setTimeout(() => {
+                    recentlyUpdatedDonors.delete(donorId);
+                    console.log(`🔓 [עריכה] הסרת הגנה על מתרים ${donorId} אחרי סגירת עריכה`);
+                }, 2000);
             } else {
+                // פותח עריכה - מסמן את המתרים כדי למנוע עדכון מהגליון
                 editingDonorId = donorId;
                 editingShouldFocus = focusName;
+                recentlyUpdatedDonors.set(donorId, Date.now());
+                console.log(`🔒 [עריכה] הגנה על מתרים ${donorId} מפני עדכון מהגליון בזמן עריכה`);
             }
             updateDonorsList();
             if (editingDonorId && editingShouldFocus) {
@@ -12672,6 +12681,11 @@
             if (editingDonorId === donorId) {
                 editingDonorId = null;
                 editingShouldFocus = false;
+                // ממתין קצת לפני שמסיר את הסימון כדי שהשמירה תסתיים
+                setTimeout(() => {
+                    recentlyUpdatedDonors.delete(donorId);
+                    console.log(`🔓 [עריכה] הסרת הגנה על מתרים ${donorId} אחרי ביטול עריכה`);
+                }, 2000);
                 updateDonorsList();
             }
         }
@@ -12751,6 +12765,9 @@
                 donor.updatedAt = new Date().toISOString();
                 console.log(`✅ עודכן מספר מתרים למתרים "${donor.name}": ${oldMatrimIdStr || 'ללא'} → ${newMatrimIdStr || 'ללא'}`);
                 changed = true;
+                // מסמן את המתרים כשונה כדי למנוע עדכון מהגליון
+                recentlyUpdatedDonors.set(donorId, Date.now() + 30000); // 30 שניות נוספות אחרי עדכון מספר מתרים
+                console.log(`🔒 [עריכה] מתרים ${donorId} עודכן מספר מתרים - מגן מפני עדכון מהגליון`);
             }
             
             if (donor.personalGoal !== parsedGoal) {
@@ -12776,8 +12793,14 @@
             // שמירה מיידית ב-localStorage לפני כל דבר אחר - זה מבטיח שהעדכון נשמר מיד
             if (changed) {
                 ensureDonorsNormalized();
-                // מסמן את המתרים כשונה לאחרונה - מונע עדכון מהגליון
-                recentlyUpdatedDonors.set(donorId, Date.now());
+                // מסמן את המתרים כשונה לאחרונה - מונע עדכון מהגליון למשך זמן
+                // אם המתרים עדיין בעריכה, נשמור את הסימון עד שסוגרים את העריכה
+                if (editingDonorId === donorId) {
+                    recentlyUpdatedDonors.set(donorId, Date.now() + 60000); // 60 שניות נוספות אם עדיין בעריכה
+                    console.log(`🔒 [עריכה] מתרים ${donorId} עדיין בעריכה - ממשיך להגן מפני עדכון מהגליון`);
+                } else {
+                    recentlyUpdatedDonors.set(donorId, Date.now());
+                }
                 
                 // שמירה מיידית של המתרים המעודכן ב-localStorage
                 try {
@@ -12841,10 +12864,25 @@
 
             // עדכון מיידי של התצוגה - זה מבטיח שהמשתמש רואה את השינוי מיד
             if (deltaInput) deltaInput.value = '';
+            
+            // שמירה מלאה של כל הנתונים (כבר שמרנו את donors קודם, אבל עכשיו שומרים הכל)
+            saveData();
+            notifyDataChanged();
+            
+            // שמירה לגליון - חשוב! כדי שהשינויים (כולל מספר מתרים) יישמרו בגליון
+            try {
+                await saveToGoogleSheets();
+                console.log(`✅ נשמרו השינויים לגליון (כולל מספר מתרים: ${donor.nedarimMatrimId || 'ללא'})`);
+            } catch (error) {
+                console.warn('⚠️ שגיאה בשמירה לגליון:', error);
+                // לא נציג שגיאה למשתמש כי העדכון כבר נשמר מקומית
+            }
+            
+            // סוגר את העריכה אחרי השמירה
             editingDonorId = null;
             editingShouldFocus = false;
             
-            // עדכון התצוגה מיד - לפני השמירה המלאה
+            // עדכון התצוגה אחרי השמירה
             updateDonorsList();
             updateGroupsDisplay();
             updateHomeStats();
@@ -12852,9 +12890,11 @@
             updateLeadersList();
             updateLiveTargets();
             
-            // שמירה מלאה של כל הנתונים (כבר שמרנו את donors קודם, אבל עכשיו שומרים הכל)
-            saveData();
-            notifyDataChanged();
+            // ממתין קצת לפני שמסיר את הסימון כדי שהשמירה לגליון תסתיים
+            setTimeout(() => {
+                recentlyUpdatedDonors.delete(donorId);
+                console.log(`🔓 [עריכה] הסרת הגנה על מתרים ${donorId} אחרי שמירה מוצלחת`);
+            }, 3000);
             
             // וידוא שהעדכון נשמר - בדיקה נוספת
             const donorAfterSave = donors.find(d => d.id === donorId);
@@ -19042,8 +19082,13 @@
                             sheetDonor = donorsFromSheetById.get(id);
                         }
                         
-                        // אם המתרים נמצא בעריכה או שונה לאחרונה, שומר את השינויים המקומיים
-                        if ((editingDonorId === id && editingDonorLocalChanges) || isRecentlyUpdated) {
+                        // אם המתרים נמצא בעריכה - שומר את כל השינויים המקומיים כולל מספר המתרים!
+                        if (editingDonorId === id) {
+                            console.log(`🔒 [עריכה] מתרים ${id} בעריכה - שומר את כל השינויים המקומיים (כולל מספר מתרים: ${existingDonor.nedarimMatrimId || 'ללא'})`);
+                            // שומר את המתרים המקומי כפי שהוא - לא מעדכן מהגליון בכלל!
+                            updatedDonors.push(existingDonor);
+                        } else if (isRecentlyUpdated) {
+                            // מתרים שונה לאחרונה (אבל לא בעריכה) - שומר את השינויים המקומיים
                             if (sheetDonor) {
                                 // מעדכן מהגליון אבל שומר את השינויים המקומיים
                                 updatedDonors.push({
@@ -19181,6 +19226,11 @@
         async function doSyncFromSheet() {
             const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
             if (!url) return { success: false };
+            // אם יש מתרים בעריכה, לא מבצע סנכרון מהגליון כדי לא להפריע לעריכה
+            if (editingDonorId !== null) {
+                console.log(`⏸️ [סנכרון] מתרים ${editingDonorId} בעריכה - מדלג על סנכרון מהגליון`);
+                return { success: true, skipped: true, reason: 'מתרים בעריכה' };
+            }
             const r = await loadFromGoogleSheets(true);
             if (r && r.success && typeof notifyDataChanged === 'function') {
                 notifyDataChanged();
