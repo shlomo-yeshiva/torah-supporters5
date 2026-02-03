@@ -17959,11 +17959,14 @@
             }
             
             try {
-                const cacheBuster = '&_=' + Date.now();
-                const response = await fetch(url + '?action=getAll' + cacheBuster, {
-                    method: 'GET',
-                    redirect: 'follow'
-                });
+                let fetchUrl;
+                const isNetlify = typeof window !== 'undefined' && window.location?.hostname?.includes('netlify.app');
+                if (isNetlify) {
+                    fetchUrl = '/.netlify/functions/sheets-proxy?url=' + encodeURIComponent(url) + '&action=getAll&_=' + Date.now();
+                } else {
+                    fetchUrl = url + (url.includes('?') ? '&' : '?') + 'action=getAll&_=' + Date.now();
+                }
+                const response = await fetch(fetchUrl, { method: 'GET', redirect: 'follow' });
                 
                 const result = await response.json();
                 
