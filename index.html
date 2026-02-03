@@ -6030,6 +6030,28 @@
                             </div>
                         </div>
 
+                        <div class="nedarim-correction-box" style="margin-top: 15px; padding: 15px; background: #fff8e1; border: 2px solid #ff9800; border-radius: 10px;">
+                            <h4 style="margin-bottom: 10px; color: #e65100;">⚠️ תיקון סכום: הפחתה מנדרים פלוס</h4>
+                            <p style="margin-bottom: 12px; font-size: 13px; color: #555;">אם נוסף סכום בטעות לנדרים (למשל בגלל באג סנכרון), אפשר להפחית כאן. ההפחתה תישלח לנדרים פלוס בלבד – לא תשנה את הסכום בתוכנה.</p>
+                            <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 4px; font-size: 12px;">מתרים (לפי רשימה או מספר מתרים):</label>
+                                    <select id="nedarimCorrectionDonorSelect" style="min-width: 220px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;">
+                                        <option value="">-- בחר מתרים --</option>
+                                    </select>
+                                    <input type="text" id="nedarimCorrectionMatrimIdManual" placeholder="או הזן מספר מתרים" style="margin-top: 6px; width: 120px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 4px; font-size: 12px;">סכום להפחתה (₪):</label>
+                                    <input type="number" id="nedarimCorrectionAmount" min="1" step="1" placeholder="למשל 200000" style="width: 120px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;">
+                                </div>
+                                <button type="button" class="btn btn-warning" onclick="applyNedarimCorrectionSubtraction()" style="background: #ff9800; color: white;">
+                                    ➖ הפחת סכום מנדרים פלוס
+                                </button>
+                            </div>
+                            <p id="nedarimCorrectionResult" style="margin-top: 10px; font-size: 12px; min-height: 20px;"></p>
+                        </div>
+
                         <div class="auto-sync-control" style="margin-top: 15px; padding: 15px; background: rgba(255, 255, 255, 0.6); border-radius: 10px; border: 1px solid var(--border);">
                             <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 500;">
                                 <input type="checkbox" id="autoSyncNedarimCheckbox" onchange="saveAutoSyncNedarimSetting()" style="width: 20px; height: 20px; cursor: pointer;">
@@ -14447,6 +14469,7 @@
                 }
                 updateAutoSyncIntervalDisplay();
             }
+            fillNedarimCorrectionDonorSelect();
             // סנכרון ראשוני של הנתונים הקיימים
             syncAllDataToDatabase();
         }).catch(error => {
@@ -19507,8 +19530,7 @@
                     groups = result.groups;
                     loadedGroups = groups.length;
                 }
-
-            
+                
                 // טעינת מתרימים
                 if (result.donors && Array.isArray(result.donors) && result.donors.length > 0) {
                     donors = result.donors;
@@ -19792,6 +19814,70 @@
                 console.error('❌ שגיאה בעדכון נדרים פלוס דרך Google Sheets:', error);
                 showNotification('⚠️ שגיאה בעדכון נדרים פלוס: ' + error.message, 'error');
                 return { success: false, error: error.message };
+            }
+        }
+        
+        // ממלא את רשימת המתרימים בתיבת תיקון ההפחתה (מתרים עם מספר מתרים תקין)
+        function fillNedarimCorrectionDonorSelect() {
+            const sel = document.getElementById('nedarimCorrectionDonorSelect');
+            if (!sel) return;
+            const currentValue = sel.value;
+            sel.innerHTML = '<option value="">-- בחר מתרים --</option>';
+            (donors || []).filter(d => {
+                const id = d.nedarimMatrimId ? String(d.nedarimMatrimId).trim() : '';
+                return id && /^\d+$/.test(id) && !/^\d{4}-\d{2}-\d{2}T/.test(id);
+            }).forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.id;
+                opt.textContent = (d.displayName || d.name || '') + ' (מס\' מתרים ' + d.nedarimMatrimId + ')';
+                sel.appendChild(opt);
+            });
+            if (currentValue) sel.value = currentValue;
+        }
+        
+        // הפחתת סכום מנדרים פלוס (תיקון סכום שנוסף בטעות)
+        async function applyNedarimCorrectionSubtraction() {
+            const resultEl = document.getElementById('nedarimCorrectionResult');
+            const setResult = (msg, isError) => {
+                if (resultEl) {
+                    resultEl.textContent = msg;
+                    resultEl.style.color = isError ? '#c62828' : '#2e7d32';
+                }
+            };
+            const donorSelect = document.getElementById('nedarimCorrectionDonorSelect');
+            const manualIdInput = document.getElementById('nedarimCorrectionMatrimIdManual');
+            const amountInput = document.getElementById('nedarimCorrectionAmount');
+            const amount = Math.round(parseFloat(amountInput && amountInput.value) || 0);
+            if (amount <= 0) {
+                setResult('נא להזין סכום להפחתה (מספר חיובי).', true);
+                return;
+            }
+            let donor = null;
+            const selectedId = donorSelect && donorSelect.value;
+            const manualId = manualIdInput && manualIdInput.value ? String(manualIdInput.value).trim() : '';
+            if (selectedId) {
+                donor = (donors || []).find(d => d.id === selectedId || String(d.id) === String(selectedId));
+                if (!donor || !donor.nedarimMatrimId || !/^\d+$/.test(String(donor.nedarimMatrimId).trim())) {
+                    setResult('נא לבחור מתרים עם מספר מתרים תקין.', true);
+                    return;
+                }
+            } else if (manualId && /^\d+$/.test(manualId)) {
+                donor = { nedarimMatrimId: manualId, name: 'תיקון ידני (מס\' ' + manualId + ')' };
+            } else {
+                setResult('נא לבחור מתרים מהרשימה או להזין מספר מתרים תקין.', true);
+                return;
+            }
+            setResult('שולח הפחתה לנדרים פלוס...', false);
+            try {
+                const res = await updateNedarimAmountViaSheets(donor, -amount, 'תיקון: הפחתת סכום שנוסף בטעות');
+                if (res && res.success && !res.skipped) {
+                    setResult('✅ הופחתו ' + amount.toLocaleString() + ' ₪ מנדרים פלוס בהצלחה.', false);
+                    if (amountInput) amountInput.value = '';
+                } else {
+                    setResult('❌ ' + (res && res.error ? res.error : 'ההפחתה נכשלה.'), true);
+                }
+            } catch (e) {
+                setResult('❌ שגיאה: ' + (e.message || e), true);
             }
         }
         
