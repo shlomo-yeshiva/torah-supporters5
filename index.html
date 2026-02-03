@@ -17137,8 +17137,9 @@
                     // בודק אם יש מספר מתרים תקין לעדכון
                     if (!matrimIdForUpdate || !/^\d+$/.test(matrimIdForUpdate)) {
                         invalidMatrimIdCount++;
-                        skippedUpdates++;
-                        console.warn(`⚠️ מתרים ${donor.name} לא נמצא לו מספר מתרים תקין מנדרים פלוס - מדלג על עדכון`);
+                        skippedUpdates++; // נדלגו – לא נכשלו!
+                        console.warn(`⚠️ מתרים ${donor.name} (ID: ${donor.id}) יש לו מספר מתרים לא תקין: ${matrimIdStr || '(חסר)'}`);
+                        console.warn(`   יש לקשר את המתרים למספר מתרים אמיתי מנדרים פלוס דרך כפתור "סנכרון תרומות"`);
                         continue; // מדלג על מתרים זה
                     }
                     
