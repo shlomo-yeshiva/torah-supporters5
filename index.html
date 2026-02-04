@@ -15968,7 +15968,8 @@
                     return result.recruiters;
                 }
                 if (result.success && result.recruiters && result.recruiters.length === 0) {
-                    console.warn('📊 שרת החזיר 0 מתרימים. מידע דיבוג:', result._debug || result.error || result);
+                    console.warn('📊 שרת החזיר 0 מתרימים. תגובה מלאה (העתק לשיתוף):');
+                    console.warn(JSON.stringify(result, null, 2));
                 }
                 if (result.success && result.recruiters) return [];
                 throw new Error(result.error || 'לא התקבלו מתרימים');
