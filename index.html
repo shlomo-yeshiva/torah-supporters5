@@ -12130,6 +12130,8 @@
             // עדכון שם התצוגה
             donor.displayName = trimmed;
             donor.updatedAt = new Date().toISOString();
+            // מגן מפני דריסה מטעינה מהגליון (למשל סנכרון כל 30 שניות) – 45 שניות
+            recentlyUpdatedDonors.set(donorId, Date.now() + 45000);
             
             // שמירה מקומית
             saveData();
@@ -12181,6 +12183,12 @@
             if (tokens.length) {
                 filteredDonors = donors.filter(donor => donorMatchesSearch(donor, tokens));
             }
+            // מיון לפי שם תצוגה א–ב (כמו בנדרים פלוס), בלי תלות בקבוצה
+            filteredDonors = [...filteredDonors].sort((a, b) => {
+                const nameA = (a.displayName || a.name || '').trim();
+                const nameB = (b.displayName || b.name || '').trim();
+                return nameA.localeCompare(nameB, 'he');
+            });
 
             if (meta) {
                 if (searchTerm) {
@@ -12829,6 +12837,8 @@
             if (oldDisplayName !== newDisplayName) {
                 donor.displayName = newDisplayName;
                 changed = true;
+                // מגן מפני דריסה מטעינה מהגליון – 45 שניות
+                recentlyUpdatedDonors.set(donorId, Date.now() + 45000);
             }
             
             // מעדכן את מספר המתרים אם השתנה
@@ -18945,7 +18955,7 @@
                         
                         // בודק אם המתרים שונה לאחרונה (פחות מ-15 שניות)
                         const lastUpdateTime = recentlyUpdatedDonors.get(id);
-                        const isRecentlyUpdated = lastUpdateTime && (now - lastUpdateTime < PROTECTION_WINDOW_MS);
+                        const isRecentlyUpdated = lastUpdateTime && (lastUpdateTime > now || (now - lastUpdateTime < PROTECTION_WINDOW_MS));
                         
                         // מחפש מתרים מהגליון - קודם לפי מספר מתרים (הזיהוי העיקרי!)
                         let sheetDonor = null;
