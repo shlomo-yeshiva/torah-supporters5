@@ -14622,17 +14622,13 @@
             startAutoRefreshTimer();
             // סנכרון ראשוני של הנתונים הקיימים
             syncAllDataToDatabase();
-        }).catch(error => {
-            console.error('❌ שגיאה באתחול בסיס הנתונים:', error);
-        });
-        
-        // ריצה ראשונה של העדכון האוטומטי אחרי 2 שניות – רק אם "הפעל עדכון אוטומטי" מסומן
-        setTimeout(async () => {
-            if (autoSyncNedarimEnabled) {
-                await performAutoRefresh();
-                await syncAllDataToDatabase();
-            }
-        }, 2000);
+            // ריצה ראשונה של העדכון האוטומטי אחרי 2 שניות – רק אם "הפעל עדכון אוטומטי" מסומן
+            setTimeout(async () => {
+                if (autoSyncNedarimEnabled) {
+                    await performAutoRefresh();
+                    await syncAllDataToDatabase();
+                }
+            }, 2000);
             // בכל זאת נפעיל את הפונקציות גם אם יש שגיאה
             updateHomeStats();
             updateGroupsDisplay();
@@ -14649,6 +14645,8 @@
             renderGroomGrantList();
             hideLiveViewBackButton();
             initLandingCards();
+        }).catch(error => {
+            console.error('❌ שגיאה באתחול בסיס הנתונים:', error);
         });
         // initLogoParticleAnimation(); // הושבת - הפונקציה הוסרה
         
