@@ -681,56 +681,6 @@
             line-height: 1.7;
         }
 
-        .instructions-welcome {
-            text-align: center;
-            padding: 28px 24px 32px;
-            background: linear-gradient(135deg, rgba(212, 175, 55, 0.12) 0%, rgba(248, 233, 202, 0.25) 50%, rgba(212, 175, 55, 0.08) 100%);
-            border-radius: 20px;
-            border: 1px solid rgba(212, 175, 55, 0.35);
-            margin-bottom: 8px;
-        }
-        .instructions-welcome h2.instructions-welcome-title {
-            font-size: 26px;
-            color: var(--brown-dark);
-            margin: 0 0 12px;
-            font-weight: 700;
-        }
-        .instructions-welcome .instructions-welcome-sub {
-            font-size: 18px;
-            color: var(--brown-medium);
-            line-height: 1.75;
-            margin: 0 0 20px;
-        }
-        .instructions-contact-box {
-            margin-top: 20px;
-            padding: 20px 24px;
-            background: rgba(255, 255, 255, 0.85);
-            border-radius: 14px;
-            border: 1px solid var(--border);
-            text-align: center;
-        }
-        .instructions-contact-box .contact-label {
-            font-size: 15px;
-            color: var(--brown-medium);
-            margin-bottom: 6px;
-        }
-        .instructions-contact-box a.instructions-email {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--primary-gold-dark);
-            text-decoration: none;
-        }
-        .instructions-contact-box a.instructions-email:hover {
-            text-decoration: underline;
-            color: var(--brown-dark);
-        }
-        .instructions-intro {
-            font-size: 17px;
-            line-height: 1.8;
-            color: var(--brown-medium);
-            margin: 0 0 8px;
-        }
-
         /* מענק לחתנים */
         .groom-grant-section {
             background: rgba(255, 255, 255, 0.55);
@@ -6456,17 +6406,8 @@
             <!-- הוראות שימוש -->
             <section class="content-section instructions-section" id="instructionsSection">
                 <div class="instructions-panel">
-                    <div class="instructions-welcome">
-                        <h2 class="instructions-welcome-title">מזל טוב! אנחנו שמחים שבחרתם בתוכנת ניהול הקמפיין שלנו</h2>
-                        <p class="instructions-welcome-sub">מדריך שימוש זה יעזור לכם להכיר את המערכת, להפעיל אותה ביעילות ולנצל את כל האפשרויות שהיא מציעה. מומלץ לעבור על ההוראות לפני תחילת העבודה.</p>
-                        <div class="instructions-contact-box">
-                            <div class="contact-label">אנו נשמח לעמוד לשירותכם. מומלץ ליצור קשר כמה שיותר מוקדם לפני פורים.</div>
-                            <a href="mailto:s0534142893@gmail.com" class="instructions-email">s0534142893@gmail.com</a>
-                        </div>
-                    </div>
-
                     <h2>הוראות שימוש בתוכנה</h2>
-                    <p class="instructions-intro">בפרק זה תמצאו הסברים מפורטים: הכנת קובצי אקסל לייבוא, טעינת רשימות מתרימים, ייצוא נתונים ודוחות, ותפעול כל מדורי המערכת.</p>
+                    <p>ברוכים הבאים לכלי הניהול של &quot;תומכי תורה&quot;. בפרק זה תמצאו הסברים מפורטים ליצירת קובצי אקסל, טעינת רשימות, ייצוא נתונים, תפעול יומיומי והבנת כל המדורים במערכת.</p>
 
                     <div class="instructions-grid">
                         <div class="instructions-card">
@@ -6515,10 +6456,6 @@
                     </div>
                     <div class="instructions-note">
                         <strong>פתרון תקלות:</strong> אם מתקבלת שגיאה בייבוא, ודאו שהעמודות ממוספרות נכון, שאין תווים מיותרים בכותרות, ושמרו מחדש את הקובץ כ-.xlsx. הודעות המערכת בתחתית המסך יסייעו באיתור הבעיה.
-                    </div>
-                    <div class="instructions-contact-box" style="margin-top: 8px;">
-                        <div class="contact-label">נתקלתם בשאלה או בבעיה? נשמח לעזור.</div>
-                        <a href="mailto:s0534142893@gmail.com" class="instructions-email">s0534142893@gmail.com</a>
                     </div>
 
                     <div class="raffle-embed-wrapper">
@@ -6789,13 +6726,17 @@
         const AUTHORIZED_ALL_SECTION_KEY = '__all__';
         
         // ===== הגדרות נדרים פלוס =====
-        // mosadId ו-matchingId נטענים מהשרת (getPublicConfig) – לא מוזנים כאן מטעמי אבטחה
         const NEDARIM_CONFIG = {
-            mosadId: '',
-            matchingId: '',
+            mosadId: '1000642',
+            matchingId: '715', // מזהה מצינג - Matching ID האמיתי (לא ה-mosadId)
+            // 💡 איך למצוא את ה-Matching ID:
+            // 1. הפעל "בדוק סכום כולל מ-API" בקונסול
+            // 2. חפש ב"ניסיון 4" את השדה "Matching" - למשל: "Nedarim:715:1:12::1:1"
+            // 3. המספר אחרי ה-Nedarim: הוא ה-Matching ID (715 במקרה הזה)
+            apiPassword: 'ep348', // ⚠️ נדרש לחלק מהפעולות
             apiUrl: 'https://matara.pro/nedarimplus/Reports/Manage3.aspx', // API ניהול
             onlineApiUrl: 'https://www.matara.pro/nedarimplus/online/Files/Manage.aspx', // API דף אונליין
-            matchPlusApiUrl: 'https://www.matara.pro/nedarimplus/V6/MatchPlus.aspx', // API MatchPlus
+            matchPlusApiUrl: 'https://www.matara.pro/nedarimplus/V6/MatchPlus.aspx', // API MatchPlus - קריאות ישירות!
             // הגדרות זמנים - סנכרון אוטומטי רק מושך (pull), לא דוחף. מרווח 5 דקות למניעת אינפלציה.
             autoSyncInterval: 5 * 60 * 1000, // 5 דקות - סנכרון אוטומטי רק משיכה מנדרים
             dataCheckInterval: 60 * 1000, // דקה - בדיקת שינויים מקומיים
@@ -7848,21 +7789,20 @@
             }
         }
         
-        // פונקציה להפעלת טיימר עדכון אוטומטי – הבוט רץ מאחורי הקלעים כל X דקות/שעות
+        // פונקציה להפעלת טיימר עדכון אוטומטי
         function startAutoRefreshTimer() {
             if (autoRefreshTimer) {
                 clearInterval(autoRefreshTimer);
-                autoRefreshTimer = null;
             }
-            if (!autoSyncNedarimEnabled) {
-                return;
+            
+            if (autoSyncNedarimEnabled) {
+                // משתמש בתדירות שנשמרה, או 5 דקות כברירת מחדל
+                const intervalMs = (autoSyncIntervalMinutes || 5) * 60 * 1000;
+                autoRefreshTimer = setInterval(async () => {
+                    await performAutoRefresh();
+                }, intervalMs);
+                console.log(`🔄 [הגדרות] טיימר עדכון אוטומטי הוגדר ל-${autoSyncIntervalMinutes || 5} דקות`);
             }
-            const intervalMinutes = autoSyncIntervalMinutes || 5;
-            const intervalMs = intervalMinutes * 60 * 1000;
-            autoRefreshTimer = setInterval(async () => {
-                await performAutoRefresh();
-            }, intervalMs);
-            console.log(`🔄 [בוט] עדכון אוטומטי פעיל – הפעולה "${autoSyncSelectedAction === 'all' ? 'כל הכפתורים' : autoSyncSelectedAction}" תרוץ כל ${intervalMinutes} דקות`);
         }
         
         // פונקציות לשמירה וטעינה של הגדרת עדכון אוטומטי נדרים פלוס
@@ -7979,7 +7919,6 @@
                 } catch (error) {
                     console.error('שגיאה בשמירת הגדרת עדכון אוטומטי נדרים פלוס:', error);
                 }
-                startAutoRefreshTimer();
             }
             
             if (select) {
@@ -10560,7 +10499,7 @@
         // טעינת נתונים
             async function loadData() {
                 try {
-                    // 🔐 טעינת הגדרות ציבוריות מהשרת (mosadId, matchingId – סודות נשארים בשרת)
+                    // 🔐 טעינת הגדרות ציבוריות מהשרת (ללא סודות!)
                     if (isAppsScript()) {
                         try {
                             await new Promise((resolve) => {
@@ -10581,24 +10520,6 @@
                             });
                         } catch (e) {
                             console.warn('⚠️ שגיאה בטעינת הגדרות:', e);
-                        }
-                    } else {
-                        var sheetsUrl = (typeof googleSheetsWebAppUrl !== 'undefined' ? googleSheetsWebAppUrl : null) || (typeof localStorage !== 'undefined' ? localStorage.getItem('googleSheetsWebAppUrl') : null) || '';
-                        if (sheetsUrl && sheetsUrl.trim()) {
-                            try {
-                                var configUrl = sheetsUrl + (sheetsUrl.indexOf('?') >= 0 ? '&' : '?') + 'action=getPublicConfig&_=' + Date.now();
-                                var res = await fetch(configUrl);
-                                if (res.ok) {
-                                    var config = await res.json();
-                                    if (config && config.success && config.mosadId) {
-                                        NEDARIM_CONFIG.mosadId = config.mosadId || '';
-                                        NEDARIM_CONFIG.matchingId = config.matchingId || '';
-                                        console.log('✅ הגדרות ציבוריות נטענו מהשרת (Web App)');
-                                    }
-                                }
-                            } catch (e) {
-                                console.warn('⚠️ טעינת getPublicConfig:', e);
-                            }
                         }
                     }
                     
@@ -11298,29 +11219,36 @@
             state.handle = requestAnimationFrame(step);
         }
         
-        // ====== WATCHDOG - מוודא שהגלילות רצות, בלי להפריע (מרווח גדול = גלילה חלקה) ======
+        // ====== WATCHDOG - מוודא שהגלילות תמיד רצות ======
         setInterval(() => {
             if (!isLiveViewActive() || !liveViewSettings.enableAutoScroll) return;
+            
             const now = performance.now();
-            const stuckMs = 6000;
-            const intervalMs = 3000;
+            
+            // בדיקת גלילת תורמים
             if (donorsScrollIsRunning) {
-                if (now - donorsScrollLastTime > stuckMs) {
+                // אם עברו יותר מ-2 שניות מהעדכון האחרון, משהו תקוע
+                if (now - donorsScrollLastTime > 2000) {
+                    console.log('⚠️ גלילת תורמים נתקעה - מפעיל מחדש');
                     donorsScrollIsRunning = false;
                     restartDonorsAutoScroll();
                 }
             } else {
+                // אם הגלילה לא רצה אבל צריכה - מפעיל
                 restartDonorsAutoScroll();
             }
+            
+            // בדיקת גלילת מובילים
             if (leadersScrollIsRunning) {
-                if (now - leadersScrollLastTime > stuckMs) {
+                if (now - leadersScrollLastTime > 2000) {
+                    console.log('⚠️ גלילת מובילים נתקעה - מפעיל מחדש');
                     leadersScrollIsRunning = false;
                     restartLeadersAutoScroll({ immediate: true });
                 }
             } else {
                 restartLeadersAutoScroll({ immediate: true });
             }
-        }, intervalMs);
+        }, 1000);
 
         const donorSearchInput = document.getElementById('donorSearchInput');
         const donorSearchClearButton = document.getElementById('donorSearchClear');
@@ -11399,32 +11327,32 @@
             showNotification(message);
         }
 
-        // הצגת הודעה
-        // suppressNotifications - משתנה גלובלי לדיכוי הודעות בתצוגת לייב או בעדכון אוטומטי
-        let suppressNotifications = false;
-        
-        function showNotification(message, force = false) {
-            // אם ההודעות מדוכאות ולא נכפה - לא מציג
-            if (suppressNotifications && !force) {
-                console.log('📢 [הודעה מדוכאת]:', message);
-                return;
+            // הצגת הודעה
+            // suppressNotifications - משתנה גלובלי לדיכוי הודעות בתצוגת לייב או בעדכון אוטומטי
+            let suppressNotifications = false;
+            
+            function showNotification(message, force = false) {
+                // אם ההודעות מדוכאות ולא נכפה - לא מציג
+                if (suppressNotifications && !force) {
+                    console.log('📢 [הודעה מדוכאת]:', message);
+                    return;
+                }
+                
+                // לא מציג הודעות בתצוגת לייב (אלא אם נכפה)
+                if (typeof isLiveViewActive === 'function' && isLiveViewActive() && !force) {
+                    console.log('📢 [הודעה מדוכאת בלייב]:', message);
+                    return;
+                }
+                
+                const notification = document.getElementById('notification');
+                if (!notification) return;
+                
+                notification.textContent = message;
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 2000);
             }
-            
-            // לא מציג הודעות בתצוגת לייב (אלא אם נכפה)
-            if (typeof isLiveViewActive === 'function' && isLiveViewActive() && !force) {
-                console.log('📢 [הודעה מדוכאת בלייב]:', message);
-                return;
-            }
-            
-            const notification = document.getElementById('notification');
-            if (!notification) return;
-            
-            notification.textContent = message;
-            notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 2000);
-        }
 
         // ניווט בין מדורים
         function activateSection(section, navItem = null) {
@@ -13244,7 +13172,7 @@
         let isUpdatingLiveView = false;
         let lastLiveViewUpdateWhenActive = 0;
         let updateLiveViewScheduledWhenActive = null;
-        const LIVE_VIEW_BACKGROUND_UPDATE_INTERVAL_MS = 60000; // בתצוגת לייב – עדכון רקע לכל היותר כל דקה (גלילה חלקה, בלי רעידות)
+        const LIVE_VIEW_BACKGROUND_UPDATE_INTERVAL_MS = 25000; // בתצוגת לייב – עדכון רקע לכל היותר כל 25 שניות (גלילה חלקה)
         function updateLiveView(immediate = false) {
             // Debouncing - מניעת עדכונים תכופים מדי
             if (updateLiveViewTimeout && !immediate) {
@@ -13607,9 +13535,10 @@
                     if (!wasScrolling && !donorsScrollIsRunning && liveViewSettings.enableAutoScroll) {
                         requestAnimationFrame(() => restartDonorsAutoScroll());
                     }
-                }
-                else {
-                    // עדכון אינקרמנטלי בלבד – לא מפעילים מחדש גלילה (מונע רעידות)
+                } else {
+                    if (!donorsScrollIsRunning && liveViewSettings.enableAutoScroll) {
+                        requestAnimationFrame(() => restartDonorsAutoScroll());
+                    }
                 }
                 container.querySelectorAll('.live-donor-card[data-entry-type="card"]').forEach(card => {
                     const donorId = card.dataset.donorId;
@@ -13642,17 +13571,8 @@
                 isUpdatingLiveView = false;
             });
         }
-        let lastLeadersListUpdateWhenActive = 0;
-        const LEADERS_LIST_UPDATE_INTERVAL_MS = 15000;
         // עדכון רשימת מובילים
         function updateLeadersList() {
-            if (typeof isLiveViewActive === 'function' && isLiveViewActive()) {
-                const now = Date.now();
-                if (lastLeadersListUpdateWhenActive && (now - lastLeadersListUpdateWhenActive) < LEADERS_LIST_UPDATE_INTERVAL_MS) {
-                    return;
-                }
-                lastLeadersListUpdateWhenActive = now;
-            }
             const leadersList = document.getElementById('leadersList');
             if (!leadersList) return;
             
@@ -14618,17 +14538,18 @@
             fillNedarimCorrectionDonorSelect();
             fillUpdateByApiDonorSelect();
             if (typeof updateNedarimFixCurrentSumLabel === 'function') updateNedarimFixCurrentSumLabel();
-            // הפעלת בוט עדכון אוטומטי מאחורי הקלעים לפי ההגדרה שנטענה
-            startAutoRefreshTimer();
             // סנכרון ראשוני של הנתונים הקיימים
             syncAllDataToDatabase();
-            // ריצה ראשונה של העדכון האוטומטי אחרי 2 שניות – רק אם "הפעל עדכון אוטומטי" מסומן
-            setTimeout(async () => {
-                if (autoSyncNedarimEnabled) {
-                    await performAutoRefresh();
-                    await syncAllDataToDatabase();
-                }
-            }, 2000);
+        }).catch(error => {
+            console.error('❌ שגיאה באתחול בסיס הנתונים:', error);
+        });
+        
+        // טעינה ראשונית אחרי 2 שניות
+        setTimeout(async () => {
+            await performAutoRefresh();
+            // סנכרון לבסיס הנתונים אחרי העדכון
+            await syncAllDataToDatabase();
+        }, 2000);
             // בכל זאת נפעיל את הפונקציות גם אם יש שגיאה
             updateHomeStats();
             updateGroupsDisplay();
@@ -14645,8 +14566,6 @@
             renderGroomGrantList();
             hideLiveViewBackButton();
             initLandingCards();
-        }).catch(error => {
-            console.error('❌ שגיאה באתחול בסיס הנתונים:', error);
         });
         // initLogoParticleAnimation(); // הושבת - הפונקציה הוסרה
         
@@ -15849,7 +15768,7 @@
                 // ✅ שליחה דרך Netlify Function מאובטחת
                 try {
                     const proxyUrl = '/.netlify/functions/nedarim-proxy';
-                    const mosadIdToSend = NEDARIM_CONFIG.mosadId || ''; // נטען מהשרת (getPublicConfig) – אין ברירת מחדל בקוד
+                    const mosadIdToSend = NEDARIM_CONFIG.mosadId || '1000642'; // ברירת מחדל
                     const requestBody = {
                         matrimId: finalMatrimId,
                         clientName: (clientName || 'תורם אנונימי').trim(),
@@ -15970,10 +15889,6 @@
                     console.log(`✅ נטענו ${result.recruiters.length} מתרימים מנדרים פלוס (כולל מספר מתרים)`);
                     if (result.recruiters[0]) console.log('📋 דוגמה:', result.recruiters[0]);
                     return result.recruiters;
-                }
-                if (result.success && result.recruiters && result.recruiters.length === 0) {
-                    console.warn('📊 שרת החזיר 0 מתרימים. תגובה מלאה (העתק לשיתוף):');
-                    console.warn(JSON.stringify(result, null, 2));
                 }
                 if (result.success && result.recruiters) return [];
                 throw new Error(result.error || 'לא התקבלו מתרימים');
@@ -17123,35 +17038,14 @@
                     console.warn('⚠️ לא הצלחתי למשוך נתונים מנדרים פלוס:', error.message);
                 }
                 
-                // אם אין רשימת מתרימים מנדרים – מנסים סנכרון מהגיליון בשרת (syncNedarimFromSheet)
+                // אם אין רשימת מתרימים מנדרים – לא שולחים כלום (מונע שליחת סכום מלא במקום דלתה)
                 if (!matrimListForComparison || matrimListForComparison.length === 0) {
-                    console.warn('⚠️ לא התקבלה רשימת מתרימים להשוואה – מנסה סנכרון מהגיליון לנדרים בשרת...');
-                    if (!silent) showNedarimStatus('מסנכרן מהגיליון לנדרים פלוס...', 'loading');
-                    var sheetsUrl = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
-                    if (sheetsUrl) {
-                        try {
-                            var syncUrl = sheetsUrl + (sheetsUrl.indexOf('?') >= 0 ? '&' : '?') + 'action=syncNedarimFromSheet&_=' + Date.now();
-                            var syncRes = await fetch(syncUrl);
-                            var syncData = await syncRes.json();
-                            if (syncData && syncData.success) {
-                                console.log('✅ סנכרון מהגיליון לנדרים פלוס הושלם:', syncData);
-                                if (!silent) {
-                                    showNedarimStatus('הסנכרון מהגיליון לנדרים פלוס הושלם בהצלחה.', 'success');
-                                    showNotification('סנכרון מהגיליון לנדרים פלוס הושלם.', 'success');
-                                }
-                                if (btn) { btn.disabled = false; btn.textContent = '🔄 סנכרון תרומות'; }
-                                return;
-                            }
-                        } catch (syncErr) {
-                            console.warn('סנכרון מהגיליון נכשל:', syncErr);
-                        }
-                    }
                     console.error('❌ לא ניתן לחשב דלתות – לא התקבלה רשימת מתרימים מנדרים פלוס. לא נשלח עדכון לנדרים.');
                     if (!silent) {
                         showNedarimStatus('לא ניתן לסנכרן: לא התקבלה רשימת מתרימים מנדרים פלוס. נסה שוב או הפעל "טען מתרימים מנדרים פלוס".', 'error');
                         showNotification('⚠️ סנכרון לנדרים פלוס נעצר – לא התקבלה רשימת מתרימים. אל תשלח עדכונים בלי רשימה.', 'warning');
                     }
-                    if (btn) { btn.disabled = false; btn.textContent = '🔄 סנכרון תרומות'; }
+                    if (btn) { btn.disabled = false; btn.textContent = '🔄 סנכרון תרומות לנדרים פלוס'; }
                     return;
                 }
                 
@@ -20453,6 +20347,9 @@
         });
         
         // ===== סוף מערכת סנכרון דרך GitHub Gist =====
+
     </script>
 </body>
 </html>
+</html>
+
