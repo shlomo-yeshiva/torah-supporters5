@@ -6110,7 +6110,7 @@
                         <div class="auto-sync-control" style="margin-top: 15px; padding: 15px; background: rgba(255, 255, 255, 0.6); border-radius: 10px; border: 1px solid var(--border);">
                             <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 500;">
                                 <input type="checkbox" id="autoSyncNedarimCheckbox" onchange="saveAutoSyncNedarimSetting()" style="width: 20px; height: 20px; cursor: pointer;">
-                                <span>🔄 הפעל עדכון אוטומטי: בעת פתיחת התוכנה וכל 5 דקות, יבוצע אוטומטית אחד מהכפתורים הבאים</span>
+                                <span>🔄 הפעל עדכון אוטומטי – הפעולה הנבחרת למטה תרוץ אוטומטית כל התדירות שתגדיר (למשל "בדוק סכום כולל מ-API" כל X דקות)</span>
                             </label>
                             <div style="margin-top: 12px; padding-right: 30px;">
                                 <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text);">בחר איזה כפתור להפעיל אוטומטית:</label>
@@ -6183,9 +6183,29 @@
                             
                             <div style="margin-top: 15px; margin-bottom: 20px;">
                                 <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 500;">
-                                    <input type="checkbox" id="autoGoogleSheetsSyncCheckbox" onchange="saveGoogleSheetsSettings()" style="width: 20px; height: 20px; cursor: pointer;">
-                                    <span>🔄 הפעל סנכרון אוטומטי: טעינה מהגליון בעליית התוכנה ושמירה בכל שינוי</span>
+                                    <input type="checkbox" id="autoGoogleSheetsSyncCheckbox" onchange="saveGoogleSheetsSettings(); applySheetSyncSettings();" style="width: 20px; height: 20px; cursor: pointer;">
+                                    <span>🔄 הפעל עדכון אוטומטי לגליון</span>
                                 </label>
+                                <div id="sheetSyncOptions" style="margin-top: 12px; padding-right: 30px; padding-top: 12px; border-top: 1px dashed var(--border);">
+                                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text);">תדירות עדכון:</label>
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                                        <input type="number" id="sheetSyncIntervalInput" min="1" max="120" value="5" onchange="saveGoogleSheetsSettings(); applySheetSyncSettings();" style="width: 70px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;">
+                                        <span>דקות</span>
+                                    </div>
+                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 8px;">
+                                        <input type="checkbox" id="sheetSyncLoadCheckbox" onchange="saveGoogleSheetsSettings(); applySheetSyncSettings();" style="width: 18px; height: 18px; cursor: pointer;">
+                                        <span>📥 טעינה מהגליון – למשוך שינויים מהגליון לתוכנה</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 8px;">
+                                        <input type="checkbox" id="sheetSyncSaveCheckbox" onchange="saveGoogleSheetsSettings(); applySheetSyncSettings();" style="width: 18px; height: 18px; cursor: pointer;">
+                                        <span>💾 שמירה לגליון – לשלוח את הנתונים מהתוכנה לגליון</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                        <input type="checkbox" id="sheetSyncSaveOnChangeCheckbox" onchange="saveGoogleSheetsSettings();" style="width: 18px; height: 18px; cursor: pointer;">
+                                        <span>שמירה אוטומטית בכל שינוי (מלבד התדירות למעלה)</span>
+                                    </label>
+                                    <p style="margin: 10px 0 0 0; font-size: 12px; color: var(--muted);">💡 ניתן לסמן טעינה בלבד, שמירה בלבד, או את שניהם. טעינה ראשונה מתבצעת גם בעליית התוכנה.</p>
+                                </div>
                             </div>
                             
                             <div style="background: #fff3e0; border: 2px solid #ff9800; border-radius: 10px; padding: 15px; margin-top: 15px;">
@@ -6706,17 +6726,13 @@
         const AUTHORIZED_ALL_SECTION_KEY = '__all__';
         
         // ===== הגדרות נדרים פלוס =====
+        // mosadId ו-matchingId נטענים מהשרת (getPublicConfig) – לא מוזנים כאן מטעמי אבטחה
         const NEDARIM_CONFIG = {
-            mosadId: '1000642',
-            matchingId: '715', // מזהה מצינג - Matching ID האמיתי (לא ה-mosadId)
-            // 💡 איך למצוא את ה-Matching ID:
-            // 1. הפעל "בדוק סכום כולל מ-API" בקונסול
-            // 2. חפש ב"ניסיון 4" את השדה "Matching" - למשל: "Nedarim:715:1:12::1:1"
-            // 3. המספר אחרי ה-Nedarim: הוא ה-Matching ID (715 במקרה הזה)
-            apiPassword: 'ep348', // ⚠️ נדרש לחלק מהפעולות
+            mosadId: '',
+            matchingId: '',
             apiUrl: 'https://matara.pro/nedarimplus/Reports/Manage3.aspx', // API ניהול
             onlineApiUrl: 'https://www.matara.pro/nedarimplus/online/Files/Manage.aspx', // API דף אונליין
-            matchPlusApiUrl: 'https://www.matara.pro/nedarimplus/V6/MatchPlus.aspx', // API MatchPlus - קריאות ישירות!
+            matchPlusApiUrl: 'https://www.matara.pro/nedarimplus/V6/MatchPlus.aspx', // API MatchPlus
             // הגדרות זמנים - סנכרון אוטומטי רק מושך (pull), לא דוחף. מרווח 5 דקות למניעת אינפלציה.
             autoSyncInterval: 5 * 60 * 1000, // 5 דקות - סנכרון אוטומטי רק משיכה מנדרים
             dataCheckInterval: 60 * 1000, // דקה - בדיקת שינויים מקומיים
@@ -10479,7 +10495,7 @@
         // טעינת נתונים
             async function loadData() {
                 try {
-                    // 🔐 טעינת הגדרות ציבוריות מהשרת (ללא סודות!)
+                    // 🔐 טעינת הגדרות ציבוריות מהשרת (mosadId, matchingId – סודות נשארים בשרת)
                     if (isAppsScript()) {
                         try {
                             await new Promise((resolve) => {
@@ -10500,6 +10516,24 @@
                             });
                         } catch (e) {
                             console.warn('⚠️ שגיאה בטעינת הגדרות:', e);
+                        }
+                    } else {
+                        var sheetsUrl = (typeof googleSheetsWebAppUrl !== 'undefined' ? googleSheetsWebAppUrl : null) || (typeof localStorage !== 'undefined' ? localStorage.getItem('googleSheetsWebAppUrl') : null) || '';
+                        if (sheetsUrl && sheetsUrl.trim()) {
+                            try {
+                                var configUrl = sheetsUrl + (sheetsUrl.indexOf('?') >= 0 ? '&' : '?') + 'action=getPublicConfig&_=' + Date.now();
+                                var res = await fetch(configUrl);
+                                if (res.ok) {
+                                    var config = await res.json();
+                                    if (config && config.success && config.mosadId) {
+                                        NEDARIM_CONFIG.mosadId = config.mosadId || '';
+                                        NEDARIM_CONFIG.matchingId = config.matchingId || '';
+                                        console.log('✅ הגדרות ציבוריות נטענו מהשרת (Web App)');
+                                    }
+                                }
+                            } catch (e) {
+                                console.warn('⚠️ טעינת getPublicConfig:', e);
+                            }
                         }
                     }
                     
@@ -13152,7 +13186,7 @@
         let isUpdatingLiveView = false;
         let lastLiveViewUpdateWhenActive = 0;
         let updateLiveViewScheduledWhenActive = null;
-        const LIVE_VIEW_BACKGROUND_UPDATE_INTERVAL_MS = 15000; // בתצוגת לייב – עדכון רקע לכל היותר כל 15 שניות (גלילה חלקה)
+        const LIVE_VIEW_BACKGROUND_UPDATE_INTERVAL_MS = 25000; // בתצוגת לייב – עדכון רקע לכל היותר כל 25 שניות (גלילה חלקה)
         function updateLiveView(immediate = false) {
             // Debouncing - מניעת עדכונים תכופים מדי
             if (updateLiveViewTimeout && !immediate) {
@@ -15748,7 +15782,7 @@
                 // ✅ שליחה דרך Netlify Function מאובטחת
                 try {
                     const proxyUrl = '/.netlify/functions/nedarim-proxy';
-                    const mosadIdToSend = NEDARIM_CONFIG.mosadId || '1000642'; // ברירת מחדל
+                    const mosadIdToSend = NEDARIM_CONFIG.mosadId || ''; // נטען מהשרת (getPublicConfig) – אין ברירת מחדל בקוד
                     const requestBody = {
                         matrimId: finalMatrimId,
                         clientName: (clientName || 'תורם אנונימי').trim(),
@@ -18700,30 +18734,38 @@
         let googleSheetsWebAppUrl = DEFAULT_GOOGLE_SHEETS_URL;
         let googleSheetsSyncEnabled = false;
         let saveToGoogleSheetsTimeout = null;
-        
-        // סנכרון אוטומטי לגליון - כל שנייה (עדכון תמידי לתצוגת לייב)
-        const LIVE_VIEW_SYNC_INTERVAL_MS = 30 * 1000; // 30 שניות (היה 1 שנייה – גרם לקפיצות)
+        let sheetSyncIntervalMinutes = 5;
+        let sheetSyncLoadEnabled = true;
+        let sheetSyncSaveEnabled = false;
+        let sheetSyncSaveOnChange = true;
         let liveViewSyncIntervalId = null;
         
         // שמירת הגדרות Google Sheets
         function saveGoogleSheetsSettings() {
             const urlInput = document.getElementById('googleSheetsWebAppUrl');
             const autoSyncCheckbox = document.getElementById('autoGoogleSheetsSyncCheckbox');
+            const intervalInput = document.getElementById('sheetSyncIntervalInput');
+            const loadCheckbox = document.getElementById('sheetSyncLoadCheckbox');
+            const saveCheckbox = document.getElementById('sheetSyncSaveCheckbox');
+            const saveOnChangeCheckbox = document.getElementById('sheetSyncSaveOnChangeCheckbox');
             
             let urlToSave = '';
             let syncEnabled = false;
-            
-            if (urlInput) {
-                urlToSave = urlInput.value.trim();
-            }
-            if (autoSyncCheckbox) {
-                syncEnabled = autoSyncCheckbox.checked;
-            }
+            if (urlInput) urlToSave = urlInput.value.trim();
+            if (autoSyncCheckbox) syncEnabled = autoSyncCheckbox.checked;
+            if (intervalInput) sheetSyncIntervalMinutes = Math.max(1, parseInt(intervalInput.value) || 5);
+            if (loadCheckbox) sheetSyncLoadEnabled = loadCheckbox.checked;
+            if (saveCheckbox) sheetSyncSaveEnabled = saveCheckbox.checked;
+            if (saveOnChangeCheckbox) sheetSyncSaveOnChange = saveOnChangeCheckbox.checked;
             
             try {
                 localStorage.setItem('googleSheetsWebAppUrl', urlToSave);
                 localStorage.setItem('googleSheetsSyncEnabled', syncEnabled ? 'true' : 'false');
-                console.log('💾 הגדרות Google Sheets נשמרו:', urlToSave ? 'יש URL' : 'אין URL');
+                localStorage.setItem('sheetSyncIntervalMinutes', String(sheetSyncIntervalMinutes));
+                localStorage.setItem('sheetSyncLoadEnabled', sheetSyncLoadEnabled ? 'true' : 'false');
+                localStorage.setItem('sheetSyncSaveEnabled', sheetSyncSaveEnabled ? 'true' : 'false');
+                localStorage.setItem('sheetSyncSaveOnChange', sheetSyncSaveOnChange ? 'true' : 'false');
+                console.log('💾 הגדרות Google Sheets נשמרו');
             } catch (e) {
                 console.warn('שגיאה בשמירת הגדרות Google Sheets:', e);
             }
@@ -18732,29 +18774,37 @@
         // טעינת הגדרות Google Sheets
         function loadGoogleSheetsSettings() {
             try {
-                // קודם בודק אם יש URL שמור, אחרת משתמש בברירת המחדל
                 const savedUrl = localStorage.getItem('googleSheetsWebAppUrl');
                 googleSheetsWebAppUrl = savedUrl || DEFAULT_GOOGLE_SHEETS_URL || '';
                 googleSheetsSyncEnabled = localStorage.getItem('googleSheetsSyncEnabled') === 'true';
-                
-                // אם יש URL ברירת מחדל ואין URL שמור - שומר אותו
+                sheetSyncIntervalMinutes = Math.max(1, parseInt(localStorage.getItem('sheetSyncIntervalMinutes')) || 5);
+                sheetSyncLoadEnabled = localStorage.getItem('sheetSyncLoadEnabled') !== 'false';
+                sheetSyncSaveEnabled = localStorage.getItem('sheetSyncSaveEnabled') === 'true';
+                sheetSyncSaveOnChange = localStorage.getItem('sheetSyncSaveOnChange') !== 'false';
                 if (DEFAULT_GOOGLE_SHEETS_URL && !savedUrl) {
                     localStorage.setItem('googleSheetsWebAppUrl', DEFAULT_GOOGLE_SHEETS_URL);
                 }
-                
                 const urlInput = document.getElementById('googleSheetsWebAppUrl');
                 const autoSyncCheckbox = document.getElementById('autoGoogleSheetsSyncCheckbox');
-                
-                if (urlInput) {
-                    urlInput.value = googleSheetsWebAppUrl;
-                }
-                if (autoSyncCheckbox) {
-                    autoSyncCheckbox.checked = googleSheetsSyncEnabled;
-                }
-                
-                console.log('📂 הגדרות Google Sheets נטענו:', { url: googleSheetsWebAppUrl ? 'מוגדר' : 'לא מוגדר', autoSync: googleSheetsSyncEnabled });
+                const intervalInput = document.getElementById('sheetSyncIntervalInput');
+                const loadCheckbox = document.getElementById('sheetSyncLoadCheckbox');
+                const saveCheckbox = document.getElementById('sheetSyncSaveCheckbox');
+                const saveOnChangeCheckbox = document.getElementById('sheetSyncSaveOnChangeCheckbox');
+                if (urlInput) urlInput.value = googleSheetsWebAppUrl;
+                if (autoSyncCheckbox) autoSyncCheckbox.checked = googleSheetsSyncEnabled;
+                if (intervalInput) intervalInput.value = sheetSyncIntervalMinutes;
+                if (loadCheckbox) loadCheckbox.checked = sheetSyncLoadEnabled;
+                if (saveCheckbox) saveCheckbox.checked = sheetSyncSaveEnabled;
+                if (saveOnChangeCheckbox) saveOnChangeCheckbox.checked = sheetSyncSaveOnChange;
+                console.log('📂 הגדרות Google Sheets נטענו');
             } catch (e) {
                 console.warn('שגיאה בטעינת הגדרות Google Sheets:', e);
+            }
+        }
+        function applySheetSyncSettings() {
+            stopLiveViewSyncPolling();
+            if (googleSheetsSyncEnabled && (googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || '').trim()) {
+                startLiveViewSyncPolling();
             }
         }
         
@@ -19154,32 +19204,38 @@
         
         function startLiveViewSyncPolling() {
             if (liveViewSyncIntervalId) return;
-            const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
+            const url = (googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '').trim();
             if (!url) {
                 console.warn('⚠️ [סנכרון] אין URL - סנכרון תקופתי לא הופעל');
                 return;
             }
-            
-            // טעינה מיידית ראשונה
-            doSyncFromSheet().then(r => {
-                if (r && r.success) console.log('🔄 [סנכרון] טעינה ראשונה מהגליון הושלמה');
-            }).catch(err => console.warn('⚠️ [סנכרון] שגיאה בטעינה ראשונה:', err));
-            
-            // ואז כל 30 שניות - רק כשהטאב גלוי (חסכון ב-API)
-            liveViewSyncIntervalId = setInterval(async () => {
-                if (document.hidden) return; // חוסך API כשהטאב מוסתר
+            const intervalMs = (sheetSyncIntervalMinutes || 5) * 60 * 1000;
+            async function runSheetSync() {
+                if (document.hidden) return;
+                if (typeof isLiveViewActive === 'function' && isLiveViewActive()) return; // בתצוגת לייב – לא מעדכן כדי לשמור על גלילה חלקה
                 try {
-                    await doSyncFromSheet();
+                    if (sheetSyncLoadEnabled) {
+                        const r = await loadFromGoogleSheets(true);
+                        if (r && r.success && typeof notifyDataChanged === 'function') notifyDataChanged();
+                    }
+                    if (sheetSyncSaveEnabled) {
+                        await saveToGoogleSheets();
+                    }
                 } catch (err) {
-                    console.warn('⚠️ [סנכרון] שגיאה בטעינה תקופתית:', err);
+                    console.warn('⚠️ [סנכרון] שגיאה בעדכון תקופתי לגליון:', err);
                 }
-            }, LIVE_VIEW_SYNC_INTERVAL_MS);
-            
+            }
+            if (sheetSyncLoadEnabled) {
+                loadFromGoogleSheets(true).then(r => {
+                    if (r && r.success) console.log('🔄 [סנכרון] טעינה ראשונה מהגליון הושלמה');
+                    if (r && r.success && typeof notifyDataChanged === 'function') notifyDataChanged();
+                }).catch(err => console.warn('⚠️ [סנכרון] שגיאה בטעינה ראשונה:', err));
+            }
+            liveViewSyncIntervalId = setInterval(runSheetSync, intervalMs);
             document.addEventListener('visibilitychange', () => {
-                if (!document.hidden) doSyncFromSheet().catch(() => {});
+                if (!document.hidden) runSheetSync().catch(() => {});
             });
-            
-            console.log('🔄 [סנכרון] סנכרון לגליון הופעל (כל 30 שניות)');
+            console.log('🔄 [סנכרון] עדכון לגליון הופעל – כל ' + (sheetSyncIntervalMinutes || 5) + ' דקות (טעינה: ' + sheetSyncLoadEnabled + ', שמירה: ' + sheetSyncSaveEnabled + ')');
         }
         
         function stopLiveViewSyncPolling() {
@@ -19911,7 +19967,7 @@
         
         // שמירה אוטומטית ל-Google Sheets (debounced)
         function autoSaveToGoogleSheets() {
-            // שמירה אוטומטית תמיד כשיש URL מוגדר (לא תלוי בסימון)
+            if (!sheetSyncSaveOnChange) return;
             const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
             if (!url) return;
             
