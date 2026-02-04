@@ -11912,7 +11912,7 @@
             
             const groupName = groupToDelete.name || 'הקבוצה';
             const confirmMessage = groupName === 'נדרים פלוס' 
-                ? 'האם אתה בטוח שברצונך למחוק את קבוצת "נדרים פלוס"?\n\nהערה: הקבוצה תיווצר מחדש בפעם הבאה שתעשה סנכרון עם נדרים פלוס.'
+                ? 'האם אתה בטוח שברצונך למחוק את קבוצת "נדרים פלוס"?\n\nהקבוצה תימחק. היא תיווצר מחדש רק בעדכון/סנכרון מנדרים פלוס כשיש מתרים בנדרים (לפי מספר מתרים) שאין בתוכנה.'
                 : 'האם אתה בטוח שברצונך למחוק את הקבוצה? כל המתרימים בקבוצה יימחקו יחד עם הקבוצה.';
             
             if (confirm(confirmMessage)) {
@@ -16033,23 +16033,40 @@
                 let newMatrim = 0;
                 let updatedMatrim = 0;
 
-                // מחפש קבוצה "נדרים פלוס" - חיפוש חכם שמתחשב בשינויי שם קלים
+                // בדיקה לפי מספר מתרים: האם יש בנדרים פלוס מתרים שאין בתוכנה
+                const existingMatrimIds = new Set();
+                donors.forEach(d => {
+                    const mid = d.nedarimMatrimId != null ? String(d.nedarimMatrimId).trim() : '';
+                    if (/^\d+$/.test(mid)) existingMatrimIds.add(mid);
+                });
+                const hasNewByMatrimId = matrimList.some(m => {
+                    const id = m.Id ?? m.MatrimId ?? m.id ?? m.MatrimNumber;
+                    if (id == null || id === '') return false;
+                    const idStr = String(id).trim();
+                    return /^\d+$/.test(idStr) && !existingMatrimIds.has(idStr);
+                });
+
+                // מחפש קבוצה "נדרים פלוס" – נוצרת רק אם יש מתרים בנדרים שאין בתוכנה (לפי מספר מתרים)
                 let nedarimGroup = groups.find(g => {
                     const gName = (g.name || '').trim().toLowerCase();
                     return gName === 'נדרים פלוס' || 
                            gName.includes('נדרים') || 
                            gName.includes('nedarim');
                 });
-                if (!nedarimGroup) {
+                if (!nedarimGroup && hasNewByMatrimId) {
                     nedarimGroup = {
                         id: Date.now(),
                         name: 'נדרים פלוס',
                         goal: defaultGroupGoal || 100000
                     };
                     groups.push(nedarimGroup);
-                    console.log('✅ [טעינת מתרימים] נוצרה קבוצה "נדרים פלוס"');
+                    console.log('✅ [טעינת מתרימים] נוצרה קבוצת "נדרים פלוס" – יש מתרים בנדרים שאין בתוכנה (לפי מספר מתרים)');
+                }
+                const targetGroup = nedarimGroup || (groups.length > 0 ? groups[0] : null);
+                if (nedarimGroup) {
+                    console.log('ℹ️ [טעינת מתרימים] קבוצה נדרים פלוס:', nedarimGroup.name);
                 } else {
-                    console.log('ℹ️ [טעינת מתרימים] נמצאה קבוצה קיימת:', nedarimGroup.name);
+                    console.log('ℹ️ [טעינת מתרימים] אין קבוצת נדרים פלוס – מתרימים חדשים/ללא קבוצה יוקצו ל:', targetGroup ? targetGroup.name : 'ללא קבוצה');
                 }
 
                 matrimList.forEach(matrim => {
@@ -16101,7 +16118,7 @@
                             id: Date.now() + Math.random(),
                             name: matrimName,
                             displayName: '',
-                            groupId: nedarimGroup.id,
+                            groupId: targetGroup ? targetGroup.id : null,
                             amount: matrimAmount,
                             personalGoal: matrimGoal || defaultDonorGoal || 0,
                             source: 'nedarim_plus',
@@ -16117,16 +16134,18 @@
                     }
                 });
 
-                // מעביר כל מתרים שאין לו קבוצה לקבוצה "נדרים פלוס"
-                let movedToNedarimGroup = 0;
-                donors.forEach(donor => {
-                    if (!donor.groupId || !groups.find(g => g.id === donor.groupId)) {
-                        donor.groupId = nedarimGroup.id;
-                        movedToNedarimGroup++;
+                // מעביר מתרימים ללא קבוצה תקנית לקבוצה הראשונה (או נדרים פלוס אם קיימת)
+                let movedToGroup = 0;
+                if (targetGroup) {
+                    donors.forEach(donor => {
+                        if (!donor.groupId || !groups.find(g => g.id === donor.groupId)) {
+                            donor.groupId = targetGroup.id;
+                            movedToGroup++;
+                        }
+                    });
+                    if (movedToGroup > 0) {
+                        console.log(`✅ [טעינת מתרימים] ${movedToGroup} מתרימים הועברו לקבוצה "${targetGroup.name}"`);
                     }
-                });
-                if (movedToNedarimGroup > 0) {
-                    console.log(`✅ [טעינת מתרימים] ${movedToNedarimGroup} מתרימים הועברו לקבוצה "נדרים פלוס"`);
                 }
 
                 saveData();
@@ -16146,8 +16165,8 @@
                 if (typeof updateLiveView === 'function') updateLiveView(true);
 
                 let message = `טעינה הושלמה! ${newMatrim} מתרימים חדשים | ${updatedMatrim} מתרימים עודכנו | סה"כ ${matrimList.length} מתרימים מנדרים פלוס (כולל מספר מתרים)`;
-                if (movedToNedarimGroup > 0) {
-                    message += ` | ${movedToNedarimGroup} מתרימים הועברו לקבוצה "נדרים פלוס"`;
+                if (movedToGroup > 0) {
+                    message += ` | ${movedToGroup} מתרימים הועברו לקבוצה "${targetGroup ? targetGroup.name : ''}"`;
                 }
                 if (!silent) {
                 showNedarimStatus(message, 'success');
@@ -16599,22 +16618,43 @@
                     throw error;
                 }
                 
-                // מחפש קבוצה "נדרים פלוס"
-                let nedarimGroup = groups.find(g => {
-                    const gName = (g.name || '').trim().toLowerCase();
-                    return gName === 'נדרים פלוס' || 
-                           gName.includes('נדרים') || 
-                           gName.includes('nedarim');
+                // בדיקה לפי מספר מתרים: האם יש מתרים ברשימת הטעינה (נדרים) שאין בתוכנה
+                const existingMatrimIdsReload = new Set();
+                donors.forEach(d => {
+                    const mid = d.nedarimMatrimId != null ? String(d.nedarimMatrimId).trim() : '';
+                    if (/^\d+$/.test(mid)) existingMatrimIdsReload.add(mid);
                 });
-                if (!nedarimGroup) {
-                    nedarimGroup = {
+                const hasNewByMatrimIdReload = matrimList.some(m => {
+                    const name = (m.Name || m.name || '').trim();
+                    if (!name) return false;
+                    const isInReloadList = donorNamesToReload.some(reloadName => {
+                        const a = reloadName.replace(/\s+/g, ' ').trim();
+                        const b = name.replace(/\s+/g, ' ').trim();
+                        if (a === b) return true;
+                        if (a.length >= 5 && b.length >= 5 && (a.includes(b) || b.includes(a))) return true;
+                        return false;
+                    });
+                    if (!isInReloadList) return false;
+                    const id = m.Id ?? m.MatrimId ?? m.id ?? m.MatrimNumber;
+                    if (id == null || id === '') return false;
+                    const idStr = String(id).trim();
+                    return /^\d+$/.test(idStr) && !existingMatrimIdsReload.has(idStr);
+                });
+
+                let nedarimGroupReload = groups.find(g => {
+                    const gName = (g.name || '').trim().toLowerCase();
+                    return gName === 'נדרים פלוס' || gName.includes('נדרים') || gName.includes('nedarim');
+                });
+                if (!nedarimGroupReload && hasNewByMatrimIdReload) {
+                    nedarimGroupReload = {
                         id: Date.now(),
                         name: 'נדרים פלוס',
                         goal: defaultGroupGoal || 100000
                     };
-                    groups.push(nedarimGroup);
-                    console.log('✅ נוצרה קבוצה "נדרים פלוס"');
+                    groups.push(nedarimGroupReload);
+                    console.log('✅ [טעינה מחדש] נוצרה קבוצת "נדרים פלוס" – יש מתרים מנדרים שאין בתוכנה (לפי מספר מתרים)');
                 }
+                const targetGroup = nedarimGroupReload || (groups.length > 0 ? groups[0] : null);
                 
                 // יוצר מתרים חדשים לפי השם
                 let reloadedCount = 0;
@@ -16709,7 +16749,7 @@
                                 originalName: matrimName,
                                 displayName: null,
                                 nedarimMatrimId: String(matrimId).trim(),
-                                groupId: nedarimGroup.id,
+                                groupId: targetGroup ? targetGroup.id : null,
                                 amount: matrimAmount,
                                 personalGoal: matrimGoal || null,
                                 history: [],
@@ -16719,7 +16759,6 @@
                                 fromMatching: true,
                                 source: 'nedarim_plus'
                             };
-                            
                             donors.push(newDonor);
                             console.log(`✅ נוצר מתרים חדש "${matrimName}" עם מספר מתרים: ${matrimId}`);
                             reloadedCount++;
@@ -17271,23 +17310,15 @@
 
                 showNedarimStatus(`מעדכן ${matrimList.length} מתרימים...`, 'loading');
 
-                // מחפש קבוצה "נדרים פלוס" - חיפוש חכם שמתחשב בשינויי שם קלים
+                // משתמשים בקבוצת "נדרים פלוס" רק אם היא קיימת – לא יוצרים אותה מחדש (כדי שאפשר למחוק אותה)
                 let nedarimGroup = groups.find(g => {
                     const gName = (g.name || '').trim().toLowerCase();
-                    return gName === 'נדרים פלוס' || 
-                           gName.includes('נדרים') || 
-                           gName.includes('nedarim');
+                    return gName === 'נדרים פלוס' || gName.includes('נדרים') || gName.includes('nedarim');
                 });
+                const fallbackGroup = groups.length > 0 ? groups[0] : null;
+                const groupForNewDonors = nedarimGroup || fallbackGroup;
                 if (!nedarimGroup) {
-                    nedarimGroup = {
-                        id: Date.now(),
-                        name: 'נדרים פלוס',
-                        goal: defaultGroupGoal || 100000
-                    };
-                    groups.push(nedarimGroup);
-                    console.log('✅ [סנכרון] נוצרה קבוצה "נדרים פלוס"');
-                } else {
-                    console.log('ℹ️ [סנכרון] נמצאה קבוצה קיימת:', nedarimGroup.name);
+                    console.log('ℹ️ [סנכרון] קבוצת "נדרים פלוס" לא קיימת (נמחקה) – מתרימים חדשים יווספו ל"' + (fallbackGroup ? fallbackGroup.name : 'ללא קבוצה') + '"');
                 }
 
                 // יוצר Set של שמות מתרימים ומספרי מתרימים שקיימים בנדרים פלוס
@@ -17350,13 +17381,17 @@
                         return;
                     }
 
-                    // מתרים לא קיים – מוסיפים מנדרים פלוס
+                    // מתרים לא קיים – מוסיפים (לקבוצה "נדרים פלוס" אם קיימת, אחרת לקבוצה הראשונה)
+                    if (!groupForNewDonors) {
+                        console.warn('⚠️ אין קבוצות – מדלג על הוספת מתרים חדש');
+                        return;
+                    }
                     const newDonor = {
                         id: Date.now() + Math.random(),
                         name: matrimName,
                         displayName: matrimName,
                         originalName: matrimName,
-                        groupId: nedarimGroup.id,
+                        groupId: groupForNewDonors.id,
                         amount: matrimAmount,
                         personalGoal: matrimGoal > 0 ? matrimGoal : (defaultDonorGoal || 0),
                         source: 'nedarim_plus',
@@ -17370,16 +17405,19 @@
                     console.log(`✅ נוסף מתרים חדש מנדרים פלוס: "${matrimName}" (מס' ${matrimIdStr}), סכום: ${matrimAmount} ש"ח`);
                 });
 
-                // מעביר כל מתרים שאין לו קבוצה לקבוצה "נדרים פלוס"
+                // מעביר מתרים שאין להם קבוצה תקינה – רק אם יש קבוצת "נדרים פלוס", אחרת לקבוצה הראשונה
+                const targetGroupForOrphans = nedarimGroup || fallbackGroup;
                 let movedToNedarimGroup = 0;
-                donors.forEach(donor => {
-                    if (!donor.groupId || !groups.find(g => g.id === donor.groupId)) {
-                        donor.groupId = nedarimGroup.id;
-                        movedToNedarimGroup++;
+                if (targetGroupForOrphans) {
+                    donors.forEach(donor => {
+                        if (!donor.groupId || !groups.find(g => g.id === donor.groupId)) {
+                            donor.groupId = targetGroupForOrphans.id;
+                            movedToNedarimGroup++;
+                        }
+                    });
+                    if (movedToNedarimGroup > 0) {
+                        console.log(`✅ [סנכרון] ${movedToNedarimGroup} מתרימים הועברו לקבוצה "${targetGroupForOrphans.name}"`);
                     }
-                });
-                if (movedToNedarimGroup > 0) {
-                    console.log(`✅ [סנכרון] ${movedToNedarimGroup} מתרימים הועברו לקבוצה "נדרים פלוס"`);
                 }
 
                 // שומר את השינויים
