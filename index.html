@@ -15967,6 +15967,9 @@
                     if (result.recruiters[0]) console.log('📋 דוגמה:', result.recruiters[0]);
                     return result.recruiters;
                 }
+                if (result.success && result.recruiters && result.recruiters.length === 0) {
+                    console.warn('📊 שרת החזיר 0 מתרימים. מידע דיבוג:', result._debug || result.error || result);
+                }
                 if (result.success && result.recruiters) return [];
                 throw new Error(result.error || 'לא התקבלו מתרימים');
             } catch (error) {
@@ -17119,7 +17122,7 @@
                 if (!matrimListForComparison || matrimListForComparison.length === 0) {
                     console.warn('⚠️ לא התקבלה רשימת מתרימים להשוואה – מנסה סנכרון מהגיליון לנדרים בשרת...');
                     if (!silent) showNedarimStatus('מסנכרן מהגיליון לנדרים פלוס...', 'loading');
-                    var sheetsUrl = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || '';
+                    var sheetsUrl = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
                     if (sheetsUrl) {
                         try {
                             var syncUrl = sheetsUrl + (sheetsUrl.indexOf('?') >= 0 ? '&' : '?') + 'action=syncNedarimFromSheet&_=' + Date.now();
