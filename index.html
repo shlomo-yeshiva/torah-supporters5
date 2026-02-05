@@ -2566,6 +2566,97 @@
             width: 100%;
         }
 
+        /* שכבת overlay בזמן עדכון אוטומטי (סיום גלילה) */
+        .live-view-update-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 500;
+            background: linear-gradient(135deg, rgba(245, 230, 211, 0.98) 0%, rgba(255, 248, 220, 0.98) 100%);
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+        .live-view-update-overlay.show {
+            display: flex;
+        }
+        .live-view-update-overlay.loading-only .live-view-update-grants { display: none !important; }
+        .live-view-update-overlay.loading-only .live-view-update-loading { display: flex !important; }
+        .live-view-update-overlay.grants-only .live-view-update-loading { display: none !important; }
+        .live-view-update-overlay.grants-only .live-view-update-grants { display: block !important; }
+        .live-view-update-loading {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            font-size: clamp(22px, 2.5vw, 32px);
+            color: var(--brown-dark);
+            font-weight: 600;
+        }
+        .live-view-update-loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--cream-dark);
+            border-top-color: var(--primary-gold);
+            border-radius: 50%;
+            animation: liveViewSpinner 0.8s linear infinite;
+        }
+        @keyframes liveViewSpinner {
+            to { transform: rotate(360deg); }
+        }
+        .live-view-update-grants {
+            display: none;
+            max-width: 720px;
+            width: 100%;
+            background: #fffef9;
+            border: 2px solid var(--primary-gold);
+            border-radius: 20px;
+            padding: 36px 40px;
+            box-shadow: 0 12px 40px rgba(212, 175, 55, 0.25);
+            text-align: right;
+            direction: rtl;
+        }
+        .live-view-update-grants h1 {
+            font-size: clamp(26px, 3vw, 36px);
+            color: var(--brown-dark);
+            margin: 0 0 20px 0;
+            text-align: center;
+        }
+        .live-view-update-grants .grants-intro {
+            font-size: clamp(16px, 1.4vw, 20px);
+            color: var(--text);
+            line-height: 1.7;
+            margin-bottom: 24px;
+        }
+        .live-view-update-grants .grants-framework {
+            font-size: clamp(16px, 1.4vw, 20px);
+            font-weight: 700;
+            color: var(--brown-dark);
+            margin-bottom: 12px;
+        }
+        .live-view-update-grants .grants-list {
+            margin: 0 0 24px 1.2em;
+            padding: 0;
+            font-size: clamp(15px, 1.3vw, 18px);
+            color: var(--text);
+            line-height: 1.8;
+        }
+        .live-view-update-grants .grants-important {
+            background: #e8f5e9;
+            border: 1px solid #81c784;
+            border-radius: 12px;
+            padding: 18px 22px;
+            margin-top: 20px;
+            font-size: clamp(15px, 1.3vw, 18px);
+            color: #1b5e20;
+            line-height: 1.7;
+        }
+        .live-view-update-grants .grants-important strong { color: #2e7d32; }
+
         .live-view-section::before {
             content: '';
             position: absolute;
@@ -5911,6 +6002,28 @@
                             </div>
 
                             <div class="liveview-setting-group">
+                                <h4>עדכון אוטומטי בסיום גלילה</h4>
+                                <p style="font-size: 13px; color: var(--muted); margin-bottom: 12px;">בסיום מחזור גלילה (אחרי הצגת כל הקבוצות) הגלילה תיעצר, יוצג התוכן שנבחר, וירוץ העדכון. אחרי סיום העדכון הגלילה תמשיך.</p>
+                                <div class="liveview-setting-row">
+                                    <label>מה להציג על המסך בזמן העדכון:</label>
+                                    <select id="liveviewUpdateShow" onchange="updateLiveViewSettings()">
+                                        <option value="loading">סימן טעינה בלבד</option>
+                                        <option value="grants">כללים למתרימים (מענקים)</option>
+                                    </select>
+                                </div>
+                                <div class="liveview-setting-row">
+                                    <label>סוג העדכון להרצה:</label>
+                                    <select id="liveviewUpdateType" onchange="updateLiveViewSettings()">
+                                        <option value="all">כל העדכונים (נדרים + גליון)</option>
+                                        <option value="check">בדוק סכום כולל מ-API</option>
+                                        <option value="loadSheet">טען מהגליון</option>
+                                        <option value="sync">סנכרון תרומות לנדרים פלוס</option>
+                                        <option value="loadMatrim">טען מתרימים מנדרים פלוס</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="liveview-setting-group">
                                 <h4>מהירות גלילה</h4>
                                 <div class="liveview-setting-row">
                                     <label>מהירות גלילת מתרימים:</label>
@@ -6324,6 +6437,24 @@
                                 <!-- יוטען דינמית -->
                             </div>
                         </div>
+                    </div>
+                </div>
+                <!-- overlay בזמן עדכון אוטומטי (סיום גלילה) -->
+                <div class="live-view-update-overlay" id="liveViewUpdateOverlay">
+                    <div class="live-view-update-loading">
+                        <div class="live-view-update-loading-spinner"></div>
+                        <span>מעדכן...</span>
+                    </div>
+                    <div class="live-view-update-grants">
+                        <h1>קבלת מענקים למתרמים</h1>
+                        <p class="grants-intro">המדור מרכז את תהליך הגשת הבקשות למענקים, ניהול קריטריונים ואישור ההטבות למתרימים העומדים באמות המידה של הארגון.</p>
+                        <p class="grants-framework">מסגרת המענק</p>
+                        <ol class="grants-list">
+                            <li>הזכאות מיועדת למתרימים שעמדו ביעד האישי שלהם בכל שנות הפעילות.</li>
+                            <li>הזכאות נבחנת בעת נישואי המתרימים בלבד, לאחר אימות רשמי של הגעה ליעדים בכל שנה.</li>
+                            <li>המענק מורכב משני חלקים: 10% מכלל הסכומים שגייס המתרים לאורך השנים, ותוספת קבועה של 3,500 ש"ח.</li>
+                        </ol>
+                        <div class="grants-important"><strong>חשוב:</strong> כל הענקת מענקים מתבצעת בפועל בהנחיית מורנו ראש הישיבה שליט"א, ולאחר קבלת אישורו הסופי.</div>
                     </div>
                 </div>
             </section>
@@ -9600,7 +9731,9 @@
             donorsSortBy: 'name',
             donorsFilter: 'all',
             maxDonorsPerGroup: 0,
-            showNotificationsOnLiveView: false
+            showNotificationsOnLiveView: false,
+            liveViewUpdateShow: 'loading',
+            liveViewUpdateType: 'all'
         };
 
         function loadLiveViewSettings() {
@@ -9655,6 +9788,10 @@
             if (enableAutoScroll) enableAutoScroll.checked = liveViewSettings.enableAutoScroll;
             const showNotificationsOnLiveView = document.getElementById('liveviewShowNotificationsOnLiveView');
             if (showNotificationsOnLiveView) showNotificationsOnLiveView.checked = !!liveViewSettings.showNotificationsOnLiveView;
+            const liveviewUpdateShow = document.getElementById('liveviewUpdateShow');
+            if (liveviewUpdateShow) liveviewUpdateShow.value = liveViewSettings.liveViewUpdateShow || 'loading';
+            const liveviewUpdateType = document.getElementById('liveviewUpdateType');
+            if (liveviewUpdateType) liveviewUpdateType.value = liveViewSettings.liveViewUpdateType || 'all';
             
             // המרת #ffffff ל-rgba עבור groupHeaderBg אם צריך
             if (liveViewSettings.groupHeaderBg === '#ffffff' || liveViewSettings.groupHeaderBg === '#FFFFFF') {
@@ -10029,7 +10166,9 @@
                 donorsSortBy: donorsSortBy ? donorsSortBy.value : liveViewSettings.donorsSortBy,
                 donorsFilter: donorsFilter ? donorsFilter.value : liveViewSettings.donorsFilter,
                 maxDonorsPerGroup: maxDonorsPerGroup ? parseInt(maxDonorsPerGroup.value) || 0 : liveViewSettings.maxDonorsPerGroup,
-                showNotificationsOnLiveView: document.getElementById('liveviewShowNotificationsOnLiveView') ? document.getElementById('liveviewShowNotificationsOnLiveView').checked : !!liveViewSettings.showNotificationsOnLiveView
+                showNotificationsOnLiveView: document.getElementById('liveviewShowNotificationsOnLiveView') ? document.getElementById('liveviewShowNotificationsOnLiveView').checked : !!liveViewSettings.showNotificationsOnLiveView,
+                liveViewUpdateShow: document.getElementById('liveviewUpdateShow') ? document.getElementById('liveviewUpdateShow').value : (liveViewSettings.liveViewUpdateShow || 'loading'),
+                liveViewUpdateType: document.getElementById('liveviewUpdateType') ? document.getElementById('liveviewUpdateType').value : (liveViewSettings.liveViewUpdateType || 'all')
             };
 
             storageSetItem('liveViewSettings', liveViewSettings);
@@ -10098,7 +10237,10 @@
                 groupsFilter: 'all',
                 donorsSortBy: 'name',
                 donorsFilter: 'all',
-                maxDonorsPerGroup: 0
+                maxDonorsPerGroup: 0,
+                showNotificationsOnLiveView: false,
+                liveViewUpdateShow: 'loading',
+                liveViewUpdateType: 'all'
             };
             storageSetItem('liveViewSettings', liveViewSettings);
             loadLiveViewSettings();
@@ -11145,32 +11287,58 @@
             state.handle = requestAnimationFrame(step);
         }
         
-        /** אחרי סיום גלילה מלאה של כל המתרימים – מריץ עדכון נדרים + גליון (רק בתצוגת לייב) */
+        /** אחרי סיום גלילה מלאה – עוצר גלילה, מציג overlay, מריץ עדכון לפי ההגדרה, ואז ממשיך גלילה */
         async function onDonorsScrollCycleComplete() {
             if (typeof isLiveViewActive !== 'function' || !isLiveViewActive()) return;
             if (!liveViewSettings.enableAutoScroll || !donorsScrollIsRunning) return;
-            console.log('🔄 [תצוגת לייב] סיום מחזור גלילה – מעדכן נדרים וגליון...');
+            const overlay = document.getElementById('liveViewUpdateOverlay');
+            const showMode = liveViewSettings.liveViewUpdateShow || 'loading';
+            const updateType = liveViewSettings.liveViewUpdateType || 'all';
+
+            stopAutoScroll('donors');
+            stopAutoScroll('leaders');
+            donorsScrollIsRunning = false;
+            leadersScrollIsRunning = false;
+
+            if (overlay) {
+                overlay.classList.remove('loading-only', 'grants-only');
+                overlay.classList.add(showMode === 'grants' ? 'grants-only' : 'loading-only');
+                overlay.classList.add('show');
+            }
+
             try {
-                if (autoSyncNedarimEnabled) {
-                    await performAutoRefresh();
-                }
-                const url = (googleSheetsWebAppUrl || (typeof localStorage !== 'undefined' && localStorage.getItem('googleSheetsWebAppUrl')) || '').trim();
-                if (url && googleSheetsSyncEnabled) {
-                    if (sheetSyncLoadEnabled) {
-                        const r = await loadFromGoogleSheets(true);
-                        if (r && r.success && typeof notifyDataChanged === 'function') notifyDataChanged();
+                if (updateType === 'all') {
+                    if (autoSyncNedarimEnabled) await performAutoRefresh();
+                    const url = (googleSheetsWebAppUrl || (typeof localStorage !== 'undefined' && localStorage.getItem('googleSheetsWebAppUrl')) || '').trim();
+                    if (url && googleSheetsSyncEnabled) {
+                        if (sheetSyncLoadEnabled) {
+                            const r = await loadFromGoogleSheets(true);
+                            if (r && r.success && typeof notifyDataChanged === 'function') notifyDataChanged();
+                        }
+                        if (sheetSyncSaveEnabled) await saveToGoogleSheets();
                     }
-                    if (sheetSyncSaveEnabled) {
-                        await saveToGoogleSheets();
-                    }
+                } else if (updateType === 'check') {
+                    await checkTotalAmountFromAPI(true);
+                } else if (updateType === 'loadSheet') {
+                    const r = await loadFromGoogleSheets(true);
+                    if (r && r.success && typeof notifyDataChanged === 'function') notifyDataChanged();
+                } else if (updateType === 'sync') {
+                    await syncWithNedarimPlus(true);
+                } else if (updateType === 'loadMatrim') {
+                    await loadMatrimFromNedarim(true);
                 }
+                if (typeof syncAllDataToDatabase === 'function') await syncAllDataToDatabase();
                 if (typeof updateLiveView === 'function') updateLiveView();
                 if (typeof updateLeadersList === 'function') updateLeadersList();
                 if (typeof notifyDataChanged === 'function') notifyDataChanged();
-                console.log('✅ [תצוגת לייב] עדכון נדרים וגליון הושלם');
+                console.log('✅ [תצוגת לייב] עדכון הושלם');
             } catch (err) {
-                console.warn('⚠️ [תצוגת לייב] שגיאה בעדכון אחרי מחזור גלילה:', err);
+                console.warn('⚠️ [תצוגת לייב] שגיאה בעדכון:', err);
             }
+
+            if (overlay) overlay.classList.remove('show');
+            if (typeof restartDonorsAutoScroll === 'function') restartDonorsAutoScroll();
+            if (typeof restartLeadersAutoScroll === 'function' && isLiveViewActive()) setTimeout(() => restartLeadersAutoScroll({ immediate: true }), 50);
         }
         
         // דגל למניעת קפיצות בזמן עדכון
