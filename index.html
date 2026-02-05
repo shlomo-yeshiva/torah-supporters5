@@ -4627,11 +4627,19 @@
             grid-column: 2 / span 1;
         }
 
+        /* כרטיסיית "עדכון אוטומטי בתצוגת לייב" – רוחב 3 כרטיסיות */
+        .liveview-settings-grid .liveview-setting-group-wide {
+            grid-column: 1 / -1;
+        }
+
         @media (max-width: 1200px) {
             .liveview-settings-grid {
                 grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
             }
             .liveview-settings-grid .liveview-setting-group:nth-child(4) {
+                grid-column: auto;
+            }
+            .liveview-settings-grid .liveview-setting-group-wide {
                 grid-column: auto;
             }
         }
@@ -6001,7 +6009,7 @@
                                 <p style="font-size: 13px; color: var(--muted); margin-top: 6px;">ברירת מחדל: כבוי – בתצוגת לייב לא יופיעו הודעות. הפעל אם תרצה לראות הודעות גם על המסך.</p>
                             </div>
 
-                            <div class="liveview-setting-group">
+                            <div class="liveview-setting-group liveview-setting-group-wide">
                                 <h4>עדכון אוטומטי בתצוגת לייב</h4>
                                 <p style="font-size: 13px; color: var(--muted); margin-bottom: 12px;">אפשר להריץ עדכון (בדוק סכום, סנכרון תרומות, טען מגליון) בסיום מחזור גלילה – או תוך כדי גלילה בלי לעצור ובלי קפיצות.</p>
                                 <div class="liveview-setting-row">
