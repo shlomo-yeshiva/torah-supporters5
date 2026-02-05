@@ -12999,63 +12999,66 @@
 
         const syncChannel = new BroadcastChannel('matching_sync');
 
+        /** מרענן את כל המסכים והתצוגות לפי הנתונים הנוכחיים – סנכרון בין מסכים */
+        function refreshAllScreensFromData() {
+            if (typeof updateDonorsList === 'function') updateDonorsList();
+            if (typeof updateGroupsDisplay === 'function') updateGroupsDisplay();
+            if (typeof updateHomeStats === 'function') updateHomeStats();
+            if (typeof updateLiveView === 'function') updateLiveView(true);
+            if (typeof updateLeadersList === 'function') updateLeadersList();
+            if (typeof updateLiveTargets === 'function') updateLiveTargets();
+            if (typeof renderScoutsTeams === 'function') renderScoutsTeams();
+            if (typeof updateScoutsStats === 'function') updateScoutsStats();
+            if (typeof renderGroomGrantList === 'function') renderGroomGrantList();
+            if (typeof updateGroupSelect === 'function') updateGroupSelect();
+            if (typeof lastDataHash !== 'undefined' && typeof calculateDataHash === 'function') lastDataHash = calculateDataHash();
+        }
+
         function notifyDataChanged() {
             try {
                 syncChannel.postMessage({ type: 'data-updated', timestamp: Date.now() });
             } catch (err) {
                 console.warn('שגיאה בשליחת עדכון סנכרון', err);
             }
-            // שמירה אוטומטית לענן
-            if (typeof autoSaveToCloud === 'function') {
-                autoSaveToCloud();
+            var url = (typeof googleSheetsWebAppUrl !== 'undefined' ? googleSheetsWebAppUrl : '') || (typeof localStorage !== 'undefined' && localStorage.getItem('googleSheetsWebAppUrl')) || '';
+            if (url && typeof autoSaveToGoogleSheets === 'function' && (typeof sheetSyncSaveOnChange === 'undefined' || sheetSyncSaveOnChange)) {
+                autoSaveToGoogleSheets();
             }
         }
-        syncChannel.addEventListener('message', (event) => {
-            if (event?.data?.type === 'data-updated') {
-                console.log('🔄 קיבלתי עדכון מ-BroadcastChannel - מעדכן תצוגות...');
-                loadData();
-                updateDonorsList();
-                updateGroupsDisplay();
-                updateHomeStats();
-                updateLiveView();
-                updateLeadersList();
-                updateLiveTargets();
-                renderScoutsTeams();
-                updateScoutsStats();
-                renderGroomGrantList();
-                // מעדכן גם את הסכום הכולל מ-API
-                fetchTotalFromMatchPlus().then(() => {
-                    updateHomeStats();
-                    updateLeadersList();
-                    updateLiveTargets();
-                });
-                // מעדכן את ה-hash
-                lastDataHash = calculateDataHash();
+        syncChannel.addEventListener('message', async (event) => {
+            if (event?.data?.type !== 'data-updated') return;
+            console.log('🔄 קיבלתי עדכון מ-BroadcastChannel - טוען נתונים ומרענן תצוגות...');
+            try {
+                if (typeof loadData === 'function') await loadData();
+                refreshAllScreensFromData();
+                if (typeof fetchTotalFromMatchPlus === 'function') {
+                    fetchTotalFromMatchPlus().then(() => {
+                        if (typeof updateHomeStats === 'function') updateHomeStats();
+                        if (typeof updateLeadersList === 'function') updateLeadersList();
+                        if (typeof updateLiveTargets === 'function') updateLiveTargets();
+                    });
+                }
+            } catch (err) {
+                console.warn('שגיאה ברענון אחרי עדכון מסך אחר:', err);
             }
         });
 
-        window.addEventListener('storage', (event) => {
+        window.addEventListener('storage', async (event) => {
             if (!event || event.storageArea !== localStorage) return;
-            if (['donors', 'groups', 'defaultDonorGoal', 'financeState', 'toolkitTips', 'scoutsSchedule', 'groomGrants'].includes(event.key)) {
-                console.log(`🔄 זוהה שינוי ב-localStorage (${event.key}) - מעדכן תצוגות...`);
-                loadData();
-                updateDonorsList();
-                updateGroupsDisplay();
-                updateHomeStats();
-                updateLiveView();
-                updateLeadersList();
-                updateLiveTargets();
-                renderScoutsTeams();
-                updateScoutsStats();
-                renderGroomGrantList();
-                // מעדכן גם את הסכום הכולל מ-API
-                fetchTotalFromMatchPlus().then(() => {
-                    updateHomeStats();
-                    updateLeadersList();
-                    updateLiveTargets();
-                });
-                // מעדכן את ה-hash
-                lastDataHash = calculateDataHash();
+            if (!['donors', 'groups', 'defaultDonorGoal', 'financeState', 'toolkitTips', 'scoutsSchedule', 'groomGrants'].includes(event.key)) return;
+            console.log('🔄 זוהה שינוי ב-localStorage (' + event.key + ') - טוען נתונים ומרענן תצוגות...');
+            try {
+                if (typeof loadData === 'function') await loadData();
+                refreshAllScreensFromData();
+                if (typeof fetchTotalFromMatchPlus === 'function') {
+                    fetchTotalFromMatchPlus().then(() => {
+                        if (typeof updateHomeStats === 'function') updateHomeStats();
+                        if (typeof updateLeadersList === 'function') updateLeadersList();
+                        if (typeof updateLiveTargets === 'function') updateLiveTargets();
+                    });
+                }
+            } catch (err) {
+                console.warn('שגיאה ברענון אחרי שינוי storage:', err);
             }
         });
 
@@ -19038,7 +19041,7 @@
         let saveToGoogleSheetsTimeout = null;
         let sheetSyncIntervalMinutes = 5;
         let sheetSyncLoadEnabled = true;
-        let sheetSyncSaveEnabled = false;
+        let sheetSyncSaveEnabled = true;
         let sheetSyncSaveOnChange = true;
         let liveViewSyncIntervalId = null;
         
@@ -19078,10 +19081,11 @@
             try {
                 const savedUrl = localStorage.getItem('googleSheetsWebAppUrl');
                 googleSheetsWebAppUrl = savedUrl || DEFAULT_GOOGLE_SHEETS_URL || '';
-                googleSheetsSyncEnabled = localStorage.getItem('googleSheetsSyncEnabled') === 'true';
+                var savedSync = localStorage.getItem('googleSheetsSyncEnabled');
+                googleSheetsSyncEnabled = savedSync === 'true' || (savedSync === null && (googleSheetsWebAppUrl || '').trim().length > 0);
                 sheetSyncIntervalMinutes = Math.max(1, parseInt(localStorage.getItem('sheetSyncIntervalMinutes')) || 5);
                 sheetSyncLoadEnabled = localStorage.getItem('sheetSyncLoadEnabled') !== 'false';
-                sheetSyncSaveEnabled = localStorage.getItem('sheetSyncSaveEnabled') === 'true';
+                sheetSyncSaveEnabled = localStorage.getItem('sheetSyncSaveEnabled') !== 'false';
                 sheetSyncSaveOnChange = localStorage.getItem('sheetSyncSaveOnChange') !== 'false';
                 if (DEFAULT_GOOGLE_SHEETS_URL && !savedUrl) {
                     localStorage.setItem('googleSheetsWebAppUrl', DEFAULT_GOOGLE_SHEETS_URL);
@@ -19518,7 +19522,10 @@
                 try {
                     if (sheetSyncLoadEnabled) {
                         const r = await loadFromGoogleSheets(true);
-                        if (r && r.success && typeof notifyDataChanged === 'function') notifyDataChanged();
+                        if (r && r.success) {
+                            if (typeof refreshAllScreensFromData === 'function') refreshAllScreensFromData();
+                            if (typeof notifyDataChanged === 'function') notifyDataChanged();
+                        }
                     }
                     if (sheetSyncSaveEnabled) {
                         await saveToGoogleSheets();
@@ -20584,6 +20591,7 @@
             console.log('🚀 [אתחול] טוען הגדרות סנכרון...');
             loadGistSyncSettings();
             loadGoogleSheetsSettings();
+            if (typeof applySheetSyncSettings === 'function') applySheetSyncSettings();
             loadComputerSettings();
             
             // מחכה קצת כדי לוודא שהכל נטען
