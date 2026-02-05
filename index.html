@@ -13231,7 +13231,7 @@
                     recentlyUpdatedDonors.set(donorId, Date.now() + 60000); // 60 שניות נוספות אם עדיין בעריכה
                     console.log(`🔒 [עריכה] מתרים ${donorId} עדיין בעריכה - ממשיך להגן מפני עדכון מהגליון`);
                 } else {
-                    recentlyUpdatedDonors.set(donorId, Date.now());
+                    recentlyUpdatedDonors.set(donorId, Date.now() + 120000); // הגנה 2 דקות מפני טעינה מהגליון
                 }
                 
                 // שמירה מיידית של המתרים המעודכן ב-localStorage
@@ -13314,19 +13314,19 @@
             editingDonorId = null;
             editingShouldFocus = false;
             
-            // עדכון התצוגה אחרי השמירה
+            // עדכון התצוגה אחרי השמירה – עדכון מיידי בתצוגת לייב בלי קפיצות
             updateDonorsList();
             updateGroupsDisplay();
             updateHomeStats();
-            updateLiveView();
-            updateLeadersList();
-            updateLiveTargets();
+            if (typeof updateLiveView === 'function') updateLiveView(true);
+            if (typeof updateLeadersList === 'function') updateLeadersList();
+            if (typeof updateLiveTargets === 'function') updateLiveTargets();
             
-            // ממתין קצת לפני שמסיר את הסימון כדי שהשמירה לגליון תסתיים
+            // מסיר את הסימון רק אחרי 2 דקות – מונע שטעינה מהגליון תדרוס את הסכום שעודכן
             setTimeout(() => {
                 recentlyUpdatedDonors.delete(donorId);
-                console.log(`🔓 [עריכה] הסרת הגנה על מתרים ${donorId} אחרי שמירה מוצלחת`);
-            }, 3000);
+                console.log(`🔓 [עריכה] הסרת הגנה על מתרים ${donorId} אחרי 2 דקות`);
+            }, 120000);
             
             // וידוא שהעדכון נשמר - בדיקה נוספת
             const donorAfterSave = donors.find(d => d.id === donorId);
@@ -15339,7 +15339,7 @@
             XLSX.writeFile(workbook, 'finance_export.xlsx');
             showNotification('קובץ אקסל נוצר בהצלחה');
         }
-        function addDonorPayment(donorId) {
+        async function addDonorPayment(donorId) {
             ensureDonorsNormalized();
             const donor = donors.find(d => d.id === donorId);
             if (!donor) {
@@ -15376,8 +15376,8 @@
                 return;
             }
             
-            // מסמן את המתרים כשונה לאחרונה - מונע עדכון מהגליון
-            recentlyUpdatedDonors.set(donorId, Date.now());
+            // מסמן את המתרים כשונה לאחרונה - מונע עדכון מהגליון למשך 2 דקות
+            recentlyUpdatedDonors.set(donorId, Date.now() + 120000);
 
             const noteInput = prompt('הזן הערה לעדכון (לא חובה):');
             const note = noteInput && noteInput.trim() ? noteInput.trim() : '';
@@ -15395,9 +15395,10 @@
             // שמירה מיידית לגליון - חשוב! כדי שהשינויים יהיו זמינים ממחשבים אחרים
             const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
             if (url) {
-                // שמירה לגליון ואז עדכון נדרים פלוס מהגליון
-                saveToGoogleSheets().then(async () => {
-                    // אחרי השמירה לגליון, מעדכן את נדרים פלוס מהגליון
+                // שמירה מיידית לגליון ואז עדכון נדרים פלוס – עידכון מסודר
+                try {
+                    await saveToGoogleSheets();
+                    console.log('✅ פרטי מתרים עודכנו בגליון');
                     if (donor.nedarimMatrimId && actualDelta !== 0) {
                         console.log(`🔄 מעדכן נדרים פלוס מהגליון: ${donorDisplayName}, דלתה: ${actualDelta}`);
                         try {
@@ -15416,34 +15417,23 @@
                             console.error('❌ שגיאה בעדכון נדרים פלוס מהגליון:', err);
                         }
                     }
-                }).then(() => {
-                    console.log('✅ פרטי מתרים עודכנו בגליון');
-                    
-                    // אחרי שמירה מוצלחת, מסיר את ההגנה (אבל רק אחרי כמה שניות כדי שהסנכרון יטען את הערך החדש)
-                    setTimeout(() => {
-                        recentlyUpdatedDonors.delete(donorId);
-                        console.log(`🔓 [סנכרון] הסרת הגנה על מתרים ${donorId} אחרי שמירה מוצלחת`);
-                    }, 5000); // 5 שניות אחרי השמירה
-                }).catch(err => {
+                } catch (err) {
                     console.warn('⚠️ שגיאה בשמירת פרטי מתרים לגליון:', err);
-                    // אם השמירה נכשלה, מסיר את ההגנה אחרי זמן קצר יותר
-                    setTimeout(() => {
-                        recentlyUpdatedDonors.delete(donorId);
-                    }, 10000);
-                });
-            } else {
-                // אם אין URL, מסיר את ההגנה אחרי זמן קצר
+                }
                 setTimeout(() => {
                     recentlyUpdatedDonors.delete(donorId);
-                }, 15000);
+                    console.log(`🔓 [סנכרון] הסרת הגנה על מתרים ${donorId} אחרי 2 דקות`);
+                }, 120000);
+            } else {
+                setTimeout(() => recentlyUpdatedDonors.delete(donorId), 120000);
             }
             
             updateDonorsList();
             updateGroupsDisplay();
             updateHomeStats();
-            updateLiveView();
-            updateLeadersList();
-            updateLiveTargets();
+            if (typeof updateLiveView === 'function') updateLiveView(true);
+            if (typeof updateLeadersList === 'function') updateLeadersList();
+            if (typeof updateLiveTargets === 'function') updateLiveTargets();
             const message = actualDelta > 0
                 ? `תשלום של ${Math.abs(actualDelta).toLocaleString()} ₪ נוסף ל-${donorDisplayName} (${paymentDate.toLocaleDateString('he-IL')})`
                 : `הופחת סכום של ${Math.abs(actualDelta).toLocaleString()} ₪ מהמתרים ${donorDisplayName} (${paymentDate.toLocaleDateString('he-IL')})`;
@@ -15528,7 +15518,7 @@
             }
         }
 
-        function adjustDonorAmount(donorId, delta) {
+        async function adjustDonorAmount(donorId, delta) {
             const donor = donors.find(d => d.id === donorId);
             if (!donor) return;
             const oldAmount = donor.amount || 0;
@@ -15539,9 +15529,7 @@
                 return;
             }
             
-            // מסמן את המתרים כשונה לאחרונה - מונע עדכון מהגליון
-            recentlyUpdatedDonors.set(donorId, Date.now());
-            
+            recentlyUpdatedDonors.set(donorId, Date.now() + 120000);
             donor.amount = newAmount;
             if (actualDelta !== 0) {
                 addAmountToDailyBreakdown(donor, actualDelta, new Date());
@@ -15550,54 +15538,46 @@
             ensureDonorsNormalized();
             saveData();
             
-            // עדכון מיידי לנדרים פלוס (אם יש nedarimMatrimId) - לפני שמירה לגליון
+            // עדכון מיידי בתוכנה, בנדרים ובגליון – מחכים לסיום לפני הצגת הודעה
             if (donor.nedarimMatrimId && actualDelta !== 0) {
                 const donorDisplayName = getDonorDisplayName(donor);
                 console.log(`🔄 מעדכן מיידית לנדרים פלוס: ${donorDisplayName}, דלתה: ${actualDelta}`);
-                updateNedarimAmountViaSheets(donor, actualDelta, actualDelta > 0 ? 'עדכון מהיר (+)' : 'עדכון מהיר (-)').then(result => {
+                try {
+                    const result = await updateNedarimAmountViaSheets(donor, actualDelta, actualDelta > 0 ? 'עדכון מהיר (+)' : 'עדכון מהיר (-)');
                     if (result && result.success && !result.skipped) {
                         console.log(`✅ עודכן בהצלחה בנדרים פלוס: ${donorDisplayName}`);
                     } else if (result && result.skipped) {
                         console.log(`ℹ️ עדכון נדלג בנדרים פלוס: ${donorDisplayName} - ${result.message || 'אין צורך בעדכון'}`);
                     } else {
-                        console.warn(`⚠️ עדכון נכשל בנדרים פלוס: ${donorDisplayName} - ${result?.error || 'שגיאה לא ידועה'}`);
+                        console.warn(`⚠️ עדכון נכשל בנדרים פלוס: ${donorDisplayName} - ${(result && result.error) || 'שגיאה לא ידועה'}`);
                     }
-                }).catch(err => {
+                } catch (err) {
                     console.error('❌ שגיאה בעדכון נדרים פלוס:', err);
-                });
+                }
             }
             
-            // שמירה מיידית לגליון - חשוב! כדי שהשינויים יהיו זמינים ממחשבים אחרים
             const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
             if (url) {
-                saveToGoogleSheets().then(() => {
+                try {
+                    await saveToGoogleSheets();
                     console.log('✅ פרטי מתרים עודכנו בגליון');
-                    
-                    // אחרי שמירה מוצלחת, מסיר את ההגנה (אבל רק אחרי כמה שניות כדי שהסנכרון יטען את הערך החדש)
-                    setTimeout(() => {
-                        recentlyUpdatedDonors.delete(donorId);
-                        console.log(`🔓 [סנכרון] הסרת הגנה על מתרים ${donorId} אחרי שמירה מוצלחת`);
-                    }, 5000); // 5 שניות אחרי השמירה
-                }).catch(err => {
+                } catch (err) {
                     console.warn('⚠️ שגיאה בשמירת פרטי מתרים לגליון:', err);
-                    // אם השמירה נכשלה, מסיר את ההגנה אחרי זמן קצר יותר
-                    setTimeout(() => {
-                        recentlyUpdatedDonors.delete(donorId);
-                    }, 10000);
-                });
-            } else {
-                // אם אין URL, מסיר את ההגנה אחרי זמן קצר
+                }
                 setTimeout(() => {
                     recentlyUpdatedDonors.delete(donorId);
-                }, 15000);
+                    console.log(`🔓 [סנכרון] הסרת הגנה על מתרים ${donorId} אחרי 2 דקות`);
+                }, 120000);
+            } else {
+                setTimeout(() => recentlyUpdatedDonors.delete(donorId), 120000);
             }
             
             updateDonorsList();
             updateGroupsDisplay();
             updateHomeStats();
-            updateLiveView();
-            updateLeadersList();
-            updateLiveTargets();
+            if (typeof updateLiveView === 'function') updateLiveView(true);
+            if (typeof updateLeadersList === 'function') updateLeadersList();
+            if (typeof updateLiveTargets === 'function') updateLiveTargets();
             showNotification(`הסכום של ${donor.name} עודכן ל-${donor.amount.toLocaleString()} ₪`);
         }
 
@@ -19324,7 +19304,7 @@
                     const existingIds = new Set();
                     const existingMatrimIds = new Set(); // Set של מספרי מתרים קיימים
                     const now = Date.now();
-                    const PROTECTION_WINDOW_MS = 15000; // 15 שניות - זמן הגנה מפני עדכון מהגליון אחרי שינוי מקומי
+                    const PROTECTION_WINDOW_MS = 120000; // 2 דקות - זמן הגנה מפני עדכון מהגליון אחרי שינוי מקומי (מונע קפיצה חזרה לסכום ישן)
                     
                     // אוסף את כל מספרי המתרים הקיימים
                     donors.forEach(d => {
@@ -19343,7 +19323,7 @@
                         const matrimId = existingDonor.nedarimMatrimId ? String(existingDonor.nedarimMatrimId).trim() : null;
                         const hasValidMatrimId = matrimId && /^\d+$/.test(matrimId);
                         
-                        // בודק אם המתרים שונה לאחרונה (פחות מ-15 שניות)
+                        // בודק אם המתרים שונה לאחרונה (פחות מ-2 דקות)
                         const lastUpdateTime = recentlyUpdatedDonors.get(id);
                         const isRecentlyUpdated = lastUpdateTime && (lastUpdateTime > now || (now - lastUpdateTime < PROTECTION_WINDOW_MS));
                         
