@@ -8772,8 +8772,8 @@
             }
 
             if (appLockToggle) {
-                appLockToggle.checked = Boolean(isPasswordActive && accessControl.requireAppUnlock);
-                appLockToggle.disabled = !isPasswordActive;
+                appLockToggle.checked = Boolean(accessControl.requireAppUnlock);
+                appLockToggle.disabled = false;
             }
 
             if (sectionsList) {
@@ -10185,12 +10185,15 @@
                 showNotification('יש להגדיר סיסמה חדשה לפני הפעלת ההגנה');
                 return;
             }
+            const requireAtLoginRequested = Boolean(appLockToggle && appLockToggle.checked);
+            if (requireAtLoginRequested && !accessControl.password) {
+                showNotification('כדי להפעיל נעילה במסך הכניסה יש להזין סיסמה חדשה (ולאשר אותה)');
+                return;
+            }
 
             accessControl.enabled = enableRequested && !!accessControl.password;
             accessControl.protectedSections = accessControl.enabled ? selectedSections : [];
-            accessControl.requireAppUnlock = accessControl.enabled
-                ? Boolean(appLockToggle && appLockToggle.checked)
-                : false;
+            accessControl.requireAppUnlock = Boolean(appLockToggle && appLockToggle.checked);
 
             if (!accessControl.enabled) {
                 accessControl.protectedSections = [];
