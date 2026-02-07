@@ -21005,13 +21005,18 @@
             }
             
             try {
+                let rs = null;
+                try { rs = typeof robotSettings !== 'undefined' ? robotSettings : null; } catch (_) {}
+                if (!rs) {
+                    try { rs = JSON.parse(localStorage.getItem('robotSettings') || '{}'); } catch (_) { rs = {}; }
+                }
                 const dataToSave = {
                     action: 'saveAll',
                     donors: donors,
                     groups: groups,
                     settings: {
                         defaultDonorGoal: defaultDonorGoal,
-                        robotSettings: robotSettings
+                        robotSettings: rs || {}
                     }
                 };
                 
@@ -21823,7 +21828,6 @@
                 renderHistoryTable();
                 
                 showHistoryStatus(`✅ נטענו ${historyData.length} רשומות`, 'success');
-
                 
             } catch (error) {
                 console.error('שגיאה בטעינת היסטוריה:', error);
