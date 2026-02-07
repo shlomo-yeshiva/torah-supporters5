@@ -3673,6 +3673,7 @@
 
         /* אזור מובילים בצד - רוחב קבוע באחוזים */
         .live-leaders-sidebar {
+            position: relative;
             flex: 0 0 25% !important;
             width: 25% !important;
             max-width: 25% !important;
@@ -3688,11 +3689,25 @@
             display: flex;
             flex-direction: column;
         }
+        /* שכבה אחת מתחת לרשימת המובילים בלבד */
+        .live-leaders-backing {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 0;
+            border-radius: 16px;
+            margin: 8px;
+            background: linear-gradient(135deg, rgba(245, 230, 211, 0.95) 0%, rgba(255, 248, 220, 0.95) 100%);
+            pointer-events: none;
+        }
         .live-leaders-scroll-wrapper {
             flex: 1;
             overflow: hidden;
             overflow-x: hidden;
             position: relative;
+            z-index: 10;
             opacity: 1;
             filter: brightness(1) saturate(1);
             /* גלילה דרך transform – בלי scrollbar */
@@ -3731,11 +3746,20 @@
         }
 
         .live-leaders-content {
+            position: relative;
+            z-index: 10;
             transition: opacity 0.6s ease-in-out;
         }
 
         .live-leaders-content.hidden {
             opacity: 0;
+        }
+
+        /* שמות המובילים מעל כל השכבות – כמו עמודת המתרימים */
+        .leaders-list,
+        #leadersList {
+            position: relative;
+            z-index: 10;
         }
 
         .leaders-title {
@@ -3786,6 +3810,7 @@
             transition: all 0.3s ease;
             box-shadow: none !important;
             position: relative;
+            z-index: 10;
             outline: none !important;
             overflow: hidden;
             margin-bottom: 0;
@@ -6670,7 +6695,7 @@
                             </label>
                         </div>
                         <p class="password-lock-note">
-                            כאשר אפשרות זו פעילה, המערכת תציג מסך נעילה לפני הצגת כל הנתונים ותיפתח רק לאחר הזנת הסיסמה.
+                            כאשר אפשרות זו פעילה, המערכת תציג מסך נעילה לפני הצגת כל הנתונים ותיפתח רק לאחר הזנת הסיסמה. הסיסמה נשמרת בצד שרת (Google Apps Script) ולא בדפדפן.
                         </p>
 
                         <div class="password-sections">
@@ -6712,6 +6737,7 @@
                 <div class="live-content">
                     <!-- אזור מובילים בצד -->
                     <div class="live-leaders-sidebar">
+                        <div class="live-leaders-backing" id="liveLeadersBacking"></div>
                         <div class="live-leaders-scroll-wrapper" id="leadersScrollWrapper">
                             <div class="live-leaders-scroll-inner" id="leadersScrollInner">
                                 <div class="live-leaders-scroll" id="leadersScrollPrimary">
@@ -7347,6 +7373,8 @@
         };
         let authorizedSections = new Set();
         let appLockResolved = false;
+        /** כשהשרת דורש סיסמה במסך הכניסה – הסיסמה נשמרת בצד שרת בלבד */
+        let serverRequiresAppUnlock = false;
         const AUTHORIZED_ALL_SECTION_KEY = '__all__';
         
         // ===== הגדרות נדרים פלוס =====
@@ -8293,7 +8321,7 @@
         }
 
         function isAppLockRequired() {
-            return Boolean(accessControl?.enabled && accessControl?.password && accessControl?.requireAppUnlock);
+            return Boolean(serverRequiresAppUnlock || (accessControl?.enabled && accessControl?.password && accessControl?.requireAppUnlock));
         }
 
         function toggleAppLockOverlay(show) {
@@ -8331,7 +8359,7 @@
             toggleAppLockOverlay(true);
         }
 
-        function handleAppLockSubmit() {
+        async function handleAppLockSubmit() {
             if (!isAppLockRequired()) {
                 toggleAppLockOverlay(false);
                 appLockResolved = true;
@@ -8345,11 +8373,40 @@
                 input?.focus();
                 return;
             }
+            if (serverRequiresAppUnlock) {
+                const url = (googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || '').trim();
+                if (!url) {
+                    if (error) error.textContent = 'לא הוגדר חיבור לשרת – לא ניתן לאמת סיסמה.';
+                    return;
+                }
+                if (error) error.textContent = 'מאמת...';
+                try {
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({ action: 'verifyAppLoginPassword', password: entered }),
+                        redirect: 'follow'
+                    });
+                    const data = res.ok ? await res.json() : {};
+                    if (data && data.success) {
+                        appLockResolved = true;
+                        markAllProtectedSectionsAuthorized();
+                        toggleAppLockOverlay(false);
+                        if (error) error.textContent = '';
+                        if (input) input.value = '';
+                        showNotification('ברוך הבא למערכת');
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('שגיאה באימות סיסמה מול השרת:', e);
+                }
+                if (error) error.textContent = 'סיסמה שגויה, נסה שוב.';
+                if (input) input.select();
+                return;
+            }
             if (entered !== accessControl.password) {
                 if (error) error.textContent = 'סיסמה שגויה, נסה שוב.';
-                if (input) {
-                    input.select();
-                }
+                if (input) input.select();
                 return;
             }
             appLockResolved = true;
@@ -8609,22 +8666,37 @@
 
         function loadAccessControl() {
             try {
-                storageGetItem('accessControl', (saved) => {
-                if (saved) {
+                storageGetItem('accessControl', async (saved) => {
+                    if (saved) {
                         accessControl = normalizeAccessControl(saved);
-                } else {
-                    accessControl = getDefaultAccessControl();
-                }
+                    } else {
+                        accessControl = getDefaultAccessControl();
+                    }
                     resetAuthorizedSections();
+                    serverRequiresAppUnlock = false;
+                    const url = (googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || '').trim();
+                    if (url) {
+                        try {
+                            const res = await fetch(url + '?action=getAppLoginSettings', { method: 'GET', redirect: 'follow' });
+                            if (res.ok) {
+                                const data = await res.json();
+                                if (data && data.success && data.requireAppUnlock) {
+                                    serverRequiresAppUnlock = true;
+                                }
+                            }
+                        } catch (e) {
+                            console.warn('שגיאה בטעינת הגדרות כניסה מהשרת:', e);
+                        }
+                    }
                     initPasswordSettingsUI();
                     initAppLock();
                 });
             } catch (error) {
                 console.warn('שגיאה בטעינת הגדרות סיסמה:', error);
                 accessControl = getDefaultAccessControl();
-            resetAuthorizedSections();
-            initPasswordSettingsUI();
-            initAppLock();
+                resetAuthorizedSections();
+                initPasswordSettingsUI();
+                initAppLock();
             }
         }
 
@@ -10080,7 +10152,7 @@
             
             return selected;
         }
-        function savePasswordSettings() {
+        async function savePasswordSettings() {
             const enableToggle = document.getElementById('passwordEnableToggle');
             const currentInput = document.getElementById('currentPasswordInput');
             const newInput = document.getElementById('newPasswordInput');
@@ -10128,6 +10200,29 @@
             }
 
             saveAccessControl();
+            const requireAtLogin = Boolean(accessControl.requireAppUnlock && accessControl.password);
+            const sheetsUrl = (googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || '').trim();
+            if (sheetsUrl) {
+                try {
+                    const res = await fetch(sheetsUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({
+                            action: 'setAppLoginPassword',
+                            password: requireAtLogin ? accessControl.password : (accessControl.password || ''),
+                            requireAppUnlock: requireAtLogin
+                        }),
+                        redirect: 'follow'
+                    });
+                    const data = res.ok ? await res.json() : {};
+                    if (data && data.success) {
+                        serverRequiresAppUnlock = requireAtLogin;
+                    }
+                } catch (e) {
+                    console.warn('שגיאה בשמירת סיסמת כניסה בשרת:', e);
+                    showNotification('הסיסמה נשמרה מקומית אך שמירה בשרת נכשלה');
+                }
+            }
             resetAuthorizedSections();
             initPasswordSettingsUI();
             initAppLock({ force: true });
@@ -10135,7 +10230,7 @@
             showNotification('הגדרות הסיסמה עודכנו');
         }
 
-        function clearPasswordSettings() {
+        async function clearPasswordSettings() {
             const currentInput = document.getElementById('currentPasswordInput');
             const currentPasswordValue = currentInput ? currentInput.value.trim() : '';
             if (accessControl.password && currentPasswordValue !== accessControl.password) {
@@ -10147,6 +10242,20 @@
             }
             accessControl = getDefaultAccessControl();
             saveAccessControl();
+            const sheetsUrl = (googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || '').trim();
+            if (sheetsUrl) {
+                try {
+                    await fetch(sheetsUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({ action: 'setAppLoginPassword', password: '', requireAppUnlock: false }),
+                        redirect: 'follow'
+                    });
+                    serverRequiresAppUnlock = false;
+                } catch (e) {
+                    console.warn('שגיאה בביטול סיסמת כניסה בשרת:', e);
+                }
+            }
             resetAuthorizedSections();
             initPasswordSettingsUI();
             initAppLock({ force: true });
@@ -10768,10 +10877,12 @@
 
         function applyLiveViewSettings() {
             const liveSection = document.getElementById('liveviewSection');
+            const leadersBacking = document.getElementById('liveLeadersBacking');
             if (!liveSection) return;
 
             // יישום צבעי רקע
             liveSection.style.background = `linear-gradient(135deg, ${liveViewSettings.bgColor} 0%, ${liveViewSettings.bgColor2} 100%)`;
+            if (leadersBacking) leadersBacking.style.background = `linear-gradient(135deg, ${liveViewSettings.bgColor} 0%, ${liveViewSettings.bgColor2} 100%)`;
 
             // חישוב rgba עם שקיפות
             const donorCardBgRgba = hexToRgba(liveViewSettings.donorCardBg, liveViewSettings.donorCardOpacity || 92);
@@ -10785,6 +10896,9 @@
 
             style.textContent = `
                 .live-view-section {
+                    background: linear-gradient(135deg, ${liveViewSettings.bgColor} 0%, ${liveViewSettings.bgColor2} 100%) !important;
+                }
+                #liveLeadersBacking {
                     background: linear-gradient(135deg, ${liveViewSettings.bgColor} 0%, ${liveViewSettings.bgColor2} 100%) !important;
                 }
                 .leaders-title {
