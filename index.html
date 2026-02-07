@@ -7150,7 +7150,8 @@
             }
             
             // אם יש Google Sheets Web App URL, נשמור שם גם (אסינכרונית, לא חוסמת)
-            const googleSheetsUrl = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || '';
+            // שימוש ב-DEFAULT_GOOGLE_SHEETS_URL כ-fallback כדי שכל חשבון/מכשיר יוכל לסנכרן
+            const googleSheetsUrl = (googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || (typeof DEFAULT_GOOGLE_SHEETS_URL !== 'undefined' ? DEFAULT_GOOGLE_SHEETS_URL : '') || '').trim();
             if (googleSheetsUrl && googleSheetsUrl.trim() !== '') {
                 // שולח נתונים בגוף הבקשה (POST body) במקום בפרמטרי URL כדי למנוע שגיאת 413
                 try {
@@ -7222,7 +7223,8 @@
                 }
                 
                 // אם אין ב-localStorage, נסה לטעון מ-Google Sheets
-                const googleSheetsUrl = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || '';
+                // שימוש ב-DEFAULT_GOOGLE_SHEETS_URL כ-fallback - כך שהרובוט יוצג זהה בכל חשבון/מכשיר
+                const googleSheetsUrl = (googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || (typeof DEFAULT_GOOGLE_SHEETS_URL !== 'undefined' ? DEFAULT_GOOGLE_SHEETS_URL : '') || '').trim();
                 if (googleSheetsUrl && googleSheetsUrl.trim() !== '') {
                     try {
                         const requestData = {
@@ -15480,6 +15482,8 @@
 
             // טעינה ראשונית
         loadData().then(async () => {
+        // טעינת הגדרות Google Sheets קודם - כך שהרובוט יקבל את ה-URL גם בחשבון/מכשיר חדש
+        if (typeof loadGoogleSheetsSettings === 'function') loadGoogleSheetsSettings();
         updateHomeStats();
         updateGroupsDisplay();
         updateDonorsList();
@@ -22025,7 +22029,7 @@
                     sheetsStatusEl.style.color = '#004085';
                     sheetsStatusEl.textContent = '🔄 טוען נתונים מהגליון בעת פתיחת התוכנה...';
                 }
-    
+                
                 try {
                     await loadFromGoogleSheets(!googleSheetsSyncEnabled);
                     console.log('✅ [אתחול] הנתונים נטענו בהצלחה מ-Google Sheets');
