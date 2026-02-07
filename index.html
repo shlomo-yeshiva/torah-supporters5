@@ -5852,8 +5852,8 @@
                         </div>
                         
                         <div style="margin-bottom: 25px; display: flex; gap: 12px; flex-wrap: wrap;">
-                            <button class="btn btn-success" id="robotStartBtn" onclick="startRobot()" style="padding: 16px 32px; font-size: 18px; font-weight: 600; min-width: 200px; border-radius: 10px; box-shadow: 0 2px 8px rgba(16,185,129,0.3);">▶️ הפעל רובוט</button>
-                            <button class="btn btn-danger" id="robotStopBtn" onclick="stopRobot()" style="padding: 16px 32px; font-size: 18px; font-weight: 600; min-width: 200px; border-radius: 10px; box-shadow: 0 2px 8px rgba(239,68,68,0.3); display: none;">⏹️ עצור רובוט</button>
+                            <button class="btn btn-success" id="robotStartBtn" onclick="window.startRobot&&window.startRobot()" style="padding: 16px 32px; font-size: 18px; font-weight: 600; min-width: 200px; border-radius: 10px; box-shadow: 0 2px 8px rgba(16,185,129,0.3);">▶️ הפעל רובוט</button>
+                            <button class="btn btn-danger" id="robotStopBtn" onclick="window.stopRobot&&window.stopRobot()" style="padding: 16px 32px; font-size: 18px; font-weight: 600; min-width: 200px; border-radius: 10px; box-shadow: 0 2px 8px rgba(239,68,68,0.3); display: none;">⏹️ עצור רובוט</button>
                         </div>
                         
                         <div style="background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border);">
@@ -7092,6 +7092,8 @@
             window.updateRobotUI = window.updateRobotUI || function(){};
             window.toggleContinuousMode = window.toggleContinuousMode || function(){};
             window.updateRobotIntervalDisplay = window.updateRobotIntervalDisplay || function(){};
+            window.startRobot = window.startRobot || function(){ console.warn('הרובוט נטען...'); };
+            window.stopRobot = window.stopRobot || function(){};
         }
         // Wrapper functions ל-Apps Script - החלפת localStorage
         // פונקציה לבדיקה אם אנחנו ב-Apps Script (בדיקה דינמית)
