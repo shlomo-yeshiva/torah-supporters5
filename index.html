@@ -5874,25 +5874,11 @@
                                     <strong>💡 טיפ:</strong> אם אתה רואה הגדרות ישנות, נסה לרענן את הדף עם <code>Ctrl+Shift+R</code> (או <code>Cmd+Shift+R</code> ב-Mac) כדי לנקות את ה-cache.
                                 </div>
                                 <div style="margin-bottom: 20px;">
-                                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text);">בחר איזה כפתורים להפעיל אוטומטית:</label>
-                                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                            <input type="checkbox" id="robotSyncCheckbox" onchange="saveRobotSettings()" style="width: 18px; height: 18px; cursor: pointer;">
-                                            <span>🔄 סנכרון תרומות לנדרים פלוס</span>
-                                        </label>
-                                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                            <input type="checkbox" id="robotCheckTotalCheckbox" onchange="saveRobotSettings()" style="width: 18px; height: 18px; cursor: pointer;">
-                                            <span>🔍 בדוק סכום כולל מ-API</span>
-                                        </label>
-                                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                            <input type="checkbox" id="robotLoadSheetCheckbox" onchange="saveRobotSettings()" style="width: 18px; height: 18px; cursor: pointer;">
-                                            <span>📥 טען מהגליון</span>
-                                        </label>
-                                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                            <input type="checkbox" id="robotSaveSheetCheckbox" onchange="saveRobotSettings()" style="width: 18px; height: 18px; cursor: pointer;">
-                                            <span>💾 שמור לגליון</span>
-                                        </label>
+                                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text);">בחר איזה כפתורים להפעיל אוטומטית – גרור לשינוי סדר:</label>
+                                    <div id="robotActionsList" style="display: flex; flex-direction: column; gap: 6px;">
+                                        <!-- הרשימה מתעדכנת דינמית לפי robotActionsConfig -->
                                     </div>
+                                    <div style="margin-top: 8px; font-size: 12px; color: var(--muted);">☝️ גרור את השורות למעלה/למטה כדי לקבוע את סדר ביצוע הפעולות</div>
                                 </div>
                                 
                                 <div style="margin-bottom: 20px;">
@@ -5900,8 +5886,15 @@
                                     <div style="display: flex; flex-direction: column; gap: 10px;">
                                         <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px; background: #f5f5f5; border-radius: 6px;">
                                             <input type="checkbox" id="robotContinuousMode" onchange="toggleContinuousMode(); saveRobotSettings();" style="width: 18px; height: 18px; cursor: pointer;">
-                                            <span style="font-weight: 500;">🔄 עדכונים שוטפים (רציף ללא הפסקה)</span>
+                                            <span style="font-weight: 500;">🔄 עדכונים שוטפים (רציף)</span>
                                         </label>
+                                        <div id="robotContinuousIntervalContainer" style="display: none; margin-right: 20px;">
+                                            <label style="font-size: 13px; color: var(--muted);">מרווח בין ריצות בעדכונים שוטפים:</label>
+                                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                                                <input type="number" id="robotContinuousIntervalInput" min="15" max="300" value="60" onchange="saveRobotSettings();" style="width: 70px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px;">
+                                                <span>שניות</span>
+                                            </div>
+                                        </div>
                                         <div id="robotIntervalContainer" style="display: flex; align-items: center; gap: 10px;">
                                             <input type="number" id="robotIntervalInput" min="0.5" step="0.5" value="10" onchange="updateRobotIntervalDisplay(); saveRobotSettings();" oninput="updateRobotIntervalDisplay();" style="width: 80px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: white;">
                                             <select id="robotIntervalUnit" onchange="updateRobotIntervalDisplay(); saveRobotSettings();" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: white; cursor: pointer;">
@@ -15497,189 +15490,184 @@
         initLandingCards();
         
         // ===== רובוט אוטומטי =====
+        const ROBOT_ACTION_IDS = ['sync', 'loadMatrim', 'checkTotal', 'loadSheet', 'saveSheet', 'syncGoogleSheets'];
+        const robotActionsConfig = {
+            sync: { id: 'sync', name: 'סנכרון תרומות לנדרים פלוס', func: () => syncWithNedarimPlus(true) },
+            loadMatrim: { id: 'loadMatrim', name: 'טען מתרימים מנדרים פלוס', func: () => loadMatrimFromNedarim(true) },
+            checkTotal: { id: 'checkTotal', name: 'בדוק סכום כולל מ-API', func: () => checkTotalAmountFromAPI(true) },
+            loadSheet: { id: 'loadSheet', name: 'טען מהגליון', func: () => loadFromGoogleSheets(true) },
+            saveSheet: { id: 'saveSheet', name: 'שמור לגליון', func: () => saveToGoogleSheets() },
+            syncGoogleSheets: { id: 'syncGoogleSheets', name: 'סנכרון דו-כיווני גליון', func: () => syncWithGoogleSheets() }
+        };
         let robotEnabled = false;
         let robotTimer = null;
-        let robotContinuousRunning = false; // דגל למניעת ריצות מקבילות בעדכונים שוטפים
+        let robotContinuousRunning = false;
         let robotSettings = {
-            sync: false,
-            checkTotal: false,
-            loadSheet: false,
-            saveSheet: false,
+            actionOrder: [...ROBOT_ACTION_IDS],
+            actionEnabled: { sync: false, loadMatrim: false, checkTotal: false, loadSheet: false, saveSheet: false, syncGoogleSheets: false },
             interval: 10,
             unit: 'minutes',
-            executionMode: 'sequential', // 'sequential' או 'parallel'
-            continuous: false // עדכונים שוטפים - ללא מרווח זמן
+            executionMode: 'sequential',
+            continuous: false,
+            continuousIntervalSeconds: 60
         };
         let robotNextRunTime = null;
         let robotHistory = [];
         
+        function migrateRobotSettingsFromLegacy(saved) {
+            if (saved.sync !== undefined || saved.checkTotal !== undefined) {
+                const ae = robotSettings.actionEnabled || {};
+                ae.sync = saved.sync === true;
+                ae.checkTotal = saved.checkTotal === true;
+                ae.loadSheet = saved.loadSheet === true;
+                ae.saveSheet = saved.saveSheet === true;
+                ae.loadMatrim = ae.loadMatrim || false;
+                ae.syncGoogleSheets = ae.syncGoogleSheets || false;
+                robotSettings.actionEnabled = ae;
+                if (!saved.actionOrder) robotSettings.actionOrder = [...ROBOT_ACTION_IDS];
+            }
+        }
         function loadRobotSettings() {
             storageGetItem('robotSettings', (saved) => {
                 if (saved) {
-                    // משמר את הערכים הקיימים אם הם כבר נשמרו
                     robotSettings = { 
-                        sync: false,
-                        checkTotal: false,
-                        loadSheet: false,
-                        saveSheet: false,
+                        actionOrder: [...ROBOT_ACTION_IDS],
+                        actionEnabled: { sync: false, loadMatrim: false, checkTotal: false, loadSheet: false, saveSheet: false, syncGoogleSheets: false },
                         interval: 10,
                         unit: 'minutes',
                         executionMode: 'sequential',
                         continuous: false,
+                        continuousIntervalSeconds: 60,
                         ...saved 
                     };
-                    // וודא שכל הערכים הם מהסוג הנכון
+                    migrateRobotSettingsFromLegacy(saved);
                     robotSettings.continuous = robotSettings.continuous === true;
-                    robotSettings.sync = robotSettings.sync === true;
-                    robotSettings.checkTotal = robotSettings.checkTotal === true;
-                    robotSettings.loadSheet = robotSettings.loadSheet === true;
-                    robotSettings.saveSheet = robotSettings.saveSheet === true;
                     robotSettings.interval = parseFloat(robotSettings.interval) || 10;
                     robotSettings.unit = robotSettings.unit || 'minutes';
                     robotSettings.executionMode = robotSettings.executionMode || 'sequential';
+                    robotSettings.continuousIntervalSeconds = Math.max(15, Math.min(300, parseInt(robotSettings.continuousIntervalSeconds, 10) || 60));
                     robotEnabled = robotSettings.enabled === true;
-                    
-                    // שמירה מחדש כדי לוודא שהפורמט נכון
+                    if (!robotSettings.actionOrder || !Array.isArray(robotSettings.actionOrder)) robotSettings.actionOrder = [...ROBOT_ACTION_IDS];
+                    if (!robotSettings.actionEnabled || typeof robotSettings.actionEnabled !== 'object') robotSettings.actionEnabled = { sync: false, loadMatrim: false, checkTotal: false, loadSheet: false, saveSheet: false, syncGoogleSheets: false };
                     storageSetItem('robotSettings', robotSettings);
-                    
-                    console.log('📥 [רובוט] טעינת הגדרות:', {
-                        enabled: robotEnabled,
-                        continuous: robotSettings.continuous,
-                        interval: robotSettings.interval,
-                        unit: robotSettings.unit,
-                        sync: robotSettings.sync,
-                        checkTotal: robotSettings.checkTotal,
-                        loadSheet: robotSettings.loadSheet,
-                        saveSheet: robotSettings.saveSheet
-                    });
-                    
-                    // אם הרובוט היה פעיל, מפעיל אותו מחדש
-                    if (robotEnabled) {
-                        // ממתין קצת כדי לוודא שהדף נטען לגמרי
-                        setTimeout(() => {
-                            startRobot();
-                        }, 500);
-                    }
+                    console.log('📥 [רובוט] טעינת הגדרות:', { enabled: robotEnabled, actionOrder: robotSettings.actionOrder, actionEnabled: robotSettings.actionEnabled });
+                    if (robotEnabled) setTimeout(() => startRobot(), 500);
                 } else {
-                    // אם אין הגדרות שמורות, מאתחל עם ברירת מחדל
-                    robotSettings = {
-                        sync: false,
-                        checkTotal: false,
-                        loadSheet: false,
-                        saveSheet: false,
-                        interval: 10,
-                        unit: 'minutes',
-                        executionMode: 'sequential',
-                        continuous: false,
-                        enabled: false
-                    };
+                    robotSettings.actionOrder = [...ROBOT_ACTION_IDS];
+                    robotSettings.actionEnabled = { sync: false, loadMatrim: false, checkTotal: false, loadSheet: false, saveSheet: false, syncGoogleSheets: false };
                     robotEnabled = false;
                 }
+                renderRobotActionsList();
                 updateRobotUI();
             });
         }
         
+        function renderRobotActionsList() {
+            const listEl = document.getElementById('robotActionsList');
+            if (!listEl) return;
+            const order = robotSettings.actionOrder || [...ROBOT_ACTION_IDS];
+            const enabled = robotSettings.actionEnabled || {};
+            listEl.innerHTML = order.map((id, idx) => {
+                const cfg = robotActionsConfig[id];
+                if (!cfg) return '';
+                const checked = enabled[id] === true;
+                return `<div class="robot-action-row" data-action-id="${id}" draggable="true" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #f8f9fa; border-radius: 8px; cursor: grab; border: 1px solid #e9ecef;">
+                    <span class="robot-drag-handle" style="cursor: grab; color: #999; font-size: 18px;" title="גרור לשינוי סדר">⋮⋮</span>
+                    <input type="checkbox" id="robotAction_${id}" ${checked ? 'checked' : ''} onchange="toggleRobotAction('${id}'); saveRobotSettings();" style="width: 18px; height: 18px; cursor: pointer;">
+                    <label for="robotAction_${id}" style="flex: 1; cursor: pointer; margin: 0;">${cfg.name}</label>
+                </div>`;
+            }).join('');
+            attachRobotListDragListeners();
+        }
+        function attachRobotListDragListeners() {
+            const listEl = document.getElementById('robotActionsList');
+            if (!listEl) return;
+            let draggedEl = null;
+            listEl.querySelectorAll('.robot-action-row').forEach(row => {
+                row.addEventListener('dragstart', (e) => { draggedEl = row; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', row.dataset.actionId); row.style.opacity = '0.5'; });
+                row.addEventListener('dragend', (e) => { row.style.opacity = '1'; draggedEl = null; });
+                row.addEventListener('dragover', (e) => { e.preventDefault(); if (draggedEl && draggedEl !== row) row.style.borderTop = '2px solid #1976d2'; });
+                row.addEventListener('dragleave', (e) => { row.style.borderTop = '1px solid #e9ecef'; });
+                row.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    row.style.borderTop = '1px solid #e9ecef';
+                    if (!draggedEl || draggedEl === row) return;
+                    const order = [...(robotSettings.actionOrder || ROBOT_ACTION_IDS)];
+                    const fromId = draggedEl.dataset.actionId;
+                    const toId = row.dataset.actionId;
+                    const fromIdx = order.indexOf(fromId);
+                    const toIdx = order.indexOf(toId);
+                    if (fromIdx >= 0 && toIdx >= 0) {
+                        order.splice(fromIdx, 1);
+                        order.splice(toIdx, 0, fromId);
+                        robotSettings.actionOrder = order;
+                        storageSetItem('robotSettings', robotSettings);
+                        renderRobotActionsList();
+                    }
+                });
+            });
+        }
+        function toggleRobotAction(id) {
+            if (!robotSettings.actionEnabled) robotSettings.actionEnabled = {};
+            robotSettings.actionEnabled[id] = document.getElementById('robotAction_' + id)?.checked === true;
+        }
+        if (typeof window !== 'undefined') { window.toggleRobotAction = toggleRobotAction; window.renderRobotActionsList = renderRobotActionsList; }
         function toggleContinuousMode() {
             const continuousCheckbox = document.getElementById('robotContinuousMode');
             const intervalContainer = document.getElementById('robotIntervalContainer');
-            
+            const continuousIntervalContainer = document.getElementById('robotContinuousIntervalContainer');
             if (continuousCheckbox && intervalContainer) {
                 if (continuousCheckbox.checked) {
                     intervalContainer.style.opacity = '0.5';
                     intervalContainer.style.pointerEvents = 'none';
+                    if (continuousIntervalContainer) continuousIntervalContainer.style.display = 'block';
                 } else {
                     intervalContainer.style.opacity = '1';
                     intervalContainer.style.pointerEvents = 'auto';
+                    if (continuousIntervalContainer) continuousIntervalContainer.style.display = 'none';
                 }
             }
         }
         
         function saveRobotSettings() {
             const checkbox = document.getElementById('robotEnabledCheckbox');
-            const syncCheckbox = document.getElementById('robotSyncCheckbox');
-            const checkTotalCheckbox = document.getElementById('robotCheckTotalCheckbox');
-            const loadSheetCheckbox = document.getElementById('robotLoadSheetCheckbox');
-            const saveSheetCheckbox = document.getElementById('robotSaveSheetCheckbox');
             const intervalInput = document.getElementById('robotIntervalInput');
             const unitSelect = document.getElementById('robotIntervalUnit');
             const sequentialRadio = document.getElementById('robotSequentialMode');
             const parallelRadio = document.getElementById('robotParallelMode');
             const continuousCheckbox = document.getElementById('robotContinuousMode');
-            
-            // שמירת המצב הקודם כדי לבדוק אם צריך להפעיל מחדש
+            const continuousIntervalInput = document.getElementById('robotContinuousIntervalInput');
             const wasEnabled = robotEnabled;
             const wasContinuous = robotSettings.continuous;
             const wasInterval = robotSettings.interval;
             const wasUnit = robotSettings.unit;
-            
-            // קריאת הערכים מה-UI
             if (checkbox) robotEnabled = checkbox.checked;
-            if (syncCheckbox) robotSettings.sync = syncCheckbox.checked;
-            if (checkTotalCheckbox) robotSettings.checkTotal = checkTotalCheckbox.checked;
-            if (loadSheetCheckbox) robotSettings.loadSheet = loadSheetCheckbox.checked;
-            if (saveSheetCheckbox) robotSettings.saveSheet = saveSheetCheckbox.checked;
+            ROBOT_ACTION_IDS.forEach(id => {
+                const cb = document.getElementById('robotAction_' + id);
+                if (cb && robotSettings.actionEnabled) robotSettings.actionEnabled[id] = cb.checked === true;
+            });
             if (intervalInput) robotSettings.interval = parseFloat(intervalInput.value) || 10;
             if (unitSelect) robotSettings.unit = unitSelect.value;
             if (sequentialRadio && sequentialRadio.checked) robotSettings.executionMode = 'sequential';
             if (parallelRadio && parallelRadio.checked) robotSettings.executionMode = 'parallel';
-            if (continuousCheckbox) robotSettings.continuous = continuousCheckbox.checked || false;
-            
+            if (continuousCheckbox) robotSettings.continuous = continuousCheckbox.checked === true;
+            if (continuousIntervalInput) robotSettings.continuousIntervalSeconds = Math.max(15, Math.min(300, parseInt(continuousIntervalInput.value, 10) || 60));
             robotSettings.enabled = robotEnabled;
-            
-            // וידוא שכל הערכים נכונים לפני שמירה
-            robotSettings.continuous = robotSettings.continuous === true;
-            robotSettings.sync = robotSettings.sync === true;
-            robotSettings.checkTotal = robotSettings.checkTotal === true;
-            robotSettings.loadSheet = robotSettings.loadSheet === true;
-            robotSettings.saveSheet = robotSettings.saveSheet === true;
             robotSettings.interval = parseFloat(robotSettings.interval) || 10;
             robotSettings.unit = robotSettings.unit || 'minutes';
             robotSettings.executionMode = robotSettings.executionMode || 'sequential';
-            
-            // שמירה מיידית ל-localStorage
             storageSetItem('robotSettings', robotSettings);
-            
-            console.log('💾 [רובוט] הגדרות נשמרו:', {
-                enabled: robotEnabled,
-                continuous: robotSettings.continuous,
-                interval: robotSettings.interval,
-                unit: robotSettings.unit,
-                sync: robotSettings.sync,
-                checkTotal: robotSettings.checkTotal,
-                loadSheet: robotSettings.loadSheet,
-                saveSheet: robotSettings.saveSheet
-            });
-            
+            console.log('💾 [רובוט] הגדרות נשמרו:', { enabled: robotEnabled, actionOrder: robotSettings.actionOrder, actionEnabled: robotSettings.actionEnabled });
             updateRobotUI();
-            
-            // בדיקה אם צריך להפעיל מחדש את הרובוט
-            const needsRestart = wasEnabled && (
-                wasContinuous !== robotSettings.continuous ||
-                wasInterval !== robotSettings.interval ||
-                wasUnit !== robotSettings.unit
-            );
-            
-            // אם הרובוט היה פעיל והמשתמש שינה הגדרות שדורשות הפעלה מחדש, או שהמשתמש הפעיל/כיבה את הרובוט
+            const needsRestart = wasEnabled && (wasContinuous !== robotSettings.continuous || wasInterval !== robotSettings.interval || wasUnit !== robotSettings.unit);
             if (wasEnabled !== robotEnabled) {
-                // המשתמש הפעיל או כיבה את הרובוט
-                if (robotEnabled) {
-                    startRobot();
-                } else {
-                    stopRobot();
-                }
+                if (robotEnabled) startRobot(); else stopRobot();
             } else if (needsRestart && robotEnabled) {
-                // הרובוט היה פעיל והמשתמש שינה הגדרות שדורשות הפעלה מחדש
-                console.log('🔄 [רובוט] משנה הגדרות - מפעיל מחדש');
                 stopRobot();
-                setTimeout(() => {
-                    startRobot();
-                }, 100);
-            } else if (wasEnabled && robotEnabled) {
-                // הרובוט היה פעיל ונשאר פעיל, רק עדכן את ההגדרות (לא צריך להפעיל מחדש)
-                console.log('✅ [רובוט] עדכון הגדרות ללא הפעלה מחדש');
-                // רק מעדכן את ההגדרות, הרובוט ממשיך לרוץ עם ההגדרות החדשות
+                setTimeout(() => startRobot(), 100);
             }
         }
+        if (typeof window !== 'undefined') window.saveRobotSettings = saveRobotSettings;
         
         function updateRobotIntervalDisplay() {
             const intervalInput = document.getElementById('robotIntervalInput');
@@ -15721,55 +15709,44 @@
         }
         
         function updateRobotUI() {
-            // טעינה מחדש של ההגדרות מ-localStorage כדי לוודא שיש לנו את הערכים העדכניים ביותר
             try {
                 const savedSettings = localStorage.getItem('robotSettings');
                 if (savedSettings) {
                     const parsed = JSON.parse(savedSettings);
-                    // עדכון המשתנה הגלובלי עם הערכים העדכניים
                     if (parsed.enabled !== undefined) robotEnabled = parsed.enabled === true;
                     if (parsed.continuous !== undefined) robotSettings.continuous = parsed.continuous === true;
-                    if (parsed.sync !== undefined) robotSettings.sync = parsed.sync === true;
-                    if (parsed.checkTotal !== undefined) robotSettings.checkTotal = parsed.checkTotal === true;
-                    if (parsed.loadSheet !== undefined) robotSettings.loadSheet = parsed.loadSheet === true;
-                    if (parsed.saveSheet !== undefined) robotSettings.saveSheet = parsed.saveSheet === true;
                     if (parsed.interval !== undefined) robotSettings.interval = parseFloat(parsed.interval) || 10;
                     if (parsed.unit !== undefined) robotSettings.unit = parsed.unit || 'minutes';
                     if (parsed.executionMode !== undefined) robotSettings.executionMode = parsed.executionMode || 'sequential';
+                    if (parsed.actionEnabled) robotSettings.actionEnabled = parsed.actionEnabled;
+                    if (parsed.continuousIntervalSeconds !== undefined) robotSettings.continuousIntervalSeconds = parsed.continuousIntervalSeconds;
                 }
-            } catch (e) {
-                console.warn('⚠️ [רובוט] שגיאה בטעינת הגדרות מ-localStorage:', e);
-            }
-            
+            } catch (e) { console.warn('⚠️ [רובוט] שגיאה בטעינת הגדרות:', e); }
             const checkbox = document.getElementById('robotEnabledCheckbox');
             const panel = document.getElementById('robotSettingsPanel');
-            const syncCheckbox = document.getElementById('robotSyncCheckbox');
-            const checkTotalCheckbox = document.getElementById('robotCheckTotalCheckbox');
-            const loadSheetCheckbox = document.getElementById('robotLoadSheetCheckbox');
-            const saveSheetCheckbox = document.getElementById('robotSaveSheetCheckbox');
             const intervalInput = document.getElementById('robotIntervalInput');
             const unitSelect = document.getElementById('robotIntervalUnit');
             const sequentialRadio = document.getElementById('robotSequentialMode');
             const parallelRadio = document.getElementById('robotParallelMode');
             const continuousCheckbox = document.getElementById('robotContinuousMode');
+            const continuousIntervalInput = document.getElementById('robotContinuousIntervalInput');
             const startBtn = document.getElementById('robotStartBtn');
             const stopBtn = document.getElementById('robotStopBtn');
             const statusEl = document.getElementById('robotStatus');
             const nextRunEl = document.getElementById('robotNextRun');
             const nextRunTimeEl = document.getElementById('robotNextRunTime');
-            
             if (checkbox) checkbox.checked = robotEnabled;
             if (panel) panel.style.display = robotEnabled ? 'block' : 'none';
-            if (syncCheckbox) syncCheckbox.checked = robotSettings.sync === true;
-            if (checkTotalCheckbox) checkTotalCheckbox.checked = robotSettings.checkTotal === true;
-            if (loadSheetCheckbox) loadSheetCheckbox.checked = robotSettings.loadSheet === true;
-            if (saveSheetCheckbox) saveSheetCheckbox.checked = robotSettings.saveSheet === true;
             if (intervalInput) intervalInput.value = robotSettings.interval || 10;
             if (unitSelect) unitSelect.value = robotSettings.unit || 'minutes';
             if (sequentialRadio) sequentialRadio.checked = (robotSettings.executionMode || 'sequential') === 'sequential';
             if (parallelRadio) parallelRadio.checked = (robotSettings.executionMode || 'sequential') === 'parallel';
             if (continuousCheckbox) continuousCheckbox.checked = robotSettings.continuous === true;
-            
+            if (continuousIntervalInput) continuousIntervalInput.value = robotSettings.continuousIntervalSeconds || 60;
+            ROBOT_ACTION_IDS.forEach(id => {
+                const cb = document.getElementById('robotAction_' + id);
+                if (cb && robotSettings.actionEnabled && robotSettings.actionEnabled[id] !== undefined) cb.checked = robotSettings.actionEnabled[id] === true;
+            });
             toggleContinuousMode();
             updateRobotIntervalDisplay();
             
@@ -15810,29 +15787,20 @@
         }
         
         async function runRobotActions() {
-            // בדיקה אם הרובוט עדיין פעיל
             if (!robotEnabled) {
                 console.log('⏹️ [רובוט] הרובוט כבוי - לא מריץ פעולות');
                 return;
             }
-            
+            const order = robotSettings.actionOrder || [...ROBOT_ACTION_IDS];
+            const enabled = robotSettings.actionEnabled || {};
             const actions = [];
-            
-            if (robotSettings.sync) {
-                actions.push({ name: 'סנכרון תרומות', func: () => syncWithNedarimPlus(true) });
+            for (const id of order) {
+                if (enabled[id] === true && robotActionsConfig[id]) {
+                    actions.push({ name: robotActionsConfig[id].name, func: robotActionsConfig[id].func });
+                }
             }
-            if (robotSettings.checkTotal) {
-                actions.push({ name: 'בדוק סכום כולל מ-API', func: () => checkTotalAmountFromAPI(true) });
-            }
-            if (robotSettings.loadSheet) {
-                actions.push({ name: 'טען מהגליון', func: () => loadFromGoogleSheets(true) });
-            }
-            if (robotSettings.saveSheet) {
-                actions.push({ name: 'שמור לגליון', func: () => saveToGoogleSheets() });
-            }
-            
             if (actions.length === 0) {
-                addRobotHistory('⚠️ אין פעולות מוגדרות', 'warning');
+                addRobotHistory('⚠️ אין פעולות מוגדרות – סמן לפחות פעולה אחת', 'warning');
                 return;
             }
             
@@ -15967,29 +15935,24 @@
                 continuous: isContinuous,
                 interval: robotSettings.interval,
                 unit: robotSettings.unit,
-                sync: robotSettings.sync,
-                checkTotal: robotSettings.checkTotal,
-                loadSheet: robotSettings.loadSheet,
-                saveSheet: robotSettings.saveSheet
+                actionOrder: robotSettings.actionOrder,
+                actionEnabled: robotSettings.actionEnabled
             });
             
-            // אם זה עדכונים שוטפים, לא משתמשים ב-setInterval אלא ברצף
             if (isContinuous) {
                 robotContinuousRunning = true;
-                // פונקציה רקורסיבית לריצה רציפה
+                const intervalSec = Math.max(15, robotSettings.continuousIntervalSeconds || 60);
                 const runContinuous = async () => {
-                    // בדיקה כפולה לפני כל ריצה
                     if (!robotEnabled || !robotSettings.continuous || !robotContinuousRunning) {
                         console.log('⏹️ [רובוט] עוצר עדכונים שוטפים');
                         robotContinuousRunning = false;
                         return;
                     }
                     await runRobotActions();
-                    // ממתין קצת לפני הפעלה הבאה (2 שניות) כדי לא להעמיס על המערכת
-                    setTimeout(runContinuous, 2000);
+                    setTimeout(runContinuous, intervalSec * 1000);
                 };
                 runContinuous();
-                addRobotHistory('🤖 הרובוט הופעל - עדכונים שוטפים', 'success');
+                addRobotHistory(`🤖 הרובוט הופעל - עדכונים שוטפים כל ${intervalSec} שניות`, 'success');
             } else {
                 // הפעלה ראשונה מיד
                 runRobotActions();
@@ -20813,22 +20776,27 @@
                     }
                     if (result.settings.robotSettings && typeof result.settings.robotSettings === 'object') {
                         const rs = result.settings.robotSettings;
+                        const ae = rs.actionEnabled && typeof rs.actionEnabled === 'object' ? rs.actionEnabled : {};
+                        if (rs.sync !== undefined) ae.sync = rs.sync === true;
+                        if (rs.checkTotal !== undefined) ae.checkTotal = rs.checkTotal === true;
+                        if (rs.loadSheet !== undefined) ae.loadSheet = rs.loadSheet === true;
+                        if (rs.saveSheet !== undefined) ae.saveSheet = rs.saveSheet === true;
                         robotSettings = {
-                            enabled: rs.enabled === true,
-                            sync: rs.sync === true,
-                            checkTotal: rs.checkTotal === true,
-                            loadSheet: rs.loadSheet === true,
-                            saveSheet: rs.saveSheet === true,
+                            actionOrder: Array.isArray(rs.actionOrder) ? rs.actionOrder : [...ROBOT_ACTION_IDS],
+                            actionEnabled: ae,
                             interval: parseFloat(rs.interval) || 10,
                             unit: rs.unit || 'minutes',
                             executionMode: (rs.executionMode === 'parallel' ? 'parallel' : 'sequential'),
-                            continuous: rs.continuous === true
+                            continuous: rs.continuous === true,
+                            continuousIntervalSeconds: Math.max(15, Math.min(300, parseInt(rs.continuousIntervalSeconds, 10) || 60)),
+                            enabled: rs.enabled === true
                         };
                         robotEnabled = robotSettings.enabled;
                         try {
                             localStorage.setItem('robotSettings', JSON.stringify(robotSettings));
                             storageSetItem('robotSettings', robotSettings);
                         } catch (e) { console.warn('שגיאה בשמירת הגדרות רובוט:', e); }
+                        if (typeof renderRobotActionsList === 'function') renderRobotActionsList();
                         if (typeof updateRobotUI === 'function') updateRobotUI();
                         if (robotEnabled && typeof startRobot === 'function') {
                             setTimeout(() => startRobot(), 500);
