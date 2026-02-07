@@ -5861,7 +5861,7 @@
                         <!-- הגדרות רובוט -->
                         <div style="background: rgba(255, 255, 255, 0.9); border-radius: 10px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border);">
                             <h4 style="margin-bottom: 15px; color: var(--brown-dark);">הגדרות רובוט אוטומטי</h4>
-                            
+                            <p style="font-size: 13px; color: var(--muted); margin-bottom: 12px;">הגדרות הרובוט נשמרות גם בגליון. במחשב או חשבון אחר: הזן את כתובת חיבור הגליון (מדור עדכונים) ולחץ "טען מהגליון" – תקבל את אותן הגדרות הרובוט.</p>
                             <div style="margin-bottom: 20px;">
                                 <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 500; margin-bottom: 15px;">
                                     <input type="checkbox" id="robotEnabledCheckbox" onchange="saveRobotSettings()" style="width: 20px; height: 20px; cursor: pointer;">
@@ -20806,10 +20806,35 @@
                     }
                 }
                 
-                // טעינת הגדרות
+                // טעינת הגדרות (כולל רובוט – כדי שיהיה זהה בכל מכשיר/חשבון)
                 if (result.settings) {
                     if (result.settings.defaultDonorGoal) {
                         defaultDonorGoal = Number(result.settings.defaultDonorGoal);
+                    }
+                    if (result.settings.robotSettings && typeof result.settings.robotSettings === 'object') {
+                        const rs = result.settings.robotSettings;
+                        robotSettings = {
+                            enabled: rs.enabled === true,
+                            sync: rs.sync === true,
+                            checkTotal: rs.checkTotal === true,
+                            loadSheet: rs.loadSheet === true,
+                            saveSheet: rs.saveSheet === true,
+                            interval: parseFloat(rs.interval) || 10,
+                            unit: rs.unit || 'minutes',
+                            executionMode: (rs.executionMode === 'parallel' ? 'parallel' : 'sequential'),
+                            continuous: rs.continuous === true
+                        };
+                        robotEnabled = robotSettings.enabled;
+                        try {
+                            localStorage.setItem('robotSettings', JSON.stringify(robotSettings));
+                            storageSetItem('robotSettings', robotSettings);
+                        } catch (e) { console.warn('שגיאה בשמירת הגדרות רובוט:', e); }
+                        if (typeof updateRobotUI === 'function') updateRobotUI();
+                        if (robotEnabled && typeof startRobot === 'function') {
+                            setTimeout(() => startRobot(), 500);
+                        } else if (!robotEnabled && typeof stopRobot === 'function') {
+                            stopRobot();
+                        }
                     }
                 }
                 
@@ -21004,7 +21029,8 @@
                     donors: donors,
                     groups: groups,
                     settings: {
-                        defaultDonorGoal: defaultDonorGoal
+                        defaultDonorGoal: defaultDonorGoal,
+                        robotSettings: robotSettings
                     }
                 };
                 
