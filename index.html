@@ -12879,7 +12879,7 @@
                 
                 // שמירה לגליון
                 const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
-                if (url) saveToGoogleSheets().catch(err => console.warn('⚠️ שגיאה בשמירה לגליון:', err));
+                if (url) saveToGoogleSheets().catch(err => console.warn('⚠️ שגיאה בשמירה לגליון:', translateFetchError(err)));
                 
                 showNotification('מספר הקבוצה עודכן');
             }
@@ -12898,7 +12898,7 @@
                 
                 // שמירה לגליון
                 const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
-                if (url) saveToGoogleSheets().catch(err => console.warn('⚠️ שגיאה בשמירה לגליון:', err));
+                if (url) saveToGoogleSheets().catch(err => console.warn('⚠️ שגיאה בשמירה לגליון:', translateFetchError(err)));
                 
                 showNotification(show ? 'הקבוצה תוצג בתצוגת לייב' : 'הקבוצה הוסרה מתצוגת לייב');
             }
@@ -12919,7 +12919,7 @@
                 
                 // שמירה לגליון
                 const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
-                if (url) saveToGoogleSheets().catch(err => console.warn('⚠️ שגיאה בשמירה לגליון:', err));
+                if (url) saveToGoogleSheets().catch(err => console.warn('⚠️ שגיאה בשמירה לגליון:', translateFetchError(err)));
                 
                 showNotification('יעד הקבוצה עודכן');
             }
@@ -17074,7 +17074,7 @@
                     }
                 }
             } catch (error) {
-                console.error('❌ שגיאה במשיכת סכום כולל דרך Google Sheets:', error.message);
+                console.error('❌ שגיאה במשיכת סכום כולל דרך Google Sheets:', translateFetchError(error));
             }
             
             // אם נכשל, ננסה לחשב מהמתרימים
@@ -17297,8 +17297,9 @@
             } catch (error) {
                 console.error('שגיאה בטעינת מתרימים:', error);
                 if (!silent) {
-                showNedarimStatus(`שגיאה: ${error.message}`, 'error');
-                showNotification(`❌ שגיאה בטעינת מתרימים: ${error.message}`);
+                const friendly = translateFetchError(error);
+                showNedarimStatus('שגיאה: ' + friendly, 'error');
+                showNotification('❌ שגיאה בטעינת מתרימים: ' + friendly);
                 }
             } finally {
                 if (!silent && btn) {
@@ -17909,9 +17910,10 @@
                 }
                 
             } catch (error) {
+                const friendly = translateFetchError(error);
                 console.error('❌ שגיאה בניקוי וטעינה מחדש:', error);
-                showNedarimStatus('❌ שגיאה: ' + error.message, 'error');
-                showNotification('❌ שגיאה בניקוי וטעינה מחדש: ' + error.message, 'error');
+                showNedarimStatus('❌ שגיאה: ' + friendly, 'error');
+                showNotification('❌ שגיאה בניקוי וטעינה מחדש: ' + friendly, 'error');
                 
                 if (btn) {
                     btn.disabled = false;
@@ -17941,9 +17943,10 @@
                     matrimList = await fetchMatrimFromMatchPlus();
                     console.log(`✅ קיבלנו ${matrimList.length} מתרימים מנדרים פלוס`);
                 } catch (error) {
+                    const friendly = translateFetchError(error);
                     console.error('❌ שגיאה במשיכת מתרים מנדרים פלוס:', error);
-                    showNedarimStatus('❌ שגיאה במשיכת מתרים מנדרים פלוס: ' + error.message, 'error');
-                    showNotification('❌ שגיאה במשיכת מתרים מנדרים פלוס: ' + error.message, 'error');
+                    showNedarimStatus('❌ שגיאה במשיכת מתרים מנדרים פלוס: ' + friendly, 'error');
+                    showNotification('❌ שגיאה במשיכת מתרים מנדרים פלוס: ' + friendly, 'error');
                     if (btn) {
                         btn.disabled = false;
                         btn.textContent = '🔗 טען מספרי מתרים לפי שם (עמודה B)';
@@ -18093,9 +18096,10 @@
                 }
                 
             } catch (error) {
+                const friendly = translateFetchError(error);
                 console.error('❌ שגיאה בטעינת מספרי מתרים:', error);
-                showNedarimStatus('❌ שגיאה: ' + error.message, 'error');
-                showNotification('❌ שגיאה בטעינת מספרי מתרים: ' + error.message, 'error');
+                showNedarimStatus('❌ שגיאה: ' + friendly, 'error');
+                showNotification('❌ שגיאה בטעינת מספרי מתרים: ' + friendly, 'error');
                 
                 if (btn) {
                     btn.disabled = false;
@@ -18629,8 +18633,9 @@
             } catch (error) {
                 console.error('שגיאה בסנכרון:', error);
                 if (!silent) {
-                showNedarimStatus(`שגיאה בסנכרון: ${error.message}`, 'error');
-                showNotification(`❌ שגיאה בסנכרון עם נדרים פלוס: ${error.message}`);
+                const friendly = translateFetchError(error);
+                showNedarimStatus('שגיאה בסנכרון: ' + friendly, 'error');
+                showNotification('❌ שגיאה בסנכרון עם נדרים פלוס: ' + friendly);
                 }
             } finally {
                 if (!silent && btn) {
@@ -18894,9 +18899,9 @@
                     showNotification(`⚠️ ה-API מחזיר 0. נשתמש בסכום מהתרימים: ${totalFromDonors.toLocaleString()} ש"ח`);
                 }
             } catch (error) {
+                const friendly = translateFetchError(error);
                 console.error('❌ [בדיקה] שגיאה:', error);
-                console.error('❌ [בדיקה] פרטי השגיאה:', error.stack);
-                showNotification(`❌ שגיאה בבדיקת הסכום: ${error.message}`);
+                showNotification('❌ שגיאה בבדיקת הסכום: ' + friendly);
             }
             
             if (!isAutoCall) {
@@ -19979,6 +19984,18 @@
             // }
         }
         
+        // תרגום שגיאות fetch להודעות ברורות למשתמש
+        function translateFetchError(error) {
+            const msg = (error && error.message) || String(error);
+            if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('ERR_NAME_NOT_RESOLVED') || msg.includes('ERR_INTERNET_DISCONNECTED')) {
+                return 'לא ניתן להתחבר לשרת. בדוק: 1) כתובת ה-Web App נכונה 2) חיבור לאינטרנט פעיל 3) פריסת Apps Script קיימת (Deploy → גרסה חדשה)';
+            }
+            if (msg.includes('CORS') || msg.includes('cross-origin')) {
+                return 'שגיאת CORS – וודא שהפריסה מוגדרת ל-"כל אחד" (Anyone)';
+            }
+            return msg;
+        }
+
         // הצגת סטטוס Google Sheets
         function showGoogleSheetsStatus(message, type = 'info') {
             const statusEl = document.getElementById('googleSheetsSyncStatus');
@@ -20041,9 +20058,10 @@
                     throw new Error(result.error || 'תגובה לא תקינה');
                 }
             } catch (error) {
+                const friendly = translateFetchError(error);
                 console.error('שגיאה בבדיקת חיבור:', error);
-                showNotification('❌ שגיאה בחיבור: ' + error.message, 'error');
-                showGoogleSheetsStatus('❌ שגיאה בחיבור: ' + error.message, 'error');
+                showNotification('❌ ' + friendly, 'error');
+                showGoogleSheetsStatus('❌ ' + friendly, 'error');
             }
         }
         
@@ -20106,8 +20124,9 @@
                             throw new Error(`Direct fetch returned ${directResponse.status}`);
                         }
                     } catch (directError) {
-                        console.error('❌ [סנכרון] גם Direct fetch נכשל:', directError.message);
-                        throw new Error('כל הניסיונות נכשלו: ' + directError.message);
+                        const friendly = translateFetchError(directError);
+                        console.error('❌ [סנכרון] גם Direct fetch נכשל:', friendly);
+                        throw new Error('כל הניסיונות נכשלו: ' + friendly);
                     }
                 }
                 
@@ -20421,12 +20440,13 @@
                 return { success: true, donors: loadedDonors, groups: loadedGroups };
                 
             } catch (error) {
+                const friendly = translateFetchError(error);
                 if (!silent) {
                     console.error('❌ [Google Sheets] שגיאה בטעינה:', error);
-                    showNotification('❌ שגיאה בטעינה: ' + error.message, 'error');
-                    showGoogleSheetsStatus('❌ שגיאה בטעינה: ' + error.message, 'error');
+                    showNotification('❌ ' + friendly, 'error');
+                    showGoogleSheetsStatus('❌ ' + friendly, 'error');
                 } else {
-                    console.warn('⚠️ [סנכרון] שגיאה בטעינה שקטה:', error.message);
+                    console.warn('⚠️ [סנכרון] שגיאה בטעינה שקטה:', friendly);
                 }
                 return { success: false };
             }
@@ -20603,7 +20623,10 @@
                 return { success: true };
                 
             } catch (error) {
+                const friendly = translateFetchError(error);
                 console.error('❌ [Google Sheets] שגיאה בשמירה:', error);
+                showNotification('❌ שמירה נכשלה: ' + friendly, 'error');
+                showGoogleSheetsStatus('❌ ' + friendly, 'error');
                 return { success: false, error: error.message };
             }
         }
@@ -20611,7 +20634,7 @@
         // סנכרון דו-כיווני עם Google Sheets
         async function syncWithGoogleSheets() {
             const urlInput = document.getElementById('googleSheetsWebAppUrl');
-            const url = urlInput ? urlInput.value.trim() : googleSheetsWebAppUrl;
+            const url = (urlInput ? urlInput.value.trim() : '') || googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
             
             if (!url) {
                 showNotification('❌ נא להגדיר את כתובת ה-Web App קודם', 'error');
@@ -20705,7 +20728,7 @@
             } catch (error) {
                 console.error('שגיאה בסנכרון עם Google Sheets:', error);
                 showNotification('❌ שגיאה בסנכרון: ' + error.message, 'error');
-                showGoogleSheetsStatus('❌ שגיאה בסנכרון: ' + error.message, 'error');
+                showGoogleSheetsStatus('❌ ' + translateFetchError(error), 'error');
             }
         }
         
