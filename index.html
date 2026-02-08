@@ -14705,8 +14705,7 @@
                 ? NEDARIM_CONFIG.goalFromAPI
                 : Math.max(0, Math.round(parseFloat(matchingGoal) || 0));
             const fromApi = (NEDARIM_CONFIG.apiDataLoaded && NEDARIM_CONFIG.totalDonatedFromAPI != null && NEDARIM_CONFIG.totalDonatedFromAPI >= 0);
-            let totalCollected = fromApi ? NEDARIM_CONFIG.totalDonatedFromAPI : localSum;
-            if (fromApi && goal > 0 && totalCollected > goal * 1.5) totalCollected = localSum;
+            const totalCollected = fromApi ? NEDARIM_CONFIG.totalDonatedFromAPI : localSum;
             const percentage = goal > 0 ? (totalCollected / goal) * 100 : 0;
             const percentDisplay = percentage >= 100 ? Math.round(percentage) : Math.max(0, percentage).toFixed(1);
             
@@ -14840,8 +14839,7 @@
                     ? NEDARIM_CONFIG.goalFromAPI
                     : Math.max(0, Math.round(parseFloat(matchingGoal) || 0));
                 const fromApiT = (NEDARIM_CONFIG.apiDataLoaded && NEDARIM_CONFIG.totalDonatedFromAPI != null && NEDARIM_CONFIG.totalDonatedFromAPI >= 0);
-                let totalCollected = fromApiT ? NEDARIM_CONFIG.totalDonatedFromAPI : localSumT;
-                if (fromApiT && goal > 0 && totalCollected > goal * 1.5) totalCollected = localSumT;
+                const totalCollected = fromApiT ? NEDARIM_CONFIG.totalDonatedFromAPI : localSumT;
 
                 if (goal > 0) {
                     const percentRaw = (totalCollected / goal) * 100;
