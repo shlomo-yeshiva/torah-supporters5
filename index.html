@@ -17196,6 +17196,25 @@
                 console.log(`✅ נמצאו ${matrimList.length} מתרימים בנדרים פלוס`);
                 console.log('דוגמה למתרים ראשון:', matrimList[0]);
 
+                // מניעת סכומים אסטרונומיים מהרובוט: הסרת כפילויות לפי מספר מתרים + בדיקת תקינות סכום
+                const MAX_REASONABLE_AMOUNT_LOAD = 5000000;
+                const origCountLoad = matrimList.length;
+                const byMatrimIdLoad = new Map();
+                for (const matrim of matrimList) {
+                    const matrimId = matrim.Id || matrim.MatrimId || matrim.id || matrim.MatrimNumber || null;
+                    const matrimIdStr = matrimId != null ? String(matrimId).trim() : null;
+                    if (!matrimIdStr || !/^\d+$/.test(matrimIdStr)) continue;
+                    const matrimAmount = parseInt(matrim.Cumule) || parseInt(matrim.Amount) || 0;
+                    const existing = byMatrimIdLoad.get(matrimIdStr);
+                    const existingAmount = existing ? (parseInt(existing.Cumule) || parseInt(existing.Amount) || 0) : Infinity;
+                    if (!existing || matrimAmount < existingAmount) {
+                        byMatrimIdLoad.set(matrimIdStr, matrim);
+                        if (existing) console.warn(`⚠️ [טעינת מתרימים] כפילות מס' ${matrimIdStr} – משתמשים בסכום הנמוך`);
+                    }
+                }
+                matrimList = [...byMatrimIdLoad.values()];
+                if (matrimList.length < origCountLoad) console.log(`📋 [טעינת מתרימים] הוסרו ${origCountLoad - matrimList.length} כפילויות`);
+
                 // יוצר או מעדכן מתרימים במערכת
                 let newMatrim = 0;
                 let updatedMatrim = 0;
@@ -17276,11 +17295,19 @@
                         }
                         if (!existingDonor.originalName) existingDonor.originalName = existingDonor.name;
                         if (existingDonor.originalName !== matrimName && !existingDonor.displayName) existingDonor.name = matrimName;
+                        if (matrimAmount > MAX_REASONABLE_AMOUNT_LOAD) {
+                            console.warn(`⚠️ [טעינת מתרימים] דילוג על עדכון "${matrimName}" (מס' ${matrimIdStr}): סכום ${matrimAmount.toLocaleString()} חריג`);
+                            return;
+                        }
                         existingDonor.amount = matrimAmount;
                         if (matrimGoal > 0) existingDonor.personalGoal = matrimGoal;
                         existingDonor.fromNedarimPlus = true;
                         updatedMatrim++;
                     } else {
+                        if (matrimAmount > MAX_REASONABLE_AMOUNT_LOAD) {
+                            console.warn(`⚠️ [טעינת מתרימים] דילוג על הוספת "${matrimName}" (מס' ${matrimIdStr}): סכום ${matrimAmount.toLocaleString()} חריג`);
+                            return;
+                        }
                         const newDonor = {
                             id: Date.now() + Math.random(),
                             name: matrimName,
@@ -18192,6 +18219,19 @@
                 console.log(pullOnly ? '🔄 מתחיל משיכה מנדרים פלוס (ללא דחיפה לנדרים)...' : '🔄 מתחיל סנכרון דו-כיווני עם נדרים פלוס...');
                 console.log('═══════════════════════════════════════════════════════');
 
+                // טעינה מהגליון לפני סנכרון – הגליון הוא מקור האמת, מונע קפיצות ודריסות
+                const urlForSync = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
+                if (!pullOnly && urlForSync && typeof loadFromGoogleSheets === 'function' && !editingDonorId) {
+                    try {
+                        const loadResult = await loadFromGoogleSheets(true);
+                        if (loadResult && loadResult.success) {
+                            console.log('📥 [סנכרון] נטען מהגליון לפני דחיפה לנדרים');
+                        }
+                    } catch (e) {
+                        console.warn('⚠️ [סנכרון] שגיאה בטעינה מהגליון לפני סנכרון:', e.message || e);
+                    }
+                }
+
                 // ========== שלב 1: דחיפה לנדרים (סנכרון דו-כיווני) ==========
                 if (!pullOnly) {
                 if (NEDARIM_CONFIG.blockPushToNedarim) {
@@ -18538,6 +18578,27 @@
 
                 console.log(`✅ קיבלנו ${matrimList.length} מתרימים מנדרים פלוס`);
 
+                // מניעת סכומים אסטרונומיים מהרובוט: הסרת כפילויות לפי מספר מתרים + בדיקת תקינות סכום
+                const MAX_REASONABLE_AMOUNT = 5000000; // 5 מיליון – סכום מקסימלי סביר למתרים בודד
+                const originalCount = matrimList.length;
+                const byMatrimId = new Map();
+                for (const matrim of matrimList) {
+                    const matrimId = matrim.Id || matrim.MatrimId || matrim.id || matrim.MatrimNumber || null;
+                    const matrimIdStr = matrimId != null ? String(matrimId).trim() : null;
+                    if (!matrimIdStr || !/^\d+$/.test(matrimIdStr)) continue;
+                    const matrimAmount = parseInt(matrim.Cumule) || parseInt(matrim.Amount) || 0;
+                    const existing = byMatrimId.get(matrimIdStr);
+                    const existingAmount = existing ? (parseInt(existing.Cumule) || parseInt(existing.Amount) || 0) : Infinity;
+                    if (!existing || matrimAmount < existingAmount) {
+                        byMatrimId.set(matrimIdStr, matrim);
+                        if (existing) console.warn(`⚠️ כפילות מספר מתרים ${matrimIdStr} ("${(matrim.Name||matrim.name||'').trim()}") – משתמשים בסכום הנמוך`);
+                    }
+                }
+                matrimList = [...byMatrimId.values()];
+                if (matrimList.length < originalCount) {
+                    console.log(`📋 הוסרו ${originalCount - matrimList.length} כפילויות מרשימת נדרים פלוס`);
+                }
+
                 if (matrimList.length === 0) {
                     // אם אין מתרימים ברשימה, זה יכול להיות בגלל הגבלת פניות
                     // לא מאפסים את הסכומים - רק מציגים הודעה
@@ -18626,6 +18687,11 @@
                         if (lastLocalUpdate && (now - lastLocalUpdate < PROTECTION_WINDOW_MS)) {
                             return; // שומר את הסכום המקומי – לא דורס בעדכון מנדרים
                         }
+                        // מניעת דריסה בסכום אסטרונומי – לא מעדכנים אם הסכום מחשיד
+                        if (matrimAmount > MAX_REASONABLE_AMOUNT) {
+                            console.warn(`⚠️ דילוג על עדכון "${matrimName}" (מס' ${matrimIdStr}): סכום ${matrimAmount.toLocaleString()} חריג – נשמר ${(existingDonor.amount||0).toLocaleString()}`);
+                            return;
+                        }
                         const oldAmount = existingDonor.amount || 0;
                         existingDonor.amount = matrimAmount;
                         if (matrimGoal > 0) existingDonor.personalGoal = matrimGoal;
@@ -18649,6 +18715,11 @@
                     // מתרים לא קיים – מוסיפים (לקבוצה "נדרים פלוס" אם קיימת, אחרת לקבוצה הראשונה)
                     if (!groupForNewDonors) {
                         console.warn('⚠️ אין קבוצות – מדלג על הוספת מתרים חדש');
+                        return;
+                    }
+                    // מניעת הוספת מתרים עם סכום אסטרונומי – לא מוסיפים אם הסכום מחשיד
+                    if (matrimAmount > MAX_REASONABLE_AMOUNT) {
+                        console.warn(`⚠️ דילוג על הוספת "${matrimName}" (מס' ${matrimIdStr}): סכום ${matrimAmount.toLocaleString()} חריג`);
                         return;
                     }
                     const newDonor = {
@@ -18689,8 +18760,8 @@
                 saveData();
                 
                 // שומר לגליון כדי שהמספר מתרים יישמר שם
-                const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
-                if (url) {
+                const urlForSave = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
+                if (urlForSave) {
                     try {
                         console.log('💾 שומר לגליון - מספרי מתרים יישמרו בעמודה "nedarimMatrimId" (עמודה 9)');
                         const saveResult = await saveToGoogleSheets();
@@ -20729,7 +20800,7 @@
                 clearTimeout(saveToGoogleSheetsTimeout);
             }
             
-            // שמירה אחרי 2 שניות ללא שינויים נוספים (מאוזן בין מהירות לחסכון)
+            // שמירה אחרי 0.8 שניות ללא שינויים נוספים – גליון כמקור אמת
             saveToGoogleSheetsTimeout = setTimeout(async () => {
                 try {
                     await saveToGoogleSheets();
@@ -20737,7 +20808,7 @@
                 } catch (err) {
                     console.warn('⚠️ שגיאה בשמירה אוטומטית ל-Google Sheets:', err);
                 }
-            }, 2000);
+            }, 800);
         }
         
         // ========== סוף סנכרון Google Sheets ==========
@@ -21155,6 +21226,19 @@
                 try {
                     await loadFromGoogleSheets(!googleSheetsSyncEnabled);
                     console.log('✅ [אתחול] הנתונים נטענו בהצלחה מ-Google Sheets');
+                    // עדכון הסכום הכולל מנדרים פלוס – לתצוגת לייב ולמדדים
+                    try {
+                        const totalData = await fetchTotalFromMatchPlus();
+                        if (totalData && totalData.Donated != null) {
+                            NEDARIM_CONFIG.totalDonatedFromAPI = totalData.Donated;
+                            NEDARIM_CONFIG.goalFromAPI = totalData.Goal || 0;
+                            NEDARIM_CONFIG.apiDataLoaded = true;
+                            if (typeof updateHomeStats === 'function') updateHomeStats();
+                            if (typeof updateLeadersList === 'function') updateLeadersList();
+                            if (typeof updateLiveTargets === 'function') updateLiveTargets();
+                            console.log('✅ [אתחול] סכום כולל מנדרים פלוס:', totalData.Donated.toLocaleString(), 'ש"ח');
+                        }
+                    } catch (e) { console.warn('⚠️ [אתחול] שגיאה בעדכון סכום מנדרים:', e.message || e); }
                 } catch (error) {
                     console.error('❌ [אתחול] שגיאה בטעינה מ-Google Sheets:', error);
                 }
