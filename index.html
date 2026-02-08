@@ -18308,7 +18308,7 @@
                 if (sumOfDeltas < -SAFE_REDUCTION_LIMIT) {
                     const reduction = Math.abs(sumOfDeltas).toLocaleString('he-IL');
                     const msg = `⚠️ הסנכרון יפחית את הסכום הכולל בנדרים פלוס בכ־${reduction} ש"ח. ייתכן שהנתונים המקומיים לא מעודכנים. מומלץ להריץ קודם "טען מתרימים מנדרים פלוס" או "בדוק סכום כולל מ-API".\n\nהאם בכל זאת להמשיך?`;
-                    if (!confirm(msg)) {
+                    if (!silent && !confirm(msg)) {
                         console.warn('🛡️ המשתמש ביטל את הסנכרון – הייתה הפחתה גדולה מהסכום');
                         if (!silent) {
                             showNedarimStatus('הסנכרון בוטל – ייתכן שהנתונים המקומיים לא מעודכנים', 'error');
@@ -18321,7 +18321,7 @@
                 if (sumOfDeltas > SAFE_INCREASE_LIMIT) {
                     const add = sumOfDeltas.toLocaleString('he-IL');
                     const msg = `⚠️ הסנכרון יעלה את הסכום הכולל בנדרים פלוס בכ־${add} ש"ח. וודא שהנתונים המקומיים נכונים לפני שממשיכים.\n\nהאם להמשיך?`;
-                    if (!confirm(msg)) {
+                    if (!silent && !confirm(msg)) {
                         if (!silent) showNedarimStatus('הסנכרון בוטל – עלייה גדולה מהסכום', 'error');
                         if (btn) { btn.disabled = false; btn.textContent = '🔄 סנכרון תרומות לנדרים פלוס'; }
                         return;
@@ -18329,7 +18329,7 @@
                 }
                 if (sumLocal > goalRef * 1.5) {
                     const msg = `⚠️ הסכום המקומי (${sumLocal.toLocaleString()} ש"ח) גבוה בהרבה מהיעד (${goalRef.toLocaleString()} ש"ח). ייתכן שיש באג בנתונים. מומלץ להריץ "טען מתרימים מנדרים פלוס" לפני סנכרון.\n\nהאם בכל זאת להמשיך?`;
-                    if (!confirm(msg)) {
+                    if (!silent && !confirm(msg)) {
                         if (!silent) showNedarimStatus('הסנכרון בוטל – סכום מקומי חשוד', 'error');
                         if (btn) { btn.disabled = false; btn.textContent = '🔄 סנכרון תרומות לנדרים פלוס'; }
                         return;
