@@ -7401,6 +7401,7 @@
             useDirectAPI: true // ✅ קריאות ישירות ל-API (ללא הגבלת קוטה)
         };
         let nedarimSyncTimer = null;
+        let syncWithNedarimPlusInProgress = false; // 🛡️ מנע סנכרונים מקבילים – כל סנכרון שולח דלתות; אם רץ פעמיים = כפילות!
         
         // הגדרת עדכון אוטומטי של נדרים פלוס (נשמרת ב-localStorage)
         let autoSyncNedarimEnabled = false; // ברירת מחדל: מושבת – מונע קפיצות 2000 ₪
@@ -18099,6 +18100,11 @@
         // 🔄 סנכרון דו-כיווני: מעדכן סכומים לנדרים פלוס וגם מושך נתונים משם
         // pullOnly = true: רק מושך מנדרים (לסנכרון אוטומטי) - לא דוחף לנדרים! מונע אינפלציה וחסימת עמותה.
         async function syncWithNedarimPlus(silent = false, pullOnly = false) {
+            if (syncWithNedarimPlusInProgress) {
+                console.warn('⚠️ [סנכרון] סנכרון כבר רץ – דילוג (מונע כפילות דלתות בנדרים פלוס)');
+                return;
+            }
+            syncWithNedarimPlusInProgress = true;
             const btn = document.getElementById('nedarimSyncBtn');
             if (!silent && btn) {
                 btn.disabled = true;
@@ -18677,6 +18683,7 @@
                 showNotification('❌ שגיאה בסנכרון עם נדרים פלוס: ' + friendly);
                 }
             } finally {
+                syncWithNedarimPlusInProgress = false; // 🔓 משחרר מנעול – מונע סנכרונים מקבילים
                 if (!silent && btn) {
                     btn.disabled = false;
                     btn.textContent = '🔄 סנכרון תרומות';
