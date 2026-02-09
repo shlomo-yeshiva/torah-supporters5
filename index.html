@@ -5462,6 +5462,7 @@
                 <button class="nav-item active" data-section="home">דף הבית</button>
                 <button class="nav-item" data-section="liveview">תצוגה בלייב</button>
                 <button class="nav-item" data-section="breakdown">פילוח נתונים</button>
+                <button class="nav-item" data-section="dailyStats">סטטיסטיקות</button>
                 <button class="nav-item" data-section="management">ניהול</button>
                 <button class="nav-item" data-section="raffle">מערכת הגרלות</button>
                 <button class="nav-item" data-section="scouts">ניהול סיירות</button>
@@ -5526,6 +5527,45 @@
                 <div class="home-content">
                     <div class="stats-grid" id="homeStats">
                         <!-- יוטען דינמית -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- סטטיסטיקות לפי תאריך -->
+            <section class="content-section daily-stats-section" id="dailyStatsSection">
+                <div style="padding: 25px; background: #fafafa; min-height: 100%;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 25px;">
+                        <span style="font-size: 24px; color: #666;">📊</span>
+                        <h2 style="margin: 0; font-size: 22px; font-weight: 600; color: #333;">סטטיסטיקות לפי תאריך</h2>
+                    </div>
+                    <p style="color: #666; font-size: 14px; margin-bottom: 20px;">בחר תאריך מימי הקמפיין כדי לראות כמה הוכנס ידנית דרך התוכנה באותו יום. הנתונים נשמרים בגליון האלקטרוני.</p>
+                    
+                    <!-- בורר תאריך -->
+                    <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap; background: white; padding: 15px 20px; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); margin-bottom: 25px;">
+                        <label style="color: #666; font-size: 14px;">תאריך:</label>
+                        <input type="date" id="dailyStatsDateInput" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; cursor: pointer;">
+                        <button onclick="loadDailyStats()" style="background: #4285f4; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">הצג</button>
+                        <span id="dailyStatsStatus" style="font-size: 13px; color: #888;"></span>
+                    </div>
+                    
+                    <!-- כרטיסי KPI -->
+                    <div id="dailyStatsKpiContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 25px;">
+                        <div class="stat-card" style="background: white; border-radius: 10px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-right: 4px solid #4285f4;">
+                            <div style="font-size: 13px; color: #666; margin-bottom: 6px;">סה"כ הוכנס ידנית</div>
+                            <div id="dailyStatsManualSum" style="font-size: 24px; font-weight: 700; color: #28a745;">₪0</div>
+                        </div>
+                        <div class="stat-card" style="background: white; border-radius: 10px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-right: 4px solid #20c997;">
+                            <div style="font-size: 13px; color: #666; margin-bottom: 6px;">מספר פעולות ידניות</div>
+                            <div id="dailyStatsManualCount" style="font-size: 24px; font-weight: 700; color: #333;">0</div>
+                        </div>
+                    </div>
+                    
+                    <!-- טבלת פעולות ידניות -->
+                    <div id="dailyStatsTableContainer" style="background: white; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); overflow: hidden;">
+                        <div style="padding: 15px 20px; background: #f8f9fa; border-bottom: 1px solid #e9ecef; font-weight: 600; color: #495057;">פעולות ידניות בתאריך הנבחר</div>
+                        <div id="dailyStatsTableBody" style="max-height: 400px; overflow-y: auto;">
+                            <div style="padding: 50px 20px; text-align: center; color: #999; font-size: 14px;">בחר תאריך ולחץ "הצג"</div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -7412,8 +7452,8 @@
             totalDonatedFromAPI: null,
             goalFromAPI: null,
             apiDataLoaded: false,
-            // הגדרה לעבודה ישירה עם ה-API (לא דרך Apps Script)
-            useDirectAPI: true, // ✅ קריאות ישירות ל-API (ללא הגבלת קוטה)
+            // סנכרון יציב: רק דרך Google Apps Script (בלי קריאות ישירות ל-API)
+            useDirectAPI: false,
             // 🛑 מצב חירום: חסימת דחיפה לנדרים – נשמר ב-localStorage, מונע אינפלציית סכומים
             get blockPushToNedarim() {
                 return (typeof localStorage !== 'undefined' && localStorage.getItem('nedarimBlockPush') === 'true');
@@ -7438,6 +7478,7 @@
             { id: 'addresses', label: 'כתובות' },
             { id: 'home', label: 'דף הבית' },
             { id: 'breakdown', label: 'פילוח נתונים' },
+            { id: 'dailyStats', label: 'סטטיסטיקות' },
             { id: 'management', label: 'ניהול (כל המדור)' },
             { id: 'management-groups', label: 'ניהול → ניהול קבוצות' },
             { id: 'management-donors', label: 'ניהול → ניהול מתרימים' },
@@ -8993,11 +9034,6 @@
                 }
             });
 
-            const sortSelect = document.getElementById('homeDonorBreakdownSortSelect');
-            if (sortSelect && sortSelect.value !== homeDonorBreakdownSortOrder) {
-                sortSelect.value = homeDonorBreakdownSortOrder || 'amountDesc';
-            }
-
             const sortToggleWrapper = document.getElementById('homeDonorSortToggleWrapper');
             const sortToggle = document.getElementById('homeDonorSortToggle');
             const isSortAvailable = hasHighlights;
@@ -9012,6 +9048,11 @@
                 } else {
                     sortToggle.checked = homeDonorSortHighlightedFirst;
                 }
+            }
+
+            const sortSelect = document.getElementById('homeDonorBreakdownSortSelect');
+            if (sortSelect && sortSelect.value !== homeDonorBreakdownSortOrder) {
+                sortSelect.value = homeDonorBreakdownSortOrder || 'amountDesc';
             }
 
             const exportBtn = document.getElementById('exportBreakdownBtn');
@@ -12348,6 +12389,15 @@
                     setTimeout(() => {
                         initLandingCards();
                     }, 100);
+                } else if (section === 'dailyStats') {
+                    const dateInput = document.getElementById('dailyStatsDateInput');
+                    if (dateInput && !dateInput.value) {
+                        const today = new Date();
+                        dateInput.value = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+                    }
+                    setTimeout(() => {
+                        initLandingCards();
+                    }, 100);
                 } else if (section === 'scouts') {
                     initScoutsSection();
                     setTimeout(() => {
@@ -12500,13 +12550,9 @@
                 ? NEDARIM_CONFIG.goalFromAPI 
                 : matchingGoal;
             const localSum = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
-            // סכום שנאסף – מ-API אם נטען וסביר; אם גבוה פי 1.5 מהיעד, לא סומכים עליו (באג/כפילות) ומשתמשים בסכום המקומי
+            // סכום שנאסף – תמיד מנדרים (מ-API) כשיש נתון, כדי שהתצוגה תתאים למה שמופיע בנדרים פלוס
             const fromApi = (NEDARIM_CONFIG.apiDataLoaded && NEDARIM_CONFIG.totalDonatedFromAPI != null && NEDARIM_CONFIG.totalDonatedFromAPI >= 0);
-            let totalCollected = fromApi ? NEDARIM_CONFIG.totalDonatedFromAPI : localSum;
-            if (fromApi && currentGoal > 0 && totalCollected > currentGoal * 1.5) {
-                console.warn('⚠️ [סטטיסטיקה] סכום מ-API לא סביר:', totalCollected, 'מעל יעד', currentGoal, '– משתמשים בסכום מקומי:', localSum);
-                totalCollected = localSum;
-            }
+            const totalCollected = fromApi ? NEDARIM_CONFIG.totalDonatedFromAPI : localSum;
             
             const matchingPercentage = currentGoal > 0 ? (totalCollected / currentGoal) * 100 : 0;
             const totalDonors = donors.length;
@@ -17185,7 +17231,7 @@
 
                 // מניעת סכומים אסטרונומיים מהרובוט: הסרת כפילויות לפי מספר מתרים + בדיקת תקינות סכום
                 const MAX_REASONABLE_AMOUNT_LOAD = 5000000;
-                const origCount = matrimList.length;
+                const origCountLoad = matrimList.length;
                 const byMatrimIdLoad = new Map();
                 for (const matrim of matrimList) {
                     const matrimId = matrim.Id || matrim.MatrimId || matrim.id || matrim.MatrimNumber || null;
@@ -17200,7 +17246,7 @@
                     }
                 }
                 matrimList = [...byMatrimIdLoad.values()];
-                if (matrimList.length < origCount) console.log(`📋 [טעינת מתרימים] הוסרו ${origCount - matrimList.length} כפילויות`);
+                if (matrimList.length < origCountLoad) console.log(`📋 [טעינת מתרימים] הוסרו ${origCountLoad - matrimList.length} כפילויות`);
 
                 // יוצר או מעדכן מתרימים במערכת
                 let newMatrim = 0;
@@ -18538,22 +18584,15 @@
                 const totalData = await fetchTotalFromMatchPlus();
                 if (totalData && totalData.Donated > 0) {
                     console.log(`✅ עדכנו סכום כולל מ-API: ${totalData.Donated.toLocaleString()} ש"ח, יעד: ${totalData.Goal.toLocaleString()} ש"ח`);
-                    // מעדכן את התצוגות - בלי להפריע לגלילה בתצוגת לייב
                     updateHomeStats();
                     updateLeadersList();
                     updateLiveTargets();
-                    // עדכון Live View גם אם הוא פעיל (עם debounce)
-                    if (typeof updateLiveView === 'function') {
-                        updateLiveView(false); // לא immediate כדי לא להפריע לגלילה
-                    }
+                    if (typeof updateLiveView === 'function') updateLiveView(false);
                 } else {
                     console.log('ℹ️ ה-API מחזיר 0 או לא עובד - נשתמש בסכום מהתרימים אחרי הסנכרון');
                 }
 
-                // משתמש ב-API של MatchPlus עם חיפושים מרובים כדי לקבל את כל המתרימים
-                if (!silent) {
-                showNedarimStatus('מושך את כל המתרימים... (עושה חיפושים מרובים)', 'loading');
-                }
+                if (!silent) showNedarimStatus('מושך את כל המתרימים... (עושה חיפושים מרובים)', 'loading');
                 let matrimList = [];
                 try {
                     matrimList = await fetchMatrimFromMatchPlus();
@@ -18755,8 +18794,8 @@
                 saveData();
                 
                 // שומר לגליון כדי שהמספר מתרים יישמר שם
-                const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
-                if (url) {
+                const urlForSave = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
+                if (urlForSave) {
                     try {
                         console.log('💾 שומר לגליון - מספרי מתרים יישמרו בעמודה "nedarimMatrimId" (עמודה 9)');
                         const saveResult = await saveToGoogleSheets();
@@ -20942,6 +20981,102 @@
             }
         }
         
+        // טעינת סטטיסטיקות ידניות לפי תאריך (מדור סטטיסטיקות)
+        async function loadDailyStats() {
+            const dateInput = document.getElementById('dailyStatsDateInput');
+            const statusEl = document.getElementById('dailyStatsStatus');
+            const sumEl = document.getElementById('dailyStatsManualSum');
+            const countEl = document.getElementById('dailyStatsManualCount');
+            const tableBody = document.getElementById('dailyStatsTableBody');
+            
+            if (!dateInput || !dateInput.value) {
+                if (statusEl) statusEl.textContent = 'נא לבחור תאריך';
+                return;
+            }
+            
+            const date = dateInput.value;
+            if (!googleSheetsWebAppUrl) {
+                if (statusEl) statusEl.textContent = '❌ נא להגדיר את כתובת ה-Web App בלשונית "עדכונים"';
+                return;
+            }
+            
+            if (statusEl) statusEl.textContent = '🔄 טוען...';
+            
+            try {
+                const params = new URLSearchParams();
+                params.append('action', 'getHistory');
+                params.append('startDate', date);
+                params.append('endDate', date);
+                params.append('source', 'manual');
+                
+                const response = await fetch(googleSheetsWebAppUrl + '?' + params.toString(), {
+                    method: 'GET',
+                    redirect: 'follow'
+                });
+                
+                const result = await response.json();
+                
+                if (!result.success && result.error) {
+                    throw new Error(result.error);
+                }
+                
+                const data = result.history || [];
+                const totalAmount = data.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+                
+                if (sumEl) sumEl.textContent = '₪' + totalAmount.toLocaleString('he-IL');
+                if (countEl) countEl.textContent = data.length;
+                if (statusEl) statusEl.textContent = `✅ ${data.length} פעולות ידניות בתאריך ${date}`;
+                
+                // טבלת פעולות
+                const getActionBadge = (action) => {
+                    const badges = {
+                        'payment': '<span style="background: #e8f5e9; color: #2e7d32; padding: 4px 8px; border-radius: 8px; font-size: 12px;">תשלום</span>',
+                        'add': '<span style="background: #e3f2fd; color: #1565c0; padding: 4px 8px; border-radius: 8px; font-size: 12px;">הוספה</span>',
+                        'update': '<span style="background: #fff3e0; color: #e65100; padding: 4px 8px; border-radius: 8px; font-size: 12px;">עדכון</span>',
+                        'delete': '<span style="background: #ffebee; color: #c62828; padding: 4px 8px; border-radius: 8px; font-size: 12px;">מחיקה</span>'
+                    };
+                    return badges[action] || `<span style="background: #f5f5f5; color: #666; padding: 4px 8px; border-radius: 8px; font-size: 12px;">${action || '?'}</span>`;
+                };
+                
+                if (tableBody) {
+                    if (data.length === 0) {
+                        tableBody.innerHTML = '<div style="padding: 40px 20px; text-align: center; color: #999; font-size: 14px;">אין פעולות ידניות בתאריך זה</div>';
+                    } else {
+                        tableBody.innerHTML = `
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: #f8f9fa; border-bottom: 2px solid #e9ecef;">
+                                        <th style="padding: 10px 12px; text-align: right; font-weight: 600; color: #495057; font-size: 12px;">שעה</th>
+                                        <th style="padding: 10px 12px; text-align: right; font-weight: 600; color: #495057; font-size: 12px;">סוג</th>
+                                        <th style="padding: 10px 12px; text-align: right; font-weight: 600; color: #495057; font-size: 12px;">שם</th>
+                                        <th style="padding: 10px 12px; text-align: right; font-weight: 600; color: #495057; font-size: 12px;">פרטים</th>
+                                        <th style="padding: 10px 12px; text-align: right; font-weight: 600; color: #495057; font-size: 12px;">סכום</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.map((entry, i) => `
+                                        <tr style="border-bottom: 1px solid #eee; ${i % 2 === 0 ? '' : 'background: #fafafa;'}">
+                                            <td style="padding: 10px 12px; font-size: 13px; color: #666;">${entry.time || ''}</td>
+                                            <td style="padding: 10px 12px;">${getActionBadge(entry.actionType)}</td>
+                                            <td style="padding: 10px 12px; font-weight: 500; color: #333;">${entry.entityName || ''}</td>
+                                            <td style="padding: 10px 12px; font-size: 12px; color: #888; max-width: 180px; overflow: hidden; text-overflow: ellipsis;">${entry.details || ''}</td>
+                                            <td style="padding: 10px 12px; font-weight: 600; color: ${Number(entry.amount) >= 0 ? '#28a745' : '#dc3545'};">${entry.amount ? '₪' + Number(entry.amount).toLocaleString() : ''}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error('שגיאה בטעינת סטטיסטיקות:', error);
+                if (statusEl) statusEl.textContent = '❌ שגיאה: ' + error.message;
+                if (sumEl) sumEl.textContent = '₪0';
+                if (countEl) countEl.textContent = '0';
+                if (tableBody) tableBody.innerHTML = '<div style="padding: 40px 20px; text-align: center; color: #c62828; font-size: 14px;">שגיאה בטעינה</div>';
+            }
+        }
+        
         // פתיחה/סגירה של תפריט ייצוא
         function toggleHistoryExportMenu() {
             const menu = document.getElementById('historyExportMenu');
@@ -21136,6 +21271,19 @@
                 try {
                     await loadFromGoogleSheets(!googleSheetsSyncEnabled);
                     console.log('✅ [אתחול] הנתונים נטענו בהצלחה מ-Google Sheets');
+                    // עדכון הסכום הכולל מנדרים פלוס – לתצוגת לייב ולמדדים
+                    try {
+                        const totalData = await fetchTotalFromMatchPlus();
+                        if (totalData && totalData.Donated != null) {
+                            NEDARIM_CONFIG.totalDonatedFromAPI = totalData.Donated;
+                            NEDARIM_CONFIG.goalFromAPI = totalData.Goal || 0;
+                            NEDARIM_CONFIG.apiDataLoaded = true;
+                            if (typeof updateHomeStats === 'function') updateHomeStats();
+                            if (typeof updateLeadersList === 'function') updateLeadersList();
+                            if (typeof updateLiveTargets === 'function') updateLiveTargets();
+                            console.log('✅ [אתחול] סכום כולל מנדרים פלוס:', totalData.Donated.toLocaleString(), 'ש"ח');
+                        }
+                    } catch (e) { console.warn('⚠️ [אתחול] שגיאה בעדכון סכום מנדרים:', e.message || e); }
                 } catch (error) {
                     console.error('❌ [אתחול] שגיאה בטעינה מ-Google Sheets:', error);
                 }
