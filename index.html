@@ -6177,6 +6177,12 @@
                                     🔍 בדוק סכום כולל מ-API
                                 </button>
                             </div>
+                            <div style="margin-top: 12px; padding: 12px; background: #f5f5f5; border-radius: 8px; border: 1px solid #ddd;">
+                                <strong>סכום מוצג בנדרים פלוס (מקור API):</strong>
+                                <span id="nedarimRealTotalInSync" style="font-weight: 700; margin-right: 8px;">—</span>
+                                <button type="button" class="btn btn-small" onclick="refreshNedarimRealTotalDisplay()" style="padding: 4px 10px; font-size: 12px;">רענן</button>
+                                <span style="font-size: 12px; color: #666; margin-right: 10px;">מה שבאמת מופיע בנדרים פלוס (כולל סליקות ללא שם מתרים)</span>
+                            </div>
                         </div>
 
                         <div class="nedarim-fix-real-amount-box" style="margin-top: 15px; padding: 15px; background: #e3f2fd; border: 2px solid #1976d2; border-radius: 10px;">
@@ -6195,6 +6201,19 @@
                                 </button>
                             </div>
                             <p id="nedarimFixResult" style="margin: 0; font-size: 12px; min-height: 18px; color: #0d47a1;"></p>
+                        </div>
+
+                        <div class="nedarim-global-reduction-box" style="margin-top: 15px; padding: 15px; background: #fce4ec; border: 2px solid #c2185b; border-radius: 10px;">
+                            <h4 style="margin-bottom: 10px; color: #880e4f;">📉 הורדה גלובלית מכל המתרים</h4>
+                            <p style="margin-bottom: 10px; font-size: 13px; color: #333;">מפחית סכום כולל מכל המתרים (ביחס לסכום של כל אחד). למשל אם בנדרים מוצג מיליון וחצי אבל הסכום האמיתי מהמתרים הוא אחר – הזן כאן כמה להפחית (למשל 300,000) כדי שהסיכום בתוכנה ובנדרים יתאים למציאות.</p>
+                            <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 8px;">
+                                <span id="nedarimGlobalReductionCurrentSum" style="font-weight: 600;">סה"כ נוכחי בתוכנה: —</span>
+                                <input type="number" id="nedarimGlobalReductionInput" min="0" step="1" placeholder="סכום להפחתה (₪)" style="width: 160px; padding: 8px 12px; border: 2px solid #c2185b; border-radius: 6px; font-size: 14px;">
+                                <button type="button" class="btn" onclick="applyGlobalReduction()" style="background: #c2185b; color: white;">
+                                    הורד סכום זה מכל המתרים (יחסי)
+                                </button>
+                            </div>
+                            <p id="nedarimGlobalReductionResult" style="margin: 0; font-size: 12px; min-height: 18px; color: #880e4f;"></p>
                         </div>
 
                         <div class="nedarim-correction-box" style="margin-top: 15px; padding: 15px; background: #fff8e1; border: 2px solid #ff9800; border-radius: 10px;">
@@ -11862,6 +11881,12 @@
                     loadLiveViewSettings();
                 } else if (tabName === 'password') {
                     initPasswordSettingsUI();
+                } else if (tabName === 'sync') {
+                    var ndEl = document.getElementById('nedarimRealTotalInSync');
+                    if (ndEl && NEDARIM_CONFIG.apiDataLoaded && NEDARIM_CONFIG.totalDonatedFromAPI != null && isFinite(NEDARIM_CONFIG.totalDonatedFromAPI)) ndEl.textContent = NEDARIM_CONFIG.totalDonatedFromAPI.toLocaleString('he-IL') + ' ₪';
+                    updateNedarimFixCurrentSumLabel();
+                    if (typeof updateNedarimGlobalReductionCurrentSum === 'function') updateNedarimGlobalReductionCurrentSum();
+                    fillNedarimCorrectionDonorSelect();
                 }
             });
         });
@@ -18117,7 +18142,9 @@
             // מנסה למשוך את הסכום מ-API ולסנכרן את התוכנה לנדרים פלוס (משיכת סכומים per-מתרים)
             try {
                 const totalData = await fetchTotalFromMatchPlus();
-                if (totalData && totalData.Donated >= 0) {
+                var nedarimDisplayEl = document.getElementById('nedarimRealTotalInSync');
+                if (nedarimDisplayEl) nedarimDisplayEl.textContent = (totalData && totalData.Donated != null && isFinite(totalData.Donated)) ? totalData.Donated.toLocaleString('he-IL') + ' ₪' : '—';
+                if (totalData && totalData.Donated != null && isFinite(totalData.Donated)) {
                     console.log('✅ [בדיקה] הסכום מ-API:', totalData.Donated.toLocaleString(), 'ש"ח');
                     console.log('📊 [API - חדש] יעד:', totalData.Goal.toLocaleString(), 'ש"ח');
                     // מיד מרעננים את כל התצוגות עם הסכום מנדרים (מקור האמת) – כולל תצוגת לייב
@@ -18145,7 +18172,7 @@
                         showNotification(`✅ הסכום כבר תואם: ${totalData.Donated.toLocaleString()} ש"ח`, 'success');
                     }
                 } else {
-                    console.error('❌ [בדיקה] ה-API מחזיר 0 או לא עובד');
+                    console.error('❌ [בדיקה] ה-API לא החזיר סכום תקין');
                     console.log('📊 [מקומי] נשתמש בסכום מהתרימים:', totalFromDonors.toLocaleString(), 'ש"ח');
                     showNotification(`⚠️ ה-API מחזיר 0. נשתמש בסכום מהתרימים: ${totalFromDonors.toLocaleString()} ש"ח`);
                 }
@@ -20095,6 +20122,7 @@
             if (!el) return;
             const sum = (donors || []).reduce((s, d) => s + (d.amount || 0), 0);
             el.textContent = 'סה"כ נוכחי בתוכנה: ' + sum.toLocaleString('he-IL') + ' ₪';
+            updateNedarimGlobalReductionCurrentSum();
         }
         
         // התאמת כל הסכומים בתוכנה לסכום האמיתי (יחסית בין המתרימים), ואז סנכרון לנדרים ישלח הפחתות
@@ -20153,6 +20181,103 @@
                 resultEl.style.color = '#0d47a1';
             }
             showNotification('הסכומים בתוכנה עודכנו. הרץ "סנכרון תרומות לנדרים פלוס" כדי לעדכן את נדרים.');
+        }
+        
+        // מרענן את התצוגה "סכום מוצג בנדרים פלוס" (משיכה מ-API ועדכון התצוגה והמערכת)
+        async function refreshNedarimRealTotalDisplay() {
+            var el = document.getElementById('nedarimRealTotalInSync');
+            if (el) el.textContent = '… טוען';
+            try {
+                var totalData = await fetchTotalFromMatchPlus();
+                if (totalData && totalData.Donated != null && isFinite(totalData.Donated)) {
+                    if (el) el.textContent = totalData.Donated.toLocaleString('he-IL') + ' ₪';
+                    NEDARIM_CONFIG.totalDonatedFromAPI = totalData.Donated;
+                    NEDARIM_CONFIG.goalFromAPI = totalData.Goal != null ? totalData.Goal : NEDARIM_CONFIG.goalFromAPI;
+                    NEDARIM_CONFIG.apiDataLoaded = true;
+                    updateHomeStats();
+                    if (typeof updateLiveView === 'function') updateLiveView();
+                    if (typeof updateLeadersList === 'function') updateLeadersList();
+                    showNotification('סכום נדרים פלוס עודכן: ' + totalData.Donated.toLocaleString('he-IL') + ' ₪', 'success');
+                } else {
+                    if (el) el.textContent = '—';
+                    showNotification('לא התקבל סכום מ-API', 'warning');
+                }
+            } catch (err) {
+                if (el) el.textContent = '—';
+                showNotification('שגיאה: ' + (err.message || err), 'error');
+            }
+        }
+        
+        // עדכון תווית סה"כ בתיבת הורדה גלובלית
+        function updateNedarimGlobalReductionCurrentSum() {
+            var el = document.getElementById('nedarimGlobalReductionCurrentSum');
+            if (!el) return;
+            var sum = (donors || []).reduce(function(s, d) { return s + (d.amount || 0); }, 0);
+            el.textContent = 'סה"כ נוכחי בתוכנה: ' + sum.toLocaleString('he-IL') + ' ₪';
+        }
+        
+        // הורדה גלובלית: מפחית X ₪ מכל המתרים (ביחס לסכום של כל אחד)
+        function applyGlobalReduction() {
+            var inputEl = document.getElementById('nedarimGlobalReductionInput');
+            var resultEl = document.getElementById('nedarimGlobalReductionResult');
+            var amountToReduce = inputEl ? Math.round(parseFloat(inputEl.value) || 0) : 0;
+            if (amountToReduce <= 0) {
+                if (resultEl) { resultEl.textContent = 'נא להזין סכום להפחתה (מספר חיובי).'; resultEl.style.color = '#c62828'; }
+                return;
+            }
+            if (!donors || donors.length === 0) {
+                if (resultEl) { resultEl.textContent = 'אין מתרימים במערכת.'; resultEl.style.color = '#c62828'; }
+                return;
+            }
+            var totalNow = donors.reduce(function(s, d) { return s + (d.amount || 0); }, 0);
+            if (totalNow <= 0) {
+                if (resultEl) { resultEl.textContent = 'סה"כ נוכחי הוא 0 – אין מה להפחית.'; resultEl.style.color = '#c62828'; }
+                return;
+            }
+            if (amountToReduce >= totalNow) {
+                donors.forEach(function(d) { d.amount = 0; });
+                ensureDonorsNormalized();
+                saveData();
+                updateDonorsList();
+                updateGroupsDisplay();
+                updateHomeStats();
+                if (typeof updateLiveView === 'function') updateLiveView();
+                if (typeof updateLeadersList === 'function') updateLeadersList();
+                updateNedarimFixCurrentSumLabel();
+                updateNedarimGlobalReductionCurrentSum();
+                if (resultEl) {
+                    resultEl.textContent = '✅ הופחתו את כל הסכומים (סה"כ היה ' + totalNow.toLocaleString('he-IL') + ' ₪). כעת הרץ "סנכרון תרומות לנדרים פלוס" כדי לעדכן את נדרים.';
+                    resultEl.style.color = '#880e4f';
+                }
+                showNotification('כל הסכומים אופסו. הרץ סנכרון תרומות לנדרים פלוס.');
+                return;
+            }
+            var targetTotal = totalNow - amountToReduce;
+            var factor = targetTotal / totalNow;
+            donors.forEach(function(d) {
+                var prev = d.amount || 0;
+                d.amount = Math.max(0, Math.round(prev * factor));
+            });
+            var newSum = donors.reduce(function(s, d) { return s + (d.amount || 0); }, 0);
+            var diff = targetTotal - newSum;
+            if (diff !== 0) {
+                var firstWithAmount = donors.find(function(d) { return (d.amount || 0) > 0; });
+                if (firstWithAmount) firstWithAmount.amount = Math.max(0, (firstWithAmount.amount || 0) + diff);
+            }
+            ensureDonorsNormalized();
+            saveData();
+            updateDonorsList();
+            updateGroupsDisplay();
+            updateHomeStats();
+            if (typeof updateLiveView === 'function') updateLiveView();
+            if (typeof updateLeadersList === 'function') updateLeadersList();
+            updateNedarimFixCurrentSumLabel();
+            updateNedarimGlobalReductionCurrentSum();
+            if (resultEl) {
+                resultEl.textContent = '✅ הופחתו ' + amountToReduce.toLocaleString('he-IL') + ' ₪. סה"כ חדש: ' + targetTotal.toLocaleString('he-IL') + ' ₪. הרץ "סנכרון תרומות לנדרים פלוס" כדי לעדכן את נדרים.';
+                resultEl.style.color = '#880e4f';
+            }
+            showNotification('הופחתו ' + amountToReduce.toLocaleString('he-IL') + ' ₪ מכל המתרים. הרץ סנכרון תרומות לנדרים.');
         }
         
         // ממלא את רשימת המתרימים בתיבת תיקון ההפחתה (מתרים עם מספר מתרים תקין)
