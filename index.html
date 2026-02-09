@@ -5918,42 +5918,46 @@
                     </div>
                 </div>
 
-                <!-- רובוט אוטומטי - גרסה חדשה ופשוטה -->
+                <!-- רובוט אוטומטי - גרסה מתקדמת עם אפשרויות -->
                 <div class="management-content" id="robotContent">
                     <div style="padding: 25px; background: #fafafa; min-height: 100%;">
-                        <h3 style="margin-bottom: 12px; color: var(--brown-dark);">עדכון אוטומטי</h3>
+                        <h3 style="margin-bottom: 12px; color: var(--brown-dark);">רובוט אוטומטי</h3>
                         <p style="font-size: 14px; color: var(--muted); margin-bottom: 20px; line-height: 1.5;">
-                            הרובוט מעדכן את הנתונים <strong>רק כלפי חוץ</strong> – שומר לגליון ודוחף לנדרים פלוס. <strong>לא טוען ולא דורס</strong> נתונים מהגליון או מנדרים. הנתונים שלך בתוכנה הם מקור האמת.
+                            הגדר את הרובוט לבצע פעולות אוטומטיות בפרקי זמן קבועים. בחר אילו פעולות להפעיל ובאיזה סדר.
                         </p>
                         
-                        <div style="background: #e8f5e9; border: 1px solid #4caf50; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #2e7d32;">
-                            <strong>✓ בטוח:</strong> בכל ריצה: 1) שמירה לגליון 2) דחיפה לנדרים 3) עדכון הסכום הכולל. אין טעינה – אין קפיצות.
-                        </div>
-                        
                         <div style="margin-bottom: 25px; display: flex; gap: 12px; flex-wrap: wrap;">
-                            <button class="btn btn-success" id="robotStartBtn" onclick="var cb=document.getElementById('robotEnabledCheckbox');if(cb)cb.checked=true;window.startRobot&&window.startRobot()" style="padding: 16px 32px; font-size: 18px; font-weight: 600; min-width: 200px; border-radius: 10px; box-shadow: 0 2px 8px rgba(16,185,129,0.3);">▶️ הפעל עדכון אוטומטי</button>
-                            <button class="btn btn-danger" id="robotStopBtn" onclick="var cb=document.getElementById('robotEnabledCheckbox');if(cb)cb.checked=false;window.stopRobot&&window.stopRobot()" style="padding: 16px 32px; font-size: 18px; font-weight: 600; min-width: 200px; border-radius: 10px; box-shadow: 0 2px 8px rgba(239,68,68,0.3); display: none;">⏹️ עצור</button>
+                            <button class="btn btn-success" id="robotStartBtn" onclick="var cb=document.getElementById('robotEnabledCheckbox');if(cb)cb.checked=true;window.startRobot&&window.startRobot()" style="padding: 16px 32px; font-size: 18px; font-weight: 600; min-width: 200px; border-radius: 10px; box-shadow: 0 2px 8px rgba(16,185,129,0.3);">▶️ הפעל רובוט</button>
+                            <button class="btn btn-danger" id="robotStopBtn" onclick="var cb=document.getElementById('robotEnabledCheckbox');if(cb)cb.checked=false;window.stopRobot&&window.stopRobot()" style="padding: 16px 32px; font-size: 18px; font-weight: 600; min-width: 200px; border-radius: 10px; box-shadow: 0 2px 8px rgba(239,68,68,0.3); display: none;">⏹️ עצור רובוט</button>
                         </div>
                         
                         <div style="background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border);">
                             <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; margin-bottom: 18px; font-size: 15px;">
                                 <input type="checkbox" id="robotEnabledCheckbox" onchange="saveRobotSettings()" style="width: 20px; height: 20px; cursor: pointer;">
-                                <span>הפעל עדכון אוטומטי</span>
+                                <span>הפעל רובוט אוטומטי</span>
                             </label>
                             
                             <div id="robotSettingsPanel" style="display: block; padding-top: 20px; border-top: 1px solid var(--border);">
                                 <div style="margin-bottom: 20px;">
-                                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text);">כל כמה דקות להריץ</label>
+                                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text);">תדירות כללית</label>
                                     <div style="display: flex; align-items: center; gap: 10px;">
                                         <input type="number" id="robotIntervalInput" min="5" max="120" value="10" onchange="updateRobotIntervalDisplay(); saveRobotSettings();" style="width: 80px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: white;">
                                         <span>דקות (מינימום 5)</span>
                                     </div>
-                                    <p style="margin-top: 8px; font-size: 13px; color: var(--muted);"><span id="robotIntervalDisplay">העדכון יופעל כל 10 דקות</span></p>
+                                    <p style="margin-top: 8px; font-size: 13px; color: var(--muted);"><span id="robotIntervalDisplay">הרובוט יריץ את כל הפעולות כל 10 דקות</span></p>
+                                </div>
+                                
+                                <div style="margin-bottom: 20px;">
+                                    <label style="display: block; margin-bottom: 12px; font-weight: 600; color: var(--text);">פעולות זמינות</label>
+                                    <p style="font-size: 13px; color: var(--muted); margin-bottom: 12px;">בחר אילו פעולות להפעיל וגרור כדי לשנות את הסדר:</p>
+                                    <div id="robotActionsList" style="display: flex; flex-direction: column; gap: 8px;">
+                                        <!-- ימולא דינמית -->
+                                    </div>
                                 </div>
                                 
                                 <div style="background: #e3f2fd; border: 1px solid #2196f3; border-radius: 8px; padding: 12px;">
                                     <div style="font-weight: 600; margin-bottom: 4px; color: #1565c0;">סטטוס</div>
-                                    <div id="robotStatus" style="font-size: 14px; color: #0d47a1;">העדכון האוטומטי כבוי</div>
+                                    <div id="robotStatus" style="font-size: 14px; color: #0d47a1;">הרובוט כבוי</div>
                                     <div id="robotNextRun" style="font-size: 12px; color: #666; margin-top: 4px; display: none;">הפעלה הבאה: <span id="robotNextRunTime">—</span></div>
                                 </div>
                             </div>
@@ -15550,9 +15554,81 @@
             if (window.__robotInited) return;
             window.__robotInited = true;
             let robotEnabled = false, robotTimer = null, robotNextRunTime = null, robotHistory = [];
-            let robotSettings = { enabled: false, intervalMinutes: 10 };
+            let robotSettings = { 
+                enabled: false, 
+                intervalMinutes: 10,
+                actions: [
+                    { id: 'saveToSheets', name: 'שמירה לגליון האלקטרוני', enabled: true, order: 1 },
+                    { id: 'pushToNedarim', name: 'דחיפה לנדרים פלוס', enabled: true, order: 2 },
+                    { id: 'checkTotal', name: 'בדיקת סכום כולל מ-API', enabled: true, order: 3 },
+                    { id: 'pullFromNedarim', name: 'משיכה מנדרים פלוס', enabled: false, order: 4 },
+                    { id: 'loadFromSheets', name: 'טעינה מגליון האלקטרוני', enabled: false, order: 5 }
+                ]
+            };
             const ROBOT_COOLDOWN_MS = 5 * 60 * 1000;
             let lastRobotRunEnd = 0;
+
+            // רשימת פעולות אפשריות
+            const robotActionsConfig = {
+                'saveToSheets': {
+                    name: 'שמירה לגליון האלקטרוני',
+                    description: 'שומר את כל הנתונים לגליון Google Sheets',
+                    icon: '💾',
+                    func: async () => {
+                        if (typeof saveToGoogleSheets === 'function') {
+                            await saveToGoogleSheets();
+                        }
+                    }
+                },
+                'pushToNedarim': {
+                    name: 'דחיפה לנדרים פלוס',
+                    description: 'שולח את הנתונים מהתוכנה לנדרים פלוס',
+                    icon: '📤',
+                    func: async () => {
+                        if (typeof syncWithNedarimPlus === 'function') {
+                            await syncWithNedarimPlus(true);
+                        }
+                    }
+                },
+                'checkTotal': {
+                    name: 'בדיקת סכום כולל מ-API',
+                    description: 'בודק ומעדכן את הסכום הכולל מנדרים פלוס',
+                    icon: '🔍',
+                    func: async () => {
+                        if (typeof fetchTotalFromMatchPlus === 'function') {
+                            const totalData = await fetchTotalFromMatchPlus();
+                            if (totalData && totalData.Donated != null) {
+                                if (typeof NEDARIM_CONFIG !== 'undefined') { 
+                                    NEDARIM_CONFIG.totalDonatedFromAPI = totalData.Donated; 
+                                    NEDARIM_CONFIG.goalFromAPI = totalData.Goal || 0; 
+                                    NEDARIM_CONFIG.apiDataLoaded = true; 
+                                }
+                                if (typeof updateHomeStats === 'function') updateHomeStats();
+                            }
+                        }
+                    }
+                },
+                'pullFromNedarim': {
+                    name: 'משיכה מנדרים פלוס',
+                    description: 'מושך את כל המתרים מנדרים פלוס ומעדכן את התוכנה',
+                    icon: '📥',
+                    func: async () => {
+                        if (typeof syncWithNedarimPlus === 'function') {
+                            await syncWithNedarimPlus(true);
+                        }
+                    }
+                },
+                'loadFromSheets': {
+                    name: 'טעינה מגליון האלקטרוני',
+                    description: 'טוען את הנתונים מגליון Google Sheets',
+                    icon: '📋',
+                    func: async () => {
+                        if (typeof loadFromGoogleSheets === 'function') {
+                            await loadFromGoogleSheets(true);
+                        }
+                    }
+                }
+            };
 
             function addRobotHistory(msg, type) {
                 robotHistory.unshift({ t: new Date().toLocaleTimeString('he-IL'), msg, type: type || 'info' });
@@ -15562,36 +15638,109 @@
                 inner.innerHTML = robotHistory.slice(0, 80).map(h => { const c = { success: '#22c55e', error: '#ef4444', warning: '#f59e0b', info: '#6b7280' }[h.type] || '#6b7280'; return '<div style="margin:4px 0;color:' + c + '">[' + h.t + '] ' + h.msg + '</div>'; }).join('');
             }
 
+            function renderRobotActions() {
+                const container = document.getElementById('robotActionsList');
+                if (!container) return;
+                
+                // ממיין לפי סדר
+                const sortedActions = [...robotSettings.actions].sort((a, b) => a.order - b.order);
+                
+                container.innerHTML = sortedActions.map((action, index) => {
+                    const config = robotActionsConfig[action.id];
+                    if (!config) return '';
+                    
+                    return `
+                        <div class="robot-action-item" data-action-id="${action.id}" style="
+                            display: flex; align-items: center; gap: 12px; 
+                            padding: 12px; background: ${action.enabled ? '#f0f9ff' : '#f9fafb'}; 
+                            border: 1px solid ${action.enabled ? '#2196f3' : '#e5e7eb'}; 
+                            border-radius: 8px; cursor: move;">
+                            <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                                <span style="font-size: 18px;">${config.icon}</span>
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 600; color: var(--text);">${config.name}</div>
+                                    <div style="font-size: 12px; color: var(--muted);">${config.description}</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                    <input type="checkbox" class="robot-action-enabled" data-action-id="${action.id}" ${action.enabled ? 'checked' : ''} onchange="toggleRobotAction('${action.id}')" style="width: 18px; height: 18px; cursor: pointer;">
+                                    <span style="font-size: 13px; color: var(--text);">פעיל</span>
+                                </label>
+                                <div style="display: flex; flex-direction: column; gap: 2px;">
+                                    <button onclick="moveRobotAction('${action.id}', 'up')" style="padding: 4px 8px; border: 1px solid var(--border); background: white; border-radius: 4px; cursor: pointer; font-size: 12px;" ${index === 0 ? 'disabled' : ''}>▲</button>
+                                    <button onclick="moveRobotAction('${action.id}', 'down')" style="padding: 4px 8px; border: 1px solid var(--border); background: white; border-radius: 4px; cursor: pointer; font-size: 12px;" ${index === sortedActions.length - 1 ? 'disabled' : ''}>▼</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            function toggleRobotAction(actionId) {
+                const action = robotSettings.actions.find(a => a.id === actionId);
+                if (action) {
+                    action.enabled = !action.enabled;
+                    saveRobotSettings(true);
+                    renderRobotActions();
+                }
+            }
+
+            function moveRobotAction(actionId, direction) {
+                const actionIndex = robotSettings.actions.findIndex(a => a.id === actionId);
+                if (actionIndex === -1) return;
+                
+                const newIndex = direction === 'up' ? actionIndex - 1 : actionIndex + 1;
+                if (newIndex < 0 || newIndex >= robotSettings.actions.length) return;
+                
+                // מחליף את הסדר
+                const tempOrder = robotSettings.actions[actionIndex].order;
+                robotSettings.actions[actionIndex].order = robotSettings.actions[newIndex].order;
+                robotSettings.actions[newIndex].order = tempOrder;
+                
+                saveRobotSettings(true);
+                renderRobotActions();
+            }
+
             async function runRobotCycle() {
                 if (!robotEnabled) return;
                 const now = Date.now();
                 if (lastRobotRunEnd > 0 && (now - lastRobotRunEnd) < ROBOT_COOLDOWN_MS) {
-                    console.log('🤖 [עדכון אוטומטי] דילוג – קודם הסתיים לפני פחות מ-5 דקות');
+                    console.log('🤖 [רובוט] דילוג – קודם הסתיים לפני פחות מ-5 דקות');
                     return;
                 }
-                addRobotHistory('מתחיל עדכון...', 'info');
+                addRobotHistory('מתחיל מחזור רובוט...', 'info');
                 try {
                     if (typeof ensureDonorsNormalized === 'function') ensureDonorsNormalized();
-                    if (typeof saveToGoogleSheets === 'function') {
-                        addRobotHistory('שמירה לגליון...', 'info');
-                        await saveToGoogleSheets();
-                        addRobotHistory('נשמר לגליון', 'success');
-                    }
-                    if (typeof syncWithNedarimPlus === 'function') {
-                        addRobotHistory('דחיפה לנדרים פלוס...', 'info');
-                        await syncWithNedarimPlus(true);
-                        addRobotHistory('נדרים פלוס עודכן', 'success');
-                    }
-                    if (typeof fetchTotalFromMatchPlus === 'function') {
-                        const totalData = await fetchTotalFromMatchPlus();
-                        if (totalData && totalData.Donated != null) {
-                            if (typeof NEDARIM_CONFIG !== 'undefined') { NEDARIM_CONFIG.totalDonatedFromAPI = totalData.Donated; NEDARIM_CONFIG.goalFromAPI = totalData.Goal || 0; NEDARIM_CONFIG.apiDataLoaded = true; }
-                            if (typeof updateHomeStats === 'function') updateHomeStats();
+                    
+                    // ממיין את הפעולות לפי סדר ומריץ רק את הפעולות הפעילות
+                    const activeActions = [...robotSettings.actions]
+                        .filter(a => a.enabled)
+                        .sort((a, b) => a.order - b.order);
+                    
+                    console.log(`🤖 [רובוט] מריץ ${activeActions.length} פעולות בסדר:`, activeActions.map(a => a.name).join(' → '));
+                    
+                    for (const action of activeActions) {
+                        const config = robotActionsConfig[action.id];
+                        if (!config || !config.func) continue;
+                        
+                        try {
+                            addRobotHistory(`${config.icon} ${config.name}...`, 'info');
+                            await config.func();
+                            addRobotHistory(`✅ ${config.name} הושלם`, 'success');
+                        } catch (error) {
+                            addRobotHistory(`❌ שגיאה ב-${config.name}: ${error.message || error}`, 'error');
+                            console.error(`❌ [רובוט] שגיאה ב-${config.name}:`, error);
                         }
+                        
+                        // ממתין קצת בין פעולות
+                        await new Promise(resolve => setTimeout(resolve, 500));
                     }
-                    addRobotHistory('הושלם בהצלחה', 'success');
+                    
+                    addRobotHistory('✅ מחזור רובוט הושלם בהצלחה', 'success');
                 } catch (e) {
-                    addRobotHistory('שגיאה: ' + (e.message || e), 'error');
+                    addRobotHistory('❌ שגיאה במחזור רובוט: ' + (e.message || e), 'error');
+                    console.error('❌ [רובוט] שגיאה:', e);
                 }
                 lastRobotRunEnd = Date.now();
             }
@@ -15602,10 +15751,28 @@
                         robotSettings.intervalMinutes = Math.max(5, Math.min(120, parseInt(saved.intervalMinutes, 10) || parseInt(saved.interval, 10) || 10));
                         robotSettings.enabled = saved.enabled === true;
                         robotEnabled = robotSettings.enabled;
+                        
+                        // טוען את רשימת הפעולות אם קיימת
+                        if (saved.actions && Array.isArray(saved.actions)) {
+                            // מעדכן את הפעולות הקיימות ושומר את החדשות
+                            const savedActionIds = new Set(saved.actions.map(a => a.id));
+                            const newActions = robotSettings.actions.map(defaultAction => {
+                                const savedAction = saved.actions.find(a => a.id === defaultAction.id);
+                                return savedAction || defaultAction;
+                            });
+                            // מוסיף פעולות חדשות שלא היו קיימות
+                            saved.actions.forEach(savedAction => {
+                                if (!robotSettings.actions.find(a => a.id === savedAction.id)) {
+                                    newActions.push(savedAction);
+                                }
+                            });
+                            robotSettings.actions = newActions;
+                        }
                     }
                     const inp = document.getElementById('robotIntervalInput');
                     if (inp) inp.value = robotSettings.intervalMinutes;
                     updateRobotIntervalDisplay();
+                    renderRobotActions();
                     updateRobotUI();
                     if (robotEnabled) setTimeout(startRobot, 300);
                 });
@@ -15625,7 +15792,10 @@
 
             function updateRobotIntervalDisplay() {
                 const display = document.getElementById('robotIntervalDisplay');
-                if (display) display.textContent = 'העדכון יופעל כל ' + (robotSettings.intervalMinutes || 10) + ' דקות';
+                if (display) {
+                    const activeCount = robotSettings.actions.filter(a => a.enabled).length;
+                    display.textContent = `הרובוט יריץ ${activeCount} פעולות כל ${robotSettings.intervalMinutes || 10} דקות`;
+                }
             }
 
             function updateRobotUI() {
@@ -15636,7 +15806,10 @@
                 const statusEl = document.getElementById('robotStatus');
                 if (startBtn) startBtn.style.display = robotEnabled ? 'none' : 'block';
                 if (stopBtn) stopBtn.style.display = robotEnabled ? 'block' : 'none';
-                if (statusEl) statusEl.textContent = robotEnabled ? 'העדכון האוטומטי פעיל' : 'העדכון האוטומטי כבוי';
+                if (statusEl) {
+                    const activeCount = robotSettings.actions.filter(a => a.enabled).length;
+                    statusEl.textContent = robotEnabled ? `הרובוט פעיל (${activeCount} פעולות מופעלות)` : 'הרובוט כבוי';
+                }
                 const nextRunEl = document.getElementById('robotNextRun');
                 const nextRunTimeEl = document.getElementById('robotNextRunTime');
                 if (nextRunEl && nextRunTimeEl) {
@@ -15663,7 +15836,8 @@
                     runRobotCycle();
                     robotNextRunTime = Date.now() + ms;
                 }, ms);
-                addRobotHistory('העדכון האוטומטי הופעל – כל ' + (robotSettings.intervalMinutes || 10) + ' דקות', 'success');
+                const activeCount = robotSettings.actions.filter(a => a.enabled).length;
+                addRobotHistory(`הרובוט הופעל – ${activeCount} פעולות כל ${robotSettings.intervalMinutes || 10} דקות`, 'success');
                 updateRobotUI();
             }
 
@@ -15673,7 +15847,7 @@
                 robotSettings.enabled = false;
                 robotNextRunTime = null;
                 storageSetItem('robotSettings', robotSettings);
-                addRobotHistory('העדכון האוטומטי הופסק', 'info');
+                addRobotHistory('הרובוט הופסק', 'info');
                 updateRobotUI();
             }
 
@@ -15682,12 +15856,12 @@
             window.saveRobotSettings = saveRobotSettings;
             window.updateRobotUI = updateRobotUI;
             window.updateRobotIntervalDisplay = updateRobotIntervalDisplay;
-            window.toggleContinuousMode = function() {};
-            window.toggleRobotAction = function() {};
+            window.toggleRobotAction = toggleRobotAction;
+            window.moveRobotAction = moveRobotAction;
             window.isRobotActive = function() { return robotEnabled; };
             setInterval(function() { if (robotEnabled) updateRobotUI(); }, 1000);
             loadRobotSettings();
-            console.log('🤖 [עדכון אוטומטי] אותחל');
+            console.log('🤖 [רובוט] אותחל עם אפשרויות מתקדמות');
             }
             window.initRobot = initRobot;
 
@@ -18314,9 +18488,8 @@
         }
 
         // ========== סנכרון תרומות לנדרים פלוס ==========
-        // מטרה: סנכרון דו-כיווני - מושך נתונים מנדרים פלוס ודוחף נתונים מהתוכנה לנדרים פלוס
-        // שלב 1: מושך נתונים מנדרים פלוס ומעדכן את המתרים המקומיים
-        // שלב 2: דוחף את הנתונים האמיתיים מהתוכנה לנדרים פלוס
+        // מטרה: מושך נתונים מנדרים פלוס ומעדכן את המתרים המקומיים (pull-only)
+        // לא דוחף שינויים מקומיים לנדרים - רק משקף את מה שקיים בנדרים
         async function syncWithNedarimPlus(silent = false) {
             const btn = document.getElementById('nedarimSyncBtn');
             if (!silent && btn) {
@@ -18601,129 +18774,6 @@
                 
                 // סנכרון לבסיס הנתונים אחרי העדכון
                 await syncAllDataToDatabase();
-                
-                // ========== שלב 2: דחיפת נתונים מהתוכנה לנדרים פלוס ==========
-                // שולח את הנתונים האמיתיים מהתוכנה לנדרים פלוס
-                if (!NEDARIM_CONFIG.blockPushToNedarim) {
-                    if (!silent) {
-                        showNedarimStatus('שולח נתונים מהתוכנה לנדרים פלוס...', 'loading');
-                    }
-                    
-                    // יוצר מפה של הסכומים הנוכחיים בנדרים פלוס
-                    const nedarimAmountsMap = new Map();
-                    matrimList.forEach(matrim => {
-                        const matrimId = matrim.Id || matrim.MatrimId || matrim.id || matrim.MatrimNumber || null;
-                        const matrimAmount = parseInt(matrim.Cumule) || parseInt(matrim.Amount) || 0;
-                        if (matrimId !== null && matrimId !== undefined) {
-                            nedarimAmountsMap.set(String(matrimId), matrimAmount);
-                        }
-                    });
-                    
-                    // מסנן מתרים שיש להם מספר מתרים תקין וסכום בתוכנה
-                    const donorsToPush = donors.filter(d => {
-                        const localAmount = d.amount || 0;
-                        if (localAmount <= 0) return false; // מדלג על מתרים עם סכום 0
-                        
-                        const matrimIdStr = d.nedarimMatrimId ? String(d.nedarimMatrimId).trim() : null;
-                        if (!matrimIdStr || !/^\d+$/.test(matrimIdStr)) {
-                            return false; // אין מספר מתרים תקין
-                        }
-                        
-                        return true;
-                    });
-                    
-                    console.log(`📤 שולח ${donorsToPush.length} מתרים מהתוכנה לנדרים פלוס...`);
-                    
-                    let pushedCount = 0;
-                    let skippedPushCount = 0;
-                    let failedPushCount = 0;
-                    
-                    for (const donor of donorsToPush) {
-                        const localAmount = donor.amount || 0;
-                        const matrimIdStr = donor.nedarimMatrimId ? String(donor.nedarimMatrimId).trim() : null;
-                        const nedarimAmount = nedarimAmountsMap.get(matrimIdStr) || 0;
-                        
-                        // מחשב את הדלתה (הסכום בתוכנה פחות הסכום בנדרים)
-                        const deltaToSend = localAmount - nedarimAmount;
-                        
-                        // אם אין שינוי, לא צריך לשלוח
-                        if (deltaToSend === 0) {
-                            skippedPushCount++;
-                            continue;
-                        }
-                        
-                        // שולח את העדכון לנדרים פלוס
-                        try {
-                            console.log(`🔄 שולח לנדרים פלוס: ${donor.name || 'ללא שם'} (מס' ${matrimIdStr}) - ${nedarimAmount.toLocaleString()} → ${localAmount.toLocaleString()} (דלתה: ${deltaToSend > 0 ? '+' : ''}${deltaToSend.toLocaleString()} ₪)`);
-                            
-                            const result = await updateNedarimAmountViaSheets(donor, deltaToSend, 'סנכרון תרומות - עדכון מהתוכנה');
-                            if (result && result.success && !result.skipped) {
-                                pushedCount++;
-                                console.log(`✅ נשלח בהצלחה לנדרים פלוס: ${donor.name || 'ללא שם'} - דלתה: ${deltaToSend > 0 ? '+' : ''}${deltaToSend.toLocaleString()} ₪`);
-                            } else if (result && result.skipped) {
-                                skippedPushCount++;
-                                console.log(`ℹ️ נדלג על שליחה: ${donor.name || 'ללא שם'} - ${result.message || 'אין צורך בעדכון'}`);
-                            } else {
-                                failedPushCount++;
-                                console.warn(`⚠️ נכשל בשליחה: ${donor.name || 'ללא שם'} - ${result?.error || result?.message || 'שגיאה לא ידועה'}`);
-                            }
-                        } catch (error) {
-                            failedPushCount++;
-                            console.error(`❌ שגיאה בשליחה ${donor.name || 'ללא שם'}:`, error);
-                        }
-                        
-                        // ממתין קצת בין עדכונים כדי לא להעמיס על השרת
-                        await new Promise(resolve => setTimeout(resolve, 300));
-                    }
-                    
-                    // מעדכן את ההודעה עם תוצאות הדחיפה
-                    if (pushedCount > 0 || failedPushCount > 0) {
-                        let pushMessage = message;
-                        if (pushedCount > 0) {
-                            pushMessage += ` | נשלחו ${pushedCount} מתרים לנדרים פלוס`;
-                        }
-                        if (failedPushCount > 0) {
-                            pushMessage += ` | ${failedPushCount} מתרים נכשלו בשליחה`;
-                        }
-                        
-                        if (!silent) {
-                            showNedarimStatus(pushMessage, 'success');
-                            if (pushedCount > 0) {
-                                showNotification(`✅ ${pushMessage}`, 'success');
-                            } else if (failedPushCount > 0) {
-                                showNotification(`⚠️ ${pushMessage}`, 'warning');
-                            }
-                        }
-                    }
-                    
-                    console.log(`📊 סיכום דחיפה: ${pushedCount} נשלחו, ${skippedPushCount} נדלגו, ${failedPushCount} נכשלו`);
-                    
-                    // שומר את הנתונים לגליון האלקטרוני אחרי הדחיפה
-                    if (pushedCount > 0) {
-                        try {
-                            await saveToGoogleSheets();
-                            console.log('✅ נשמר לגליון האלקטרוני אחרי דחיפה לנדרים פלוס');
-                        } catch (error) {
-                            console.warn('⚠️ לא הצלחתי לשמור לגליון האלקטרוני:', error);
-                        }
-                        
-                        // מעדכן את הסכום הכולל מ-API אחרי הדחיפה
-                        try {
-                            const totalDataAfterPush = await fetchTotalFromMatchPlus();
-                            if (totalDataAfterPush && totalDataAfterPush.Donated > 0) {
-                                NEDARIM_CONFIG.totalDonatedFromAPI = totalDataAfterPush.Donated;
-                                NEDARIM_CONFIG.goalFromAPI = totalDataAfterPush.Goal || 0;
-                                NEDARIM_CONFIG.apiDataLoaded = true;
-                                updateHomeStats();
-                                updateLeadersList();
-                                updateLiveTargets();
-                                console.log(`📊 סכום כולל בנדרים פלוס אחרי דחיפה: ${totalDataAfterPush.Donated.toLocaleString()} ש"ח`);
-                            }
-                        } catch (error) {
-                            console.warn('⚠️ לא הצלחתי לעדכן את הסכום הכולל מ-API אחרי הדחיפה:', error);
-                        }
-                    }
-                }
 
             } catch (error) {
                 console.error('שגיאה בסנכרון:', error);
