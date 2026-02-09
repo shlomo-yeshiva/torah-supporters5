@@ -6410,11 +6410,11 @@
                         </div>
 
                         <div class="nedarim-reset-to-zero-box" style="margin-top: 15px; padding: 15px; background: #fff3e0; border: 2px solid #e65100; border-radius: 10px;">
-                            <h4 style="margin-bottom: 10px; color: #bf360c;">🔄 איפוס הסכום המוצג בנדרים ל־0 ₪</h4>
-                            <p style="margin-bottom: 10px; font-size: 13px; color: #333;">אם בנדרים מוצג מינוס ורוצים לאפס את התצוגה ל־0 – התוכנה תשלח תיקון טכני לנדרים.</p>
+                            <h4 style="margin-bottom: 10px; color: #bf360c;">🔄 אפס את הסכום הכולל בדף הנדרים ל־0 ₪ (שליחה ישירה)</h4>
+                            <p style="margin-bottom: 10px; font-size: 13px; color: #333;">אם בדף התרומה של נדרים (matara.pro/nedarimplus) מוצג סכום שלא קיים במציאות – למשל 29,000 ₪ – כפתור זה <strong>שולח ישירות לנדרים פלוס</strong> תיקון או הפחתה כך שהסכום הכולל המוצג שם יהיה 0 ₪. מתאים גם למינוס שגוי.</p>
                             <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
                                 <span id="nedarimResetCurrentDisplay" style="font-weight: 700;">הסכום בנדרים כעת: —</span>
-                                <button type="button" class="btn" onclick="resetNedarimDisplayToZero()" id="resetNedarimToZeroBtn" style="background: #e65100; color: white;">אפס את הסכום המוצג בנדרים ל־0 ₪</button>
+                                <button type="button" class="btn" onclick="resetNedarimDisplayToZero()" id="resetNedarimToZeroBtn" style="background: #e65100; color: white; font-weight: 600;">שלח לנדרים: סכום כולל = 0 ₪</button>
                             </div>
                             <p id="nedarimResetToZeroResult" style="margin-top: 10px; font-size: 12px; min-height: 20px; color: #bf360c;"></p>
                         </div>
@@ -20513,12 +20513,9 @@
                 if (btn) { btn.disabled = false; btn.textContent = 'אפס את הסכום המוצג בנדרים ל־0 ₪'; }
                 return;
             }
-            if (amountToAdd < 0) {
-                setResult('הסכום בנדרים חיובי (' + currentTotal.toLocaleString('he-IL') + ' ₪). איפוס ל־0 דורש הפחתה – השתמש ב"התאמה לסכום האמיתי" או "הורדה גלובלית".', true);
-                if (btn) { btn.disabled = false; btn.textContent = 'אפס את הסכום המוצג בנדרים ל־0 ₪'; }
-                return;
-            }
-            var confirmMsg = 'הסכום בנדרים כעת: ' + currentTotal.toLocaleString('he-IL') + ' ₪.\n\nיישלח תיקון של ' + amountToAdd.toLocaleString('he-IL') + ' ₪ לנדרים (ייחוס טכני ל"' + (donor.displayName || donor.name || '') + '" – חובה ב-API).\n\nבתוכנה לא יתווסף הסכום לאף מתרים – רק התצוגה תעבור ל־0. בסנכרון הבא נדרים יתעדכן לפי הסכומים האמיתיים.\n\nלהמשיך?';
+            var isReduction = amountToAdd < 0;
+            var actionText = isReduction ? 'הפחתה של ' + Math.abs(amountToAdd).toLocaleString('he-IL') + ' ₪' : 'תיקון של ' + amountToAdd.toLocaleString('he-IL') + ' ₪';
+            var confirmMsg = 'הסכום בנדרים כעת: ' + currentTotal.toLocaleString('he-IL') + ' ₪.\n\nיישלח לנדרים פלוס ' + actionText + ' (ייחוס ל"' + (donor.displayName || donor.name || '') + '" – חובה ב-API).\n\nהסכום הכולל המוצג בדף התרומה (matara.pro/nedarimplus) יעבור ל־0 ₪.\n\nלהמשיך?';
             if (!confirm(confirmMsg)) {
                 if (btn) { btn.disabled = false; btn.textContent = 'אפס את הסכום המוצג בנדרים ל־0 ₪'; }
                 return;
@@ -20542,8 +20539,10 @@
                 if (typeof updateNedarimGlobalReductionCurrentSum === 'function') updateNedarimGlobalReductionCurrentSum();
                 var ndEl = document.getElementById('nedarimRealTotalInSync');
                 if (ndEl) ndEl.textContent = '0 ₪';
+                var ndDev = document.getElementById('nedarimRealTotalInDev');
+                if (ndDev) ndDev.textContent = '0 ₪';
                 updateNedarimResetCurrentDisplay();
-                setResult('✅ נשלח תיקון של ' + amountToAdd.toLocaleString('he-IL') + ' ₪. הסכום המוצג בנדרים אמור להיות 0 ₪. מומלץ לרענן "סכום מוצג בנדרים" כדי לוודא.', false);
+                setResult('✅ נשלח לנדרים פלוס ' + (amountToAdd > 0 ? 'תיקון +' : 'הפחתה ') + amountToAdd.toLocaleString('he-IL') + ' ₪. הסכום הכולל בדף התרומה אמור להציג 0 ₪. רענן את הדף בנדרים כדי לוודא.', false);
                 showNotification('איפוס נשלח. הסכום בנדרים אמור להציג 0 ₪.', 'success');
             } catch (e) {
                 setResult('❌ ' + (e.message || e), true);
