@@ -6219,6 +6219,18 @@
                             <p id="nedarimGlobalReductionResult" style="margin: 0; font-size: 12px; min-height: 18px; color: #880e4f;"></p>
                         </div>
 
+                        <div class="nedarim-global-addition-test-box" style="margin-top: 15px; padding: 15px; background: #e8eaf6; border: 2px solid #3f51b5; border-radius: 10px;">
+                            <h4 style="margin-bottom: 10px; color: #1a237e;">הענק לכל המתרים סכום זהה</h4>
+                            <p style="margin-bottom: 10px; font-size: 13px; color: #333;">מגדיר את הסכום שנאסף <strong>לכל</strong> המתרים לערך שהזנת – גם בנדרים פלוס וגם בתוכנה. למשל 2,000 ₪ לכל מתרים.</p>
+                            <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 8px;">
+                                <input type="number" id="nedarimGlobalAdditionInput" min="0" step="1" placeholder="סכום לכל מתרים (₪)" style="width: 200px; padding: 8px 12px; border: 2px solid #3f51b5; border-radius: 6px; font-size: 14px;">
+                                <button type="button" class="btn" onclick="applyGlobalAdditionForTesting()" id="nedarimGlobalAdditionBtn" style="background: #3f51b5; color: white;">
+                                    הגדר סכום זה לכל המתרים
+                                </button>
+                            </div>
+                            <p id="nedarimGlobalAdditionResult" style="margin: 0; font-size: 12px; min-height: 18px; color: #1a237e;"></p>
+                        </div>
+
                         <div class="nedarim-correction-box" style="margin-top: 15px; padding: 15px; background: #fff8e1; border: 2px solid #ff9800; border-radius: 10px;">
                             <h4 style="margin-bottom: 10px; color: #e65100;">⚠️ תיקון סכום: הפחתה מנדרים פלוס (הפחתה ידנית)</h4>
                             <p style="margin-bottom: 12px; font-size: 13px; color: #555;">אם נוסף סכום בטעות לנדרים (למשל בגלל באג סנכרון), אפשר להפחית כאן. ההפחתה תישלח לנדרים פלוס בלבד – לא תשנה את הסכום בתוכנה.</p>
@@ -20266,6 +20278,64 @@
                 resultEl.style.color = '#880e4f';
             }
             showNotification('הופחתו ' + amountToReduce.toLocaleString('he-IL') + ' ₪ מכל המתרים. הרץ סנכרון תרומות לנדרים.');
+        }
+        
+        // הענק לכל המתרים סכום זהה: מגדיר את הסכום של כל מתרים לערך שהזין – בנדרים ובתוכנה (בלי כתוב "בדיקה")
+        async function applyGlobalAdditionForTesting() {
+            var inputEl = document.getElementById('nedarimGlobalAdditionInput');
+            var resultEl = document.getElementById('nedarimGlobalAdditionResult');
+            var btn = document.getElementById('nedarimGlobalAdditionBtn');
+            var targetAmount = inputEl ? Math.round(parseFloat(inputEl.value) || 0) : 0;
+            if (targetAmount < 0) {
+                if (resultEl) { resultEl.textContent = 'נא להזין סכום 0 ומעלה.'; resultEl.style.color = '#c62828'; }
+                return;
+            }
+            var withMatrimId = (donors || []).filter(function(d) {
+                var id = d.nedarimMatrimId ? String(d.nedarimMatrimId).trim() : '';
+                return id && /^\d+$/.test(id) && !/^\d{4}-\d{2}-\d{2}T/.test(id);
+            });
+            if (withMatrimId.length === 0) {
+                if (resultEl) { resultEl.textContent = 'אין מתרים עם מספר מתרים תקין (nedarimMatrimId). הרץ "סנכרון תרומות" או קשר מתרים לנדרים.'; resultEl.style.color = '#c62828'; }
+                return;
+            }
+            if (!confirm('מגדיר את הסכום של ' + withMatrimId.length + ' מתרים ל־' + targetAmount.toLocaleString('he-IL') + ' ₪. להמשיך?')) return;
+            if (btn) { btn.disabled = true; btn.textContent = 'מעדכן...'; }
+            if (resultEl) { resultEl.textContent = 'מעדכן ' + withMatrimId.length + ' מתרים...'; resultEl.style.color = '#1a237e'; }
+            var ok = 0, err = 0;
+            for (var i = 0; i < withMatrimId.length; i++) {
+                var d = withMatrimId[i];
+                var current = d.amount || 0;
+                var delta = targetAmount - current;
+                d.amount = targetAmount;
+                if (delta === 0) {
+                    ok++;
+                    continue;
+                }
+                try {
+                    var res = await updateNedarimAmountViaSheets(d, delta, delta > 0 ? 'תרומות' : 'עדכון סכום');
+                    if (res && res.success && !res.skipped) ok++; else err++;
+                } catch (e) {
+                    d.amount = current;
+                    err++;
+                    console.warn('שגיאה בעדכון מתרים ' + (d.displayName || d.name), e);
+                }
+                if (resultEl && (i + 1) % 5 === 0) resultEl.textContent = 'מעדכן... ' + (i + 1) + '/' + withMatrimId.length;
+            }
+            ensureDonorsNormalized();
+            saveData();
+            updateDonorsList();
+            updateGroupsDisplay();
+            updateHomeStats();
+            if (typeof updateLiveView === 'function') updateLiveView();
+            if (typeof updateLeadersList === 'function') updateLeadersList();
+            if (typeof updateNedarimFixCurrentSumLabel === 'function') updateNedarimFixCurrentSumLabel();
+            if (typeof updateNedarimGlobalReductionCurrentSum === 'function') updateNedarimGlobalReductionCurrentSum();
+            if (resultEl) {
+                resultEl.textContent = '✅ עודכן: ' + ok + ' מתרים עם סכום ' + targetAmount.toLocaleString('he-IL') + ' ₪.' + (err > 0 ? ' (' + err + ' נכשלו)' : '');
+                resultEl.style.color = '#1a237e';
+            }
+            showNotification('הסכום הוגדר ל־' + targetAmount.toLocaleString('he-IL') + ' ₪ ל־' + ok + ' מתרים.');
+            if (btn) { btn.disabled = false; btn.textContent = 'הגדר סכום זה לכל המתרים'; }
         }
         
         // ממלא את רשימת המתרימים בתיבת תיקון ההפחתה (מתרים עם מספר מתרים תקין)
