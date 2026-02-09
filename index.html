@@ -5918,75 +5918,42 @@
                     </div>
                 </div>
 
-                <!-- רובוט אוטומטי -->
+                <!-- רובוט אוטומטי - גרסה חדשה ופשוטה -->
                 <div class="management-content" id="robotContent">
                     <div style="padding: 25px; background: #fafafa; min-height: 100%;">
-                        <h3 style="margin-bottom: 12px; color: var(--brown-dark);">רובוט אוטומטי</h3>
+                        <h3 style="margin-bottom: 12px; color: var(--brown-dark);">עדכון אוטומטי</h3>
                         <p style="font-size: 14px; color: var(--muted); margin-bottom: 20px; line-height: 1.5;">
-                            הרובוט מבצע פעולות סנכרון אוטומטיות בזמנים שתגדיר – סנכרון עם נדרים פלוס, טעינה ושמירה לגליון Google, בדיקת סכומים ועוד. ההגדרות נשמרות גם בגליון ולכן זמינות מכל מחשב.
+                            הרובוט מעדכן את הנתונים <strong>רק כלפי חוץ</strong> – שומר לגליון ודוחף לנדרים פלוס. <strong>לא טוען ולא דורס</strong> נתונים מהגליון או מנדרים. הנתונים שלך בתוכנה הם מקור האמת.
                         </p>
                         
-                        <div style="background: #fff8e1; border: 1px solid #ffc107; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #5d4e37;">
-                            <strong>⚠️ הגבלת פניות:</strong> נדרים פלוס מאפשרים עד 500 פניות לשעה. מומלץ להגדיר מרווח של 10–15 דקות לפחות בין ריצות, במיוחד עם כמה מסכים פתוחים.
+                        <div style="background: #e8f5e9; border: 1px solid #4caf50; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #2e7d32;">
+                            <strong>✓ בטוח:</strong> בכל ריצה: 1) שמירה לגליון 2) דחיפה לנדרים 3) עדכון הסכום הכולל. אין טעינה – אין קפיצות.
                         </div>
                         
                         <div style="margin-bottom: 25px; display: flex; gap: 12px; flex-wrap: wrap;">
-                            <button class="btn btn-success" id="robotStartBtn" onclick="var cb=document.getElementById('robotEnabledCheckbox');if(cb)cb.checked=true;window.startRobot&&window.startRobot()" style="padding: 16px 32px; font-size: 18px; font-weight: 600; min-width: 200px; border-radius: 10px; box-shadow: 0 2px 8px rgba(16,185,129,0.3);">▶️ הפעל רובוט</button>
-                            <button class="btn btn-danger" id="robotStopBtn" onclick="var cb=document.getElementById('robotEnabledCheckbox');if(cb)cb.checked=false;window.stopRobot&&window.stopRobot()" style="padding: 16px 32px; font-size: 18px; font-weight: 600; min-width: 200px; border-radius: 10px; box-shadow: 0 2px 8px rgba(239,68,68,0.3); display: none;">⏹️ עצור רובוט</button>
+                            <button class="btn btn-success" id="robotStartBtn" onclick="var cb=document.getElementById('robotEnabledCheckbox');if(cb)cb.checked=true;window.startRobot&&window.startRobot()" style="padding: 16px 32px; font-size: 18px; font-weight: 600; min-width: 200px; border-radius: 10px; box-shadow: 0 2px 8px rgba(16,185,129,0.3);">▶️ הפעל עדכון אוטומטי</button>
+                            <button class="btn btn-danger" id="robotStopBtn" onclick="var cb=document.getElementById('robotEnabledCheckbox');if(cb)cb.checked=false;window.stopRobot&&window.stopRobot()" style="padding: 16px 32px; font-size: 18px; font-weight: 600; min-width: 200px; border-radius: 10px; box-shadow: 0 2px 8px rgba(239,68,68,0.3); display: none;">⏹️ עצור</button>
                         </div>
                         
                         <div style="background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border);">
                             <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; margin-bottom: 18px; font-size: 15px;">
                                 <input type="checkbox" id="robotEnabledCheckbox" onchange="saveRobotSettings()" style="width: 20px; height: 20px; cursor: pointer;">
-                                <span>הפעל רובוט אוטומטי</span>
+                                <span>הפעל עדכון אוטומטי</span>
                             </label>
                             
                             <div id="robotSettingsPanel" style="display: block; padding-top: 20px; border-top: 1px solid var(--border);">
                                 <div style="margin-bottom: 20px;">
-                                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text);">פעולות להפעלה אוטומטית</label>
-                                    <p style="font-size: 12px; color: var(--muted); margin-bottom: 8px;">בחר פעולות וגרור לשינוי סדר הביצוע.</p>
-                                    <div id="robotActionsList" style="display: flex; flex-direction: column; gap: 6px;"></div>
-                                </div>
-                                
-                                <div style="margin-bottom: 20px;">
-                                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text);">תדירות</label>
-                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px; background: #f5f5f5; border-radius: 8px; margin-bottom: 12px;">
-                                        <input type="checkbox" id="robotContinuousMode" onchange="toggleContinuousMode(); saveRobotSettings();" style="width: 18px; height: 18px; cursor: pointer;">
-                                        <span>עדכונים שוטפים (רצוף)</span>
-                                    </label>
-                                    <div id="robotContinuousIntervalContainer" style="display: none; margin-bottom: 12px; margin-right: 20px;">
-                                        <label style="font-size: 13px; color: var(--muted);">מרווח בין ריצות:</label>
-                                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                                            <input type="number" id="robotContinuousIntervalInput" min="15" max="300" value="60" onchange="saveRobotSettings();" style="width: 70px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px;">
-                                            <span>שניות</span>
-                                        </div>
+                                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text);">כל כמה דקות להריץ</label>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <input type="number" id="robotIntervalInput" min="5" max="120" value="10" onchange="updateRobotIntervalDisplay(); saveRobotSettings();" style="width: 80px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: white;">
+                                        <span>דקות (מינימום 5)</span>
                                     </div>
-                                    <div id="robotIntervalContainer" style="display: flex; align-items: center; gap: 10px;">
-                                        <input type="number" id="robotIntervalInput" min="0.5" step="0.5" value="10" onchange="updateRobotIntervalDisplay(); saveRobotSettings();" oninput="updateRobotIntervalDisplay();" style="width: 80px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: white;">
-                                        <select id="robotIntervalUnit" onchange="updateRobotIntervalDisplay(); saveRobotSettings();" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: white; cursor: pointer;">
-                                            <option value="minutes">דקות</option>
-                                            <option value="hours">שעות</option>
-                                        </select>
-                                    </div>
-                                    <p style="margin-top: 8px; font-size: 13px; color: var(--muted);"><span id="robotIntervalDisplay">הרובוט יפעיל את הכפתורים הנבחרים כל 10 דקות</span></p>
+                                    <p style="margin-top: 8px; font-size: 13px; color: var(--muted);"><span id="robotIntervalDisplay">העדכון יופעל כל 10 דקות</span></p>
                                 </div>
                                 
-                                <div style="margin-bottom: 20px;">
-                                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text);">אופן ביצוע</label>
-                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 6px;">
-                                        <input type="radio" name="robotExecutionMode" id="robotSequentialMode" value="sequential" checked onchange="saveRobotSettings();" style="width: 18px; height: 18px; cursor: pointer;">
-                                        <span>רציף – פעולה אחת אחרי השנייה</span>
-                                    </label>
-                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                        <input type="radio" name="robotExecutionMode" id="robotParallelMode" value="parallel" onchange="saveRobotSettings();" style="width: 18px; height: 18px; cursor: pointer;">
-                                        <span>מקבילי – כל הפעולות יחד</span>
-                                    </label>
-                                    <p style="font-size: 12px; color: var(--muted); margin-top: 6px;">מומלץ: רציף – מקטין סיכון לבעיות סנכרון.</p>
-                                </div>
-                                
-                                <div style="background: #e8f5e9; border: 1px solid #4caf50; border-radius: 8px; padding: 12px;">
-                                    <div style="font-weight: 600; margin-bottom: 4px; color: #2e7d32;">סטטוס</div>
-                                    <div id="robotStatus" style="font-size: 14px; color: #1b5e20;">הרובוט כבוי</div>
+                                <div style="background: #e3f2fd; border: 1px solid #2196f3; border-radius: 8px; padding: 12px;">
+                                    <div style="font-weight: 600; margin-bottom: 4px; color: #1565c0;">סטטוס</div>
+                                    <div id="robotStatus" style="font-size: 14px; color: #0d47a1;">העדכון האוטומטי כבוי</div>
                                     <div id="robotNextRun" style="font-size: 12px; color: #666; margin-top: 4px; display: none;">הפעלה הבאה: <span id="robotNextRunTime">—</span></div>
                                 </div>
                             </div>
@@ -6584,7 +6551,15 @@
                                 <button class="btn btn-info" onclick="checkTotalAmountFromAPI()" id="checkTotalBtn" style="background: #17a2b8; color: white;">
                                     🔍 בדוק סכום כולל מ-API
                                 </button>
+                                <button class="btn btn-danger" onclick="fixLargeAmounts()" id="fixLargeAmountsBtn" style="background: #dc3545; color: white;">
+                                    🛡️ תיקון סכומים חריגים (מעל 500,000)
+                                </button>
                             </div>
+                        </div>
+                        
+                        <div id="fixLargeAmountsResult" style="margin-top: 15px; padding: 15px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 10px; display: none;">
+                            <h4 style="margin-bottom: 10px; color: #856404;">תוצאות תיקון סכומים חריגים</h4>
+                            <div id="fixLargeAmountsDetails" style="font-size: 13px; line-height: 1.6;"></div>
                         </div>
 
                         <div class="nedarim-fix-real-amount-box" style="margin-top: 15px; padding: 15px; background: #e3f2fd; border: 2px solid #1976d2; border-radius: 10px;">
@@ -15574,33 +15549,145 @@
             function initRobot() {
             if (window.__robotInited) return;
             window.__robotInited = true;
-            const ROBOT_ACTION_IDS = ['sync', 'saveSheet', 'syncGoogleSheets'];
-            const robotActionsConfig = {
-                sync: { id: 'sync', name: 'סנכרון תרומות לנדרים פלוס', func: () => syncWithNedarimPlus(true) },
-                saveSheet: { id: 'saveSheet', name: 'שמור לגליון', func: () => saveToGoogleSheets() },
-                syncGoogleSheets: { id: 'syncGoogleSheets', name: 'סנכרון דו-כיווני גליון', func: () => syncWithGoogleSheets(true) }
-            };
-            let robotEnabled = false, robotTimer = null, robotContinuousRunning = false, robotNextRunTime = null, robotHistory = [];
-            let robotSettings = { actionOrder: [...ROBOT_ACTION_IDS], actionEnabled: { sync: false, loadMatrim: false, checkTotal: false, loadSheet: false, saveSheet: false, syncGoogleSheets: false }, interval: 10, unit: 'minutes', executionMode: 'sequential', continuous: false, continuousIntervalSeconds: 60 };
-            function migrateRobotSettingsFromLegacy(saved) { if (saved.sync !== undefined || saved.checkTotal !== undefined) { const ae = robotSettings.actionEnabled || {}; ae.sync = saved.sync === true; ae.checkTotal = saved.checkTotal === true; ae.loadSheet = saved.loadSheet === true; ae.saveSheet = saved.saveSheet === true; ae.loadMatrim = ae.loadMatrim || false; ae.syncGoogleSheets = ae.syncGoogleSheets || false; robotSettings.actionEnabled = ae; if (!saved.actionOrder) robotSettings.actionOrder = [...ROBOT_ACTION_IDS]; } }
-            function loadRobotSettings() { storageGetItem('robotSettings', (saved) => { if (saved) { robotSettings = { actionOrder: [...ROBOT_ACTION_IDS], actionEnabled: { sync: false, loadMatrim: false, checkTotal: false, loadSheet: false, saveSheet: false, syncGoogleSheets: false }, interval: 10, unit: 'minutes', executionMode: 'sequential', continuous: false, continuousIntervalSeconds: 60, ...saved }; migrateRobotSettingsFromLegacy(saved); robotSettings.continuous = robotSettings.continuous === true; robotSettings.interval = parseFloat(robotSettings.interval) || 10; robotSettings.unit = robotSettings.unit || 'minutes'; robotSettings.executionMode = robotSettings.executionMode || 'sequential'; robotSettings.continuousIntervalSeconds = Math.max(15, Math.min(300, parseInt(robotSettings.continuousIntervalSeconds, 10) || 60)); robotEnabled = robotSettings.enabled === true; if (!robotSettings.actionOrder || !Array.isArray(robotSettings.actionOrder)) robotSettings.actionOrder = [...ROBOT_ACTION_IDS]; if (!robotSettings.actionEnabled || typeof robotSettings.actionEnabled !== 'object') robotSettings.actionEnabled = { sync: false, loadMatrim: false, checkTotal: false, loadSheet: false, saveSheet: false, syncGoogleSheets: false }; if (robotEnabled) setTimeout(() => startRobot(), 500); } else { robotSettings.actionOrder = [...ROBOT_ACTION_IDS]; robotSettings.actionEnabled = { sync: false, loadMatrim: false, checkTotal: false, loadSheet: false, saveSheet: false, syncGoogleSheets: false }; robotEnabled = false; } renderRobotActionsList(); updateRobotUI(); }); }
-            function renderRobotActionsList() { const listEl = document.getElementById('robotActionsList'); if (!listEl) return; const order = robotSettings.actionOrder || [...ROBOT_ACTION_IDS]; const enabled = robotSettings.actionEnabled || {}; listEl.innerHTML = order.map((id) => { const cfg = robotActionsConfig[id]; if (!cfg) return ''; const checked = enabled[id] === true; return `<div class="robot-action-row" data-action-id="${id}" draggable="true" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #f8f9fa; border-radius: 8px; cursor: grab; border: 1px solid #e9ecef;"><span class="robot-drag-handle" style="cursor: grab; color: #999; font-size: 18px;">⋮⋮</span><input type="checkbox" id="robotAction_${id}" ${checked ? 'checked' : ''} onchange="toggleRobotAction('${id}'); saveRobotSettings();" style="width: 18px; height: 18px; cursor: pointer;"><label for="robotAction_${id}" style="flex: 1; cursor: pointer; margin: 0;">${cfg.name}</label></div>`; }).join(''); attachRobotListDragListeners(); }
-            function attachRobotListDragListeners() { const listEl = document.getElementById('robotActionsList'); if (!listEl) return; let draggedEl = null; listEl.querySelectorAll('.robot-action-row').forEach(row => { row.addEventListener('dragstart', (e) => { draggedEl = row; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', row.dataset.actionId); row.style.opacity = '0.5'; }); row.addEventListener('dragend', (e) => { row.style.opacity = '1'; draggedEl = null; }); row.addEventListener('dragover', (e) => { e.preventDefault(); if (draggedEl && draggedEl !== row) row.style.borderTop = '2px solid #1976d2'; }); row.addEventListener('dragleave', (e) => { row.style.borderTop = '1px solid #e9ecef'; }); row.addEventListener('drop', (e) => { e.preventDefault(); row.style.borderTop = '1px solid #e9ecef'; if (!draggedEl || draggedEl === row) return; const order = [...(robotSettings.actionOrder || ROBOT_ACTION_IDS)]; const fromId = draggedEl.dataset.actionId; const toId = row.dataset.actionId; const fromIdx = order.indexOf(fromId); const toIdx = order.indexOf(toId); if (fromIdx >= 0 && toIdx >= 0) { order.splice(fromIdx, 1); order.splice(toIdx, 0, fromId); robotSettings.actionOrder = order; storageSetItem('robotSettings', robotSettings); renderRobotActionsList(); } draggedEl = null; }); }); }
-            window.toggleRobotAction = function(id) { if (!robotSettings.actionEnabled) robotSettings.actionEnabled = {}; robotSettings.actionEnabled[id] = document.getElementById('robotAction_' + id)?.checked === true; };
-            function toggleContinuousMode() { const cb = document.getElementById('robotContinuousMode'); const ic = document.getElementById('robotIntervalContainer'); const cic = document.getElementById('robotContinuousIntervalContainer'); if (cb && ic) { if (cb.checked) { ic.style.opacity = '0.5'; ic.style.pointerEvents = 'none'; if (cic) cic.style.display = 'block'; } else { ic.style.opacity = '1'; ic.style.pointerEvents = 'auto'; if (cic) cic.style.display = 'none'; } } }
-            function saveRobotSettings(skipRestart) { const checkbox = document.getElementById('robotEnabledCheckbox'); if (checkbox) robotEnabled = checkbox.checked; ROBOT_ACTION_IDS.forEach(id => { const cb = document.getElementById('robotAction_' + id); if (cb && robotSettings.actionEnabled) robotSettings.actionEnabled[id] = cb.checked === true; }); const intervalInput = document.getElementById('robotIntervalInput'); const unitSelect = document.getElementById('robotIntervalUnit'); const continuousCheckbox = document.getElementById('robotContinuousMode'); const continuousIntervalInput = document.getElementById('robotContinuousIntervalInput'); const seqRadio = document.getElementById('robotSequentialMode'); const parRadio = document.getElementById('robotParallelMode'); if (intervalInput) robotSettings.interval = parseFloat(intervalInput.value) || 10; if (unitSelect) robotSettings.unit = unitSelect.value; if (continuousCheckbox) robotSettings.continuous = continuousCheckbox.checked === true; if (continuousIntervalInput) robotSettings.continuousIntervalSeconds = Math.max(15, Math.min(300, parseInt(continuousIntervalInput.value, 10) || 60)); if (seqRadio && seqRadio.checked) robotSettings.executionMode = 'sequential'; if (parRadio && parRadio.checked) robotSettings.executionMode = 'parallel'; robotSettings.enabled = robotEnabled; storageSetItem('robotSettings', robotSettings); updateRobotUI(); if (!skipRestart) { if (robotEnabled) startRobot(); else stopRobot(); } }
-            function updateRobotIntervalDisplay() { const intervalInput = document.getElementById('robotIntervalInput'); const unitSelect = document.getElementById('robotIntervalUnit'); const display = document.getElementById('robotIntervalDisplay'); const continuousCheckbox = document.getElementById('robotContinuousMode'); if (!display) return; if (continuousCheckbox && continuousCheckbox.checked) { display.textContent = 'הרובוט יפעיל את הכפתורים הנבחרים ברצף עדכונים שוטפים'; return; } if (!intervalInput || !unitSelect) return; const value = parseFloat(intervalInput.value) || 10; const unit = unitSelect.value; display.textContent = unit === 'hours' ? `הרובוט יפעיל כל ${value} שעות` : `הרובוט יפעיל כל ${value} דקות`; }
-            function addRobotHistory(msg, type) { robotHistory.unshift({ t: new Date().toLocaleTimeString('he-IL'), msg, type: type || 'info' }); const el = document.getElementById('robotHistory'); if (!el) return; const inner = el.querySelector('.robot-history-inner') || (function(){ const d = document.createElement('div'); d.className = 'robot-history-inner'; el.innerHTML = ''; el.appendChild(d); return d; })(); inner.innerHTML = robotHistory.slice(0, 80).map(h => { const c = { success: '#22c55e', error: '#ef4444', warning: '#f59e0b', info: '#6b7280' }[h.type] || '#6b7280'; return `<div style="margin:4px 0;color:${c}">[${h.t}] ${h.msg}</div>`; }).join(''); }
-            function updateRobotUI() { const checkbox = document.getElementById('robotEnabledCheckbox'); const panel = document.getElementById('robotSettingsPanel'); if (checkbox) checkbox.checked = robotEnabled; if (panel) panel.style.display = 'block'; const intervalInput = document.getElementById('robotIntervalInput'); const unitSelect = document.getElementById('robotIntervalUnit'); const continuousCheckbox = document.getElementById('robotContinuousMode'); const continuousIntervalInput = document.getElementById('robotContinuousIntervalInput'); const seqRadio = document.getElementById('robotSequentialMode'); const parRadio = document.getElementById('robotParallelMode'); if (intervalInput) intervalInput.value = robotSettings.interval || 10; if (unitSelect) unitSelect.value = robotSettings.unit || 'minutes'; if (continuousCheckbox) continuousCheckbox.checked = robotSettings.continuous === true; if (continuousIntervalInput) continuousIntervalInput.value = robotSettings.continuousIntervalSeconds || 60; if (seqRadio) seqRadio.checked = (robotSettings.executionMode || 'sequential') === 'sequential'; if (parRadio) parRadio.checked = (robotSettings.executionMode || 'sequential') === 'parallel'; ROBOT_ACTION_IDS.forEach(id => { const cb = document.getElementById('robotAction_' + id); if (cb && robotSettings.actionEnabled) cb.checked = robotSettings.actionEnabled[id] === true; }); toggleContinuousMode(); updateRobotIntervalDisplay(); const startBtn = document.getElementById('robotStartBtn'); const stopBtn = document.getElementById('robotStopBtn'); const statusEl = document.getElementById('robotStatus'); if (startBtn) startBtn.style.display = !robotEnabled ? 'block' : 'none'; if (stopBtn) stopBtn.style.display = robotEnabled ? 'block' : 'none'; if (statusEl) statusEl.textContent = robotEnabled ? 'הרובוט פעיל' : 'הרובוט כבוי'; const nextRunEl = document.getElementById('robotNextRun'); const nextRunTimeEl = document.getElementById('robotNextRunTime'); if (nextRunEl && nextRunTimeEl) { if (robotEnabled && !robotSettings.continuous && robotNextRunTime) { nextRunEl.style.display = 'block'; const diff = Math.max(0, robotNextRunTime - Date.now()); const mins = Math.floor(diff / 60000); const secs = Math.floor((diff % 60000) / 1000); nextRunTimeEl.textContent = mins > 0 ? mins + ' דק\' ' + secs + ' שנ\'' : secs + ' שניות'; } else { nextRunEl.style.display = 'none'; } } }
-            function updateRobotNextRun() { if (robotSettings.continuous) return; const iv = robotSettings.interval || 10; const ms = robotSettings.unit === 'hours' ? iv * 60 * 60 * 1000 : iv * 60 * 1000; robotNextRunTime = Date.now() + ms; }
-            function runRobotActions() { if (!robotEnabled) return; const order = robotSettings.actionOrder || [...ROBOT_ACTION_IDS]; const enabled = robotSettings.actionEnabled || {}; const items = []; for (const id of order) { if (enabled[id] === true && robotActionsConfig[id]) items.push(robotActionsConfig[id]); } if (items.length === 0) { addRobotHistory('סמן לפחות פעולה אחת', 'warning'); return; } addRobotHistory('מתחיל ' + items.length + ' פעולות...', 'info'); const exec = robotSettings.executionMode === 'parallel' ? async () => { const results = await Promise.all(items.map(async (cfg) => { addRobotHistory('▶ ' + cfg.name, 'info'); try { await cfg.func(); addRobotHistory('✓ ' + cfg.name, 'success'); return true; } catch (e) { addRobotHistory('✗ ' + cfg.name + ': ' + (e.message || e), 'error'); return false; } })); const ok = results.filter(Boolean).length; addRobotHistory('הושלם: ' + ok + '/' + items.length + ' הצליחו', ok === items.length ? 'success' : 'warning'); } : async () => { let ok = 0; for (const cfg of items) { addRobotHistory('▶ ' + cfg.name, 'info'); try { await cfg.func(); addRobotHistory('✓ ' + cfg.name, 'success'); ok++; } catch (e) { addRobotHistory('✗ ' + cfg.name + ': ' + (e.message || e), 'error'); } } addRobotHistory('הושלם: ' + ok + '/' + items.length + ' הצליחו', ok === items.length ? 'success' : 'warning'); }; exec().catch(() => {}); }
-            function startRobot() { saveRobotSettings(true); if (robotTimer) { clearInterval(robotTimer); robotTimer = null; } robotContinuousRunning = false; robotEnabled = true; robotSettings.enabled = true; storageSetItem('robotSettings', robotSettings); const isContinuous = robotSettings.continuous === true; if (isContinuous) { robotContinuousRunning = true; const intervalSec = Math.max(15, robotSettings.continuousIntervalSeconds || 60); const runC = async () => { if (!robotEnabled || !robotSettings.continuous || !robotContinuousRunning) return; await runRobotActions(); setTimeout(runC, intervalSec * 1000); }; runC(); addRobotHistory('הרובוט הופעל - עדכונים שוטפים', 'success'); } else { runRobotActions(); const iv = robotSettings.interval || 10; const ms = robotSettings.unit === 'hours' ? iv * 60 * 60 * 1000 : iv * 60 * 1000; updateRobotNextRun(); robotNextRunTime = Date.now() + ms; robotTimer = setInterval(() => { if (!robotEnabled) { clearInterval(robotTimer); robotTimer = null; return; } runRobotActions(); updateRobotNextRun(); robotNextRunTime = Date.now() + ms; }, ms); addRobotHistory('הרובוט הופעל - כל ' + iv + (robotSettings.unit === 'hours' ? ' שעות' : ' דקות'), 'success'); } updateRobotUI(); }
-            function stopRobot() { if (robotTimer) { clearInterval(robotTimer); robotTimer = null; } robotEnabled = false; robotSettings.enabled = false; robotContinuousRunning = false; robotNextRunTime = null; storageSetItem('robotSettings', robotSettings); addRobotHistory('הרובוט הופסק', 'info'); updateRobotUI(); }
-            window.startRobot = startRobot; window.stopRobot = stopRobot; window.saveRobotSettings = saveRobotSettings; window.updateRobotUI = updateRobotUI; window.toggleContinuousMode = toggleContinuousMode; window.updateRobotIntervalDisplay = updateRobotIntervalDisplay;
-            window.isRobotActive = () => robotEnabled; // חושף למניעת טעינה מהגליון כשהרובוט פעיל
-            setInterval(() => { if (robotEnabled) updateRobotUI(); }, 1000);
+            let robotEnabled = false, robotTimer = null, robotNextRunTime = null, robotHistory = [];
+            let robotSettings = { enabled: false, intervalMinutes: 10 };
+            const ROBOT_COOLDOWN_MS = 5 * 60 * 1000;
+            let lastRobotRunEnd = 0;
+
+            function addRobotHistory(msg, type) {
+                robotHistory.unshift({ t: new Date().toLocaleTimeString('he-IL'), msg, type: type || 'info' });
+                const el = document.getElementById('robotHistory');
+                if (!el) return;
+                const inner = el.querySelector('.robot-history-inner') || (function(){ const d = document.createElement('div'); d.className = 'robot-history-inner'; el.innerHTML = ''; el.appendChild(d); return d; })();
+                inner.innerHTML = robotHistory.slice(0, 80).map(h => { const c = { success: '#22c55e', error: '#ef4444', warning: '#f59e0b', info: '#6b7280' }[h.type] || '#6b7280'; return '<div style="margin:4px 0;color:' + c + '">[' + h.t + '] ' + h.msg + '</div>'; }).join('');
+            }
+
+            async function runRobotCycle() {
+                if (!robotEnabled) return;
+                const now = Date.now();
+                if (lastRobotRunEnd > 0 && (now - lastRobotRunEnd) < ROBOT_COOLDOWN_MS) {
+                    console.log('🤖 [עדכון אוטומטי] דילוג – קודם הסתיים לפני פחות מ-5 דקות');
+                    return;
+                }
+                addRobotHistory('מתחיל עדכון...', 'info');
+                try {
+                    if (typeof ensureDonorsNormalized === 'function') ensureDonorsNormalized();
+                    if (typeof saveToGoogleSheets === 'function') {
+                        addRobotHistory('שמירה לגליון...', 'info');
+                        await saveToGoogleSheets();
+                        addRobotHistory('נשמר לגליון', 'success');
+                    }
+                    if (typeof syncWithNedarimPlus === 'function') {
+                        addRobotHistory('דחיפה לנדרים פלוס...', 'info');
+                        await syncWithNedarimPlus(true);
+                        addRobotHistory('נדרים פלוס עודכן', 'success');
+                    }
+                    if (typeof fetchTotalFromMatchPlus === 'function') {
+                        const totalData = await fetchTotalFromMatchPlus();
+                        if (totalData && totalData.Donated != null) {
+                            if (typeof NEDARIM_CONFIG !== 'undefined') { NEDARIM_CONFIG.totalDonatedFromAPI = totalData.Donated; NEDARIM_CONFIG.goalFromAPI = totalData.Goal || 0; NEDARIM_CONFIG.apiDataLoaded = true; }
+                            if (typeof updateHomeStats === 'function') updateHomeStats();
+                        }
+                    }
+                    addRobotHistory('הושלם בהצלחה', 'success');
+                } catch (e) {
+                    addRobotHistory('שגיאה: ' + (e.message || e), 'error');
+                }
+                lastRobotRunEnd = Date.now();
+            }
+
+            function loadRobotSettings() {
+                storageGetItem('robotSettings', (saved) => {
+                    if (saved && typeof saved === 'object') {
+                        robotSettings.intervalMinutes = Math.max(5, Math.min(120, parseInt(saved.intervalMinutes, 10) || parseInt(saved.interval, 10) || 10));
+                        robotSettings.enabled = saved.enabled === true;
+                        robotEnabled = robotSettings.enabled;
+                    }
+                    const inp = document.getElementById('robotIntervalInput');
+                    if (inp) inp.value = robotSettings.intervalMinutes;
+                    updateRobotIntervalDisplay();
+                    updateRobotUI();
+                    if (robotEnabled) setTimeout(startRobot, 300);
+                });
+            }
+
+            function saveRobotSettings(skipRestart) {
+                const checkbox = document.getElementById('robotEnabledCheckbox');
+                if (checkbox) robotEnabled = checkbox.checked;
+                const inp = document.getElementById('robotIntervalInput');
+                if (inp) robotSettings.intervalMinutes = Math.max(5, Math.min(120, parseFloat(inp.value) || 10));
+                robotSettings.enabled = robotEnabled;
+                storageSetItem('robotSettings', robotSettings);
+                updateRobotIntervalDisplay();
+                updateRobotUI();
+                if (!skipRestart) { if (robotEnabled) startRobot(); else stopRobot(); }
+            }
+
+            function updateRobotIntervalDisplay() {
+                const display = document.getElementById('robotIntervalDisplay');
+                if (display) display.textContent = 'העדכון יופעל כל ' + (robotSettings.intervalMinutes || 10) + ' דקות';
+            }
+
+            function updateRobotUI() {
+                const checkbox = document.getElementById('robotEnabledCheckbox');
+                if (checkbox) checkbox.checked = robotEnabled;
+                const startBtn = document.getElementById('robotStartBtn');
+                const stopBtn = document.getElementById('robotStopBtn');
+                const statusEl = document.getElementById('robotStatus');
+                if (startBtn) startBtn.style.display = robotEnabled ? 'none' : 'block';
+                if (stopBtn) stopBtn.style.display = robotEnabled ? 'block' : 'none';
+                if (statusEl) statusEl.textContent = robotEnabled ? 'העדכון האוטומטי פעיל' : 'העדכון האוטומטי כבוי';
+                const nextRunEl = document.getElementById('robotNextRun');
+                const nextRunTimeEl = document.getElementById('robotNextRunTime');
+                if (nextRunEl && nextRunTimeEl) {
+                    if (robotEnabled && robotNextRunTime) {
+                        nextRunEl.style.display = 'block';
+                        const diff = Math.max(0, robotNextRunTime - Date.now());
+                        const mins = Math.floor(diff / 60000);
+                        const secs = Math.floor((diff % 60000) / 1000);
+                        nextRunTimeEl.textContent = (mins > 0 ? mins + ' דק\' ' : '') + secs + ' שנ\'';
+                    } else nextRunEl.style.display = 'none';
+                }
+            }
+
+            function startRobot() {
+                if (robotTimer) clearInterval(robotTimer);
+                robotEnabled = true;
+                robotSettings.enabled = true;
+                storageSetItem('robotSettings', robotSettings);
+                runRobotCycle();
+                const ms = (robotSettings.intervalMinutes || 10) * 60 * 1000;
+                robotNextRunTime = Date.now() + ms;
+                robotTimer = setInterval(function() {
+                    if (!robotEnabled) { clearInterval(robotTimer); robotTimer = null; return; }
+                    runRobotCycle();
+                    robotNextRunTime = Date.now() + ms;
+                }, ms);
+                addRobotHistory('העדכון האוטומטי הופעל – כל ' + (robotSettings.intervalMinutes || 10) + ' דקות', 'success');
+                updateRobotUI();
+            }
+
+            function stopRobot() {
+                if (robotTimer) { clearInterval(robotTimer); robotTimer = null; }
+                robotEnabled = false;
+                robotSettings.enabled = false;
+                robotNextRunTime = null;
+                storageSetItem('robotSettings', robotSettings);
+                addRobotHistory('העדכון האוטומטי הופסק', 'info');
+                updateRobotUI();
+            }
+
+            window.startRobot = startRobot;
+            window.stopRobot = stopRobot;
+            window.saveRobotSettings = saveRobotSettings;
+            window.updateRobotUI = updateRobotUI;
+            window.updateRobotIntervalDisplay = updateRobotIntervalDisplay;
+            window.toggleContinuousMode = function() {};
+            window.toggleRobotAction = function() {};
+            window.isRobotActive = function() { return robotEnabled; };
+            setInterval(function() { if (robotEnabled) updateRobotUI(); }, 1000);
             loadRobotSettings();
-            console.log('🤖 [רובוט] אותחל');
+            console.log('🤖 [עדכון אוטומטי] אותחל');
             }
             window.initRobot = initRobot;
 
@@ -17227,8 +17314,8 @@
                 console.log(`✅ נמצאו ${matrimList.length} מתרימים בנדרים פלוס`);
                 console.log('דוגמה למתרים ראשון:', matrimList[0]);
 
-                // מניעת סכומים אסטרונומיים מהרובוט: הסרת כפילויות לפי מספר מתרים + בדיקת תקינות סכום
-                const MAX_REASONABLE_AMOUNT_LOAD = 5000000;
+                // מניעת סכומים אסטרונומיים – סף מקסימלי סביר למתרים בודד
+                const MAX_REASONABLE_AMOUNT_LOAD = 500000; // חצי מיליון
                 const origCountLoad = matrimList.length;
                 const byMatrimIdLoad = new Map();
                 for (const matrim of matrimList) {
@@ -18612,8 +18699,8 @@
 
                 console.log(`✅ קיבלנו ${matrimList.length} מתרימים מנדרים פלוס`);
 
-                // מניעת סכומים אסטרונומיים מהרובוט: הסרת כפילויות לפי מספר מתרים + בדיקת תקינות סכום
-                const MAX_REASONABLE_AMOUNT = 5000000; // 5 מיליון – סכום מקסימלי סביר למתרים בודד
+                // מניעת סכומים אסטרונומיים (למשל 4M) – סף מקסימלי סביר למתרים בודד. מעל זה לא מעדכנים.
+                const MAX_REASONABLE_AMOUNT = 500000; // חצי מיליון – מעל זה נחשב חריג ולא מיושם
                 const originalCount = matrimList.length;
                 const byMatrimId = new Map();
                 for (const matrim of matrimList) {
@@ -19188,6 +19275,99 @@
                 btn.textContent = '🔍 בדוק סכום כולל מ-API';
             }
         }
+
+        // פונקציה לתיקון סכומים חריגים (מעל 500,000)
+        async function fixLargeAmounts() {
+            const btn = document.getElementById('fixLargeAmountsBtn');
+            const resultDiv = document.getElementById('fixLargeAmountsResult');
+            const detailsDiv = document.getElementById('fixLargeAmountsDetails');
+            const MAX_REASONABLE = 500000;
+            
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = '⏳ בודק...';
+            }
+            
+            if (resultDiv) resultDiv.style.display = 'none';
+            if (detailsDiv) detailsDiv.innerHTML = '';
+            
+            try {
+                ensureDonorsNormalized();
+                const problematicDonors = donors.filter(d => {
+                    const amt = parseInt(d.amount, 10) || 0;
+                    return amt > MAX_REASONABLE;
+                });
+                
+                if (problematicDonors.length === 0) {
+                    if (detailsDiv) detailsDiv.innerHTML = '<p style="color: #28a745; margin: 0;">✅ לא נמצאו מתרים עם סכום מעל 500,000 ₪. הכל תקין!</p>';
+                    if (resultDiv) resultDiv.style.display = 'block';
+                    if (btn) { btn.disabled = false; btn.textContent = '🛡️ תיקון סכומים חריגים (מעל 500,000)'; }
+                    showNotification('✅ לא נמצאו סכומים חריגים', 'success');
+                    return;
+                }
+                
+                let fixedCount = 0;
+                let totalReduced = 0;
+                const fixedList = [];
+                
+                for (const donor of problematicDonors) {
+                    const oldAmount = parseInt(donor.amount, 10) || 0;
+                    const reduction = oldAmount - MAX_REASONABLE;
+                    donor.amount = MAX_REASONABLE;
+                    fixedCount++;
+                    totalReduced += reduction;
+                    fixedList.push({
+                        name: donor.name || donor.displayName || 'ללא שם',
+                        oldAmount: oldAmount,
+                        newAmount: MAX_REASONABLE,
+                        reduction: reduction
+                    });
+                    
+                    if (!Array.isArray(donor.history)) donor.history = [];
+                    donor.history.unshift({
+                        id: Date.now() + Math.random(),
+                        date: new Date().toISOString(),
+                        delta: -reduction,
+                        amountAfter: MAX_REASONABLE,
+                        source: 'fix_large_amounts',
+                        note: `תיקון אוטומטי – סכום חריג ${oldAmount.toLocaleString()} הופחת ל-${MAX_REASONABLE.toLocaleString()}`
+                    });
+                }
+                
+                saveData();
+                
+                let detailsHtml = '<p style="margin: 0 0 12px 0; font-weight: 600; color: #856404;">תוקנו ' + fixedCount + ' מתרים:</p><ul style="margin: 0 0 12px 0; padding-right: 20px; font-size: 12px; line-height: 1.8;">';
+                fixedList.forEach(item => {
+                    detailsHtml += '<li><strong>' + item.name + ':</strong> ' + item.oldAmount.toLocaleString() + ' → ' + item.newAmount.toLocaleString() + ' (הופחתו ' + item.reduction.toLocaleString() + ' ₪)</li>';
+                });
+                detailsHtml += '</ul>';
+                detailsHtml += '<p style="margin: 0; font-weight: 600; color: #856404;">סה"כ הופחתו: ' + totalReduced.toLocaleString() + ' ₪</p>';
+                detailsHtml += '<p style="margin: 8px 0 0 0; font-size: 12px; color: #666;">💡 כדי לעדכן גם את הגליון, לחץ "שמור לגליון" או "סנכרון דו-כיווני גליון"</p>';
+                
+                if (detailsDiv) detailsDiv.innerHTML = detailsHtml;
+                if (resultDiv) resultDiv.style.display = 'block';
+                
+                updateDonorsList();
+                updateHomeStats();
+                updateLiveView();
+                updateLeadersList();
+                updateLiveTargets();
+                
+                showNotification('✅ תוקנו ' + fixedCount + ' מתרים עם סכום חריג. סה"כ הופחתו ' + totalReduced.toLocaleString() + ' ₪', 'success');
+                
+            } catch (error) {
+                console.error('❌ שגיאה בתיקון סכומים חריגים:', error);
+                if (detailsDiv) detailsDiv.innerHTML = '<p style="color: #dc3545; margin: 0;">❌ שגיאה: ' + (error.message || error) + '</p>';
+                if (resultDiv) resultDiv.style.display = 'block';
+                showNotification('❌ שגיאה בתיקון: ' + (error.message || error), 'error');
+            }
+            
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = '🛡️ תיקון סכומים חריגים (מעל 500,000)';
+            }
+        }
+        window.fixLargeAmounts = fixLargeAmounts;
 
         // ===== סוף חיבור לנדרים פלוס =====
 
@@ -19773,11 +19953,15 @@
                                 updatedDonors.push(existingDonor);
                             }
                         } else {
-                            // מתרים לא בעריכה ולא שונה לאחרונה - מעדכן מהגליון
+                            // מתרים לא בעריכה ולא שונה לאחרונה - מעדכן מהגליון (חוסם סכומים חריגים מהגליון)
                             if (sheetDonor) {
-                                // ⚠️ חשוב: שומר את מספר המתרים המקומי אם הוא תקין
+                                const sheetAmount = parseInt(sheetDonor.amount, 10) || 0;
+                                const MAX_SHEET_AMOUNT = 500000;
+                                const safeAmount = sheetAmount > MAX_SHEET_AMOUNT ? (existingDonor.amount || 0) : sheetAmount;
+                                if (sheetAmount > MAX_SHEET_AMOUNT) console.warn('⚠️ [גליון] סכום חריג למתרים "' + (sheetDonor.name || '') + '" – נשמר מקומי:', safeAmount, 'במקום', sheetAmount);
                                 updatedDonors.push({
                                     ...sheetDonor,
+                                    amount: safeAmount,
                                     nedarimMatrimId: hasValidMatrimId ? existingDonor.nedarimMatrimId : (sheetDonor.nedarimMatrimId || existingDonor.nedarimMatrimId)
                                 });
                             } else {
@@ -19786,21 +19970,27 @@
                         }
                     });
                     
-                    // הוספת מתרימים חדשים מהגליון שלא קיימים מקומית (רק אם יש להם מספר מתרים תקין)
+                    const MAX_SHEET_AMOUNT_NEW = 500000;
+                    // הוספת מתרימים חדשים מהגליון שלא קיימים מקומית (רק אם יש להם מספר מתרים תקין וסכום סביר)
                     donorsFromSheetByMatrimId.forEach((sheetDonor, matrimIdStr) => {
                         if (!existingMatrimIds.has(matrimIdStr)) {
-                            // מתרים חדש מהגליון עם מספר מתרים תקין
+                            const amt = parseInt(sheetDonor.amount, 10) || 0;
+                            if (amt > MAX_SHEET_AMOUNT_NEW) {
+                                console.warn('⚠️ [גליון] דילוג על מתרים חדש "' + (sheetDonor.name || '') + '" – סכום חריג ' + amt);
+                                return;
+                            }
                             updatedDonors.push(sheetDonor);
                             console.log(`➕ נוסף מתרים חדש מהגליון לפי מספר מתרים ${matrimIdStr}: ${sheetDonor.name}`);
                         }
                     });
                     
-                    // גם מתרים מהגליון לפי ID (אם אין להם מספר מתרים תקין)
+                    // גם מתרים מהגליון לפי ID (אם אין להם מספר מתרים תקין) – רק עם סכום סביר
                     donorsFromSheetById.forEach((sheetDonor, id) => {
                         if (!existingIds.has(id)) {
+                            const amt = parseInt(sheetDonor.amount, 10) || 0;
+                            if (amt > MAX_SHEET_AMOUNT_NEW) return;
                             const hasMatrimId = sheetDonor.nedarimMatrimId && /^\d+$/.test(String(sheetDonor.nedarimMatrimId).trim());
                             if (!hasMatrimId) {
-                                // מתרים חדש מהגליון ללא מספר מתרים תקין - מוסיף רק אם אין לו מספר מתרים תקין
                                 updatedDonors.push(sheetDonor);
                             }
                         }
@@ -20096,9 +20286,15 @@
                 if (!rs) {
                     try { rs = JSON.parse(localStorage.getItem('robotSettings') || '{}'); } catch (_) { rs = {}; }
                 }
+                const MAX_AMOUNT_TO_SHEET = 500000;
+                const donorsForSheet = donors.map(d => {
+                    const amt = parseInt(d.amount, 10) || 0;
+                    if (amt > MAX_AMOUNT_TO_SHEET) console.warn('⚠️ [שמירה לגליון] סכום חריג למתרים "' + (d.name || '') + '" – נשמר כ-' + MAX_AMOUNT_TO_SHEET + ' ולא ' + amt);
+                    return { ...d, amount: Math.min(MAX_AMOUNT_TO_SHEET, Math.max(0, amt)) };
+                });
                 const dataToSave = {
                     action: 'saveAll',
-                    donors: donors,
+                    donors: donorsForSheet,
                     groups: groups,
                     settings: {
                         defaultDonorGoal: defaultDonorGoal,
