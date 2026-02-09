@@ -18314,8 +18314,9 @@
         }
 
         // ========== סנכרון תרומות לנדרים פלוס ==========
-        // מטרה: מושך נתונים מנדרים פלוס ומעדכן את המתרים המקומיים (pull-only)
-        // לא דוחף שינויים מקומיים לנדרים - רק משקף את מה שקיים בנדרים
+        // מטרה: סנכרון דו-כיווני - מושך נתונים מנדרים פלוס ודוחף נתונים מהתוכנה לנדרים פלוס
+        // שלב 1: מושך נתונים מנדרים פלוס ומעדכן את המתרים המקומיים
+        // שלב 2: דוחף את הנתונים האמיתיים מהתוכנה לנדרים פלוס
         async function syncWithNedarimPlus(silent = false) {
             const btn = document.getElementById('nedarimSyncBtn');
             if (!silent && btn) {
@@ -18600,6 +18601,129 @@
                 
                 // סנכרון לבסיס הנתונים אחרי העדכון
                 await syncAllDataToDatabase();
+                
+                // ========== שלב 2: דחיפת נתונים מהתוכנה לנדרים פלוס ==========
+                // שולח את הנתונים האמיתיים מהתוכנה לנדרים פלוס
+                if (!NEDARIM_CONFIG.blockPushToNedarim) {
+                    if (!silent) {
+                        showNedarimStatus('שולח נתונים מהתוכנה לנדרים פלוס...', 'loading');
+                    }
+                    
+                    // יוצר מפה של הסכומים הנוכחיים בנדרים פלוס
+                    const nedarimAmountsMap = new Map();
+                    matrimList.forEach(matrim => {
+                        const matrimId = matrim.Id || matrim.MatrimId || matrim.id || matrim.MatrimNumber || null;
+                        const matrimAmount = parseInt(matrim.Cumule) || parseInt(matrim.Amount) || 0;
+                        if (matrimId !== null && matrimId !== undefined) {
+                            nedarimAmountsMap.set(String(matrimId), matrimAmount);
+                        }
+                    });
+                    
+                    // מסנן מתרים שיש להם מספר מתרים תקין וסכום בתוכנה
+                    const donorsToPush = donors.filter(d => {
+                        const localAmount = d.amount || 0;
+                        if (localAmount <= 0) return false; // מדלג על מתרים עם סכום 0
+                        
+                        const matrimIdStr = d.nedarimMatrimId ? String(d.nedarimMatrimId).trim() : null;
+                        if (!matrimIdStr || !/^\d+$/.test(matrimIdStr)) {
+                            return false; // אין מספר מתרים תקין
+                        }
+                        
+                        return true;
+                    });
+                    
+                    console.log(`📤 שולח ${donorsToPush.length} מתרים מהתוכנה לנדרים פלוס...`);
+                    
+                    let pushedCount = 0;
+                    let skippedPushCount = 0;
+                    let failedPushCount = 0;
+                    
+                    for (const donor of donorsToPush) {
+                        const localAmount = donor.amount || 0;
+                        const matrimIdStr = donor.nedarimMatrimId ? String(donor.nedarimMatrimId).trim() : null;
+                        const nedarimAmount = nedarimAmountsMap.get(matrimIdStr) || 0;
+                        
+                        // מחשב את הדלתה (הסכום בתוכנה פחות הסכום בנדרים)
+                        const deltaToSend = localAmount - nedarimAmount;
+                        
+                        // אם אין שינוי, לא צריך לשלוח
+                        if (deltaToSend === 0) {
+                            skippedPushCount++;
+                            continue;
+                        }
+                        
+                        // שולח את העדכון לנדרים פלוס
+                        try {
+                            console.log(`🔄 שולח לנדרים פלוס: ${donor.name || 'ללא שם'} (מס' ${matrimIdStr}) - ${nedarimAmount.toLocaleString()} → ${localAmount.toLocaleString()} (דלתה: ${deltaToSend > 0 ? '+' : ''}${deltaToSend.toLocaleString()} ₪)`);
+                            
+                            const result = await updateNedarimAmountViaSheets(donor, deltaToSend, 'סנכרון תרומות - עדכון מהתוכנה');
+                            if (result && result.success && !result.skipped) {
+                                pushedCount++;
+                                console.log(`✅ נשלח בהצלחה לנדרים פלוס: ${donor.name || 'ללא שם'} - דלתה: ${deltaToSend > 0 ? '+' : ''}${deltaToSend.toLocaleString()} ₪`);
+                            } else if (result && result.skipped) {
+                                skippedPushCount++;
+                                console.log(`ℹ️ נדלג על שליחה: ${donor.name || 'ללא שם'} - ${result.message || 'אין צורך בעדכון'}`);
+                            } else {
+                                failedPushCount++;
+                                console.warn(`⚠️ נכשל בשליחה: ${donor.name || 'ללא שם'} - ${result?.error || result?.message || 'שגיאה לא ידועה'}`);
+                            }
+                        } catch (error) {
+                            failedPushCount++;
+                            console.error(`❌ שגיאה בשליחה ${donor.name || 'ללא שם'}:`, error);
+                        }
+                        
+                        // ממתין קצת בין עדכונים כדי לא להעמיס על השרת
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                    }
+                    
+                    // מעדכן את ההודעה עם תוצאות הדחיפה
+                    if (pushedCount > 0 || failedPushCount > 0) {
+                        let pushMessage = message;
+                        if (pushedCount > 0) {
+                            pushMessage += ` | נשלחו ${pushedCount} מתרים לנדרים פלוס`;
+                        }
+                        if (failedPushCount > 0) {
+                            pushMessage += ` | ${failedPushCount} מתרים נכשלו בשליחה`;
+                        }
+                        
+                        if (!silent) {
+                            showNedarimStatus(pushMessage, 'success');
+                            if (pushedCount > 0) {
+                                showNotification(`✅ ${pushMessage}`, 'success');
+                            } else if (failedPushCount > 0) {
+                                showNotification(`⚠️ ${pushMessage}`, 'warning');
+                            }
+                        }
+                    }
+                    
+                    console.log(`📊 סיכום דחיפה: ${pushedCount} נשלחו, ${skippedPushCount} נדלגו, ${failedPushCount} נכשלו`);
+                    
+                    // שומר את הנתונים לגליון האלקטרוני אחרי הדחיפה
+                    if (pushedCount > 0) {
+                        try {
+                            await saveToGoogleSheets();
+                            console.log('✅ נשמר לגליון האלקטרוני אחרי דחיפה לנדרים פלוס');
+                        } catch (error) {
+                            console.warn('⚠️ לא הצלחתי לשמור לגליון האלקטרוני:', error);
+                        }
+                        
+                        // מעדכן את הסכום הכולל מ-API אחרי הדחיפה
+                        try {
+                            const totalDataAfterPush = await fetchTotalFromMatchPlus();
+                            if (totalDataAfterPush && totalDataAfterPush.Donated > 0) {
+                                NEDARIM_CONFIG.totalDonatedFromAPI = totalDataAfterPush.Donated;
+                                NEDARIM_CONFIG.goalFromAPI = totalDataAfterPush.Goal || 0;
+                                NEDARIM_CONFIG.apiDataLoaded = true;
+                                updateHomeStats();
+                                updateLeadersList();
+                                updateLiveTargets();
+                                console.log(`📊 סכום כולל בנדרים פלוס אחרי דחיפה: ${totalDataAfterPush.Donated.toLocaleString()} ש"ח`);
+                            }
+                        } catch (error) {
+                            console.warn('⚠️ לא הצלחתי לעדכן את הסכום הכולל מ-API אחרי הדחיפה:', error);
+                        }
+                    }
+                }
 
             } catch (error) {
                 console.error('שגיאה בסנכרון:', error);
