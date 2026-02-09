@@ -6243,7 +6243,7 @@
 
                         <div class="nedarim-reset-to-zero-box" style="margin-top: 15px; padding: 15px; background: #fff3e0; border: 2px solid #e65100; border-radius: 10px;">
                             <h4 style="margin-bottom: 10px; color: #bf360c;">🔄 איפוס הסכום המוצג בנדרים ל־0 ₪</h4>
-                            <p style="margin-bottom: 10px; font-size: 13px; color: #333;">אם בנדרים מוצג מינוס (למשל מינוס מיליון וחצי) ורוצים לאפס את התצוגה ל־0 – התוכנה תחשב אוטומטית כמה להוסיף ותשלח תיקון אחד לנדרים (על שם "מתרים לתוספות כלליות" למטה). אחרי זה הסכום המוצג בנדרים יהיה 0 ₪.</p>
+                            <p style="margin-bottom: 10px; font-size: 13px; color: #333;">אם בנדרים מוצג מינוס ורוצים לאפס את התצוגה ל־0 – התוכנה תשלח תיקון טכני לנדרים (חובה לייחס למתרים אחד ב-API). <strong>בתוכנה לא מתווסף הסכום לאף מתרים</strong> – רק התצוגה עוברת ל־0. בסנכרון תרומות הבא נדרים יתעדכן לפי הסכומים האמיתיים של המתרים.</p>
                             <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
                                 <span id="nedarimResetCurrentDisplay" style="font-weight: 700;">הסכום בנדרים כעת: —</span>
                                 <button type="button" class="btn" onclick="resetNedarimDisplayToZero()" id="resetNedarimToZeroBtn" style="background: #e65100; color: white;">
@@ -20422,7 +20422,7 @@
                 if (btn) { btn.disabled = false; btn.textContent = 'אפס את הסכום המוצג בנדרים ל־0 ₪'; }
                 return;
             }
-            var confirmMsg = 'הסכום בנדרים כעת: ' + currentTotal.toLocaleString('he-IL') + ' ₪.\n\nנוסיף ' + amountToAdd.toLocaleString('he-IL') + ' ₪ (על שם "' + (donor.displayName || donor.name || '') + '") כדי שהתצוגה תהיה 0 ₪.\n\nלהמשיך?';
+            var confirmMsg = 'הסכום בנדרים כעת: ' + currentTotal.toLocaleString('he-IL') + ' ₪.\n\nיישלח תיקון של ' + amountToAdd.toLocaleString('he-IL') + ' ₪ לנדרים (ייחוס טכני ל"' + (donor.displayName || donor.name || '') + '" – חובה ב-API).\n\nבתוכנה לא יתווסף הסכום לאף מתרים – רק התצוגה תעבור ל־0. בסנכרון הבא נדרים יתעדכן לפי הסכומים האמיתיים.\n\nלהמשיך?';
             if (!confirm(confirmMsg)) {
                 if (btn) { btn.disabled = false; btn.textContent = 'אפס את הסכום המוצג בנדרים ל־0 ₪'; }
                 return;
@@ -20433,13 +20433,7 @@
             var donorName = (donor.displayName || donor.name || '').toString().trim();
             try {
                 await uploadOfflineDonation(donorName, 'תיקון איפוס מאזן', amountToAdd, 'איפוס תצוגה ל־0 ₪', '', matrimId);
-                var d = (donors || []).find(function(x) { return x.id === donor.id || String(x.id) === String(donor.id); });
-                if (d) {
-                    d.amount = Math.max(0, (d.amount || 0) + amountToAdd);
-                    d.updatedAt = new Date().toISOString();
-                    saveData();
-                    try { await saveToGoogleSheets(); } catch (e) { console.warn('שמירה לגליון:', e); }
-                }
+                // לא מעדכנים את הסכום של המתרים בתוכנה – רק התצוגה עוברת ל־0. בסנכרון הבא נדרים יתעדכן לפי הסכומים האמיתיים
                 NEDARIM_CONFIG.totalDonatedFromAPI = 0;
                 NEDARIM_CONFIG.apiDataLoaded = true;
                 updateDonorsList();
