@@ -18309,9 +18309,9 @@
                 console.warn('⚠️ [סנכרון] סנכרון כבר רץ – דילוג (מונע כפילות דלתות בנדרים פלוס)');
                 return;
             }
-            // מונע סנכרונים תכופים מרובוט – מרווח מינימלי 3 דקות אחרי סנכרון קודם
+            // מונע סנכרונים תכופים מרובוט – מרווח מינימלי 3 דקות אחרי סנכרון קודם (רק אם זה דחיפה, לא pullOnly)
             const SYNC_COOLDOWN_MS = 3 * 60 * 1000;
-            if (silent && lastSyncEndTime > 0 && (Date.now() - lastSyncEndTime) < SYNC_COOLDOWN_MS) {
+            if (silent && !pullOnly && lastSyncEndTime > 0 && (Date.now() - lastSyncEndTime) < SYNC_COOLDOWN_MS) {
                 const waitSec = Math.ceil((SYNC_COOLDOWN_MS - (Date.now() - lastSyncEndTime)) / 1000);
                 console.warn(`⚠️ [סנכרון] דילוג – סנכרון אחרון לפני פחות מ-3 דקות (המתן ${waitSec} שניות)`);
                 return;
@@ -19221,6 +19221,19 @@
                     if (typeof updateLiveView === 'function') updateLiveView();
                     const diff = totalData.Donated - totalFromDonors;
                     if (Math.abs(diff) > 0) {
+                        // בדיקה אם הסכום ב-API נראה חריג (מעל מיליון) - ייתכן שיש סכומים אסטרונומיים בנדרים
+                        if (totalData.Donated > 1000000 && !isAutoCall) {
+                            const confirmSync = confirm(
+                                '⚠️ הסכום ב-API נראה חריג: ' + totalData.Donated.toLocaleString() + ' ש"ח\n\n' +
+                                'בתוכנה יש: ' + totalFromDonors.toLocaleString() + ' ש"ח\n\n' +
+                                'האם להמשיך לסנכרן? (סכומים מעל 500,000 לא יישמרו)'
+                            );
+                            if (!confirmSync) {
+                                showNotification('סנכרון בוטל', 'info');
+                                if (btn && !silent) { btn.disabled = false; btn.textContent = '🔍 בדוק סכום כולל מ-API'; }
+                                return;
+                            }
+                        }
                         if (!isAutoCall) {
                             showNedarimStatus('מסנכרן סכומים מנדרים פלוס לתוכנה...', 'loading');
                         }
