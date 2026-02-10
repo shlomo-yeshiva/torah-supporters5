@@ -11023,19 +11023,25 @@
             const bgImg = (liveViewSettings.bgImageUrl || '').trim();
             const resolvedBgImage = bgImg ? (bgImg.startsWith('data:') ? bgImg : toDirectImageUrl(bgImg)) : defaultBgImage;
             const safeUrl = (resolvedBgImage || defaultBgImage).replace(/'/g, "\\'");
+            const toHexWithAlpha = (c, a) => {
+                let h = (c || '#f5e6d3').trim().replace(/^#/, '');
+                if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+                return '#' + h + (a || '80');
+            };
+            const overlayC1 = toHexWithAlpha(liveViewSettings.bgColor);
+            const overlayC2 = toHexWithAlpha(liveViewSettings.bgColor2);
 
             style.textContent = `
                 .live-view-section {
-                    background: linear-gradient(135deg, ${liveViewSettings.bgColor} 0%, ${liveViewSettings.bgColor2} 100%) !important;
+                    background: linear-gradient(135deg, ${overlayC1} 0%, ${overlayC2} 100%),
+                                url('${safeUrl}') center center / cover no-repeat !important;
                 }
                 #liveLeadersBacking {
-                    background: linear-gradient(135deg, ${liveViewSettings.bgColor} 0%, ${liveViewSettings.bgColor2} 100%) !important;
+                    background: linear-gradient(135deg, ${overlayC1} 0%, ${overlayC2} 100%),
+                                url('${safeUrl}') center center / cover no-repeat !important;
                 }
                 .live-donors-container {
-                    background-image: url('${safeUrl}') !important;
-                    background-repeat: no-repeat !important;
-                    background-position: center center !important;
-                    background-size: cover !important;
+                    background: transparent !important;
                 }
                 .leaders-title {
                     font-size: ${liveViewSettings.titleSize}px !important;
