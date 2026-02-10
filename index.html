@@ -3011,7 +3011,7 @@
             background-image: url('https://i.postimg.cc/ZRMCLxgW/wgw-t-t-dhws.png');
             background-repeat: no-repeat;
             background-position: center center;
-            background-size: 100% 100%;
+            background-size: clamp(780px, 74vw, 1500px) auto;
             background-attachment: scroll;
             background-blend-mode: normal;
         }
@@ -10822,7 +10822,11 @@
             };
 
             // שמירת ההגדרות
+            try { localStorage.setItem('liveViewSettings', JSON.stringify(liveViewSettings)); } catch (e) {}
             storageSetItem('liveViewSettings', liveViewSettings);
+            if (typeof saveToGoogleSheets === 'function') {
+                saveToGoogleSheets().catch(() => {});
+            }
             
             // עדכון המשתנה הגלובלי מיד כדי שהפונקציה showNotification תבדוק נכון
             const showNotificationsCheckbox = document.getElementById('liveviewShowNotificationsOnLiveView');
@@ -10967,7 +10971,7 @@
                     background-image: url('https://i.postimg.cc/ZRMCLxgW/wgw-t-t-dhws.png') !important;
                     background-repeat: no-repeat !important;
                     background-position: center center !important;
-                    background-size: 100% 100% !important;
+                    background-size: clamp(780px, 74vw, 1500px) auto !important;
                 }
                 .leaders-title {
                     font-size: ${liveViewSettings.titleSize}px !important;
