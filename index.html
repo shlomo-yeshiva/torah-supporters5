@@ -5491,7 +5491,7 @@
                     <button type="button" class="management-tab management-calculator-trigger" onclick="toggleManagementCalculator()">
                         מחשבון
                     </button>
-                    <button class="management-tab" data-tab="sync">עדכונים</button>
+                    <button class="management-tab" data-tab="sync">רובוט אוטומטי</button>
                     <button class="management-tab" data-tab="history">📜 היסטוריה</button>
                     <button class="management-tab" data-tab="reset">אפשרויות איפוס</button>
                     <button class="management-tab" data-tab="password">הגדרת סיסמה</button>
@@ -6009,40 +6009,6 @@
                                 <p style="font-size: 13px; color: var(--muted); margin-top: 6px;">ברירת מחדל: כבוי – בתצוגת לייב לא יופיעו הודעות. הפעל אם תרצה לראות הודעות גם על המסך.</p>
                             </div>
 
-                            <div class="liveview-setting-group liveview-setting-group-wide">
-                                <h4>עדכון אוטומטי בתצוגת לייב</h4>
-                                <p style="font-size: 13px; color: var(--muted); margin-bottom: 12px;">אפשר להריץ עדכון (בדוק סכום, סנכרון תרומות, טען מגליון) בסיום מחזור גלילה – או תוך כדי גלילה בלי לעצור ובלי קפיצות.</p>
-                                <div class="liveview-setting-row">
-                                    <label>מתי להריץ עדכון אוטומטי:</label>
-                                    <select id="liveviewUpdateWhen" onchange="updateLiveViewSettings()">
-                                        <option value="end">בסיום מחזור גלילה (עוצר, מציג overlay, מעדכן, ממשיך)</option>
-                                        <option value="during">תוך כדי גלילה (בלי לעצור, בלי קפיצות)</option>
-                                    </select>
-                                </div>
-                                <div class="liveview-setting-row" id="liveviewUpdateDuringIntervalRow" style="display: none;">
-                                    <label>כל כמה דקות (תוך כדי גלילה):</label>
-                                    <input type="number" id="liveviewUpdateDuringMinutes" min="1" max="60" value="5" onchange="updateLiveViewSettings()" style="width: 60px;">
-                                    <span style="font-size: 12px; color: var(--muted);">דקות</span>
-                                </div>
-                                <div class="liveview-setting-row" id="liveviewUpdateEndOptionsRow">
-                                    <label>מה להציג על המסך בזמן העדכון (רק במצב "בסיום מחזור"):</label>
-                                    <select id="liveviewUpdateShow" onchange="updateLiveViewSettings()">
-                                        <option value="loading">סימן טעינה בלבד</option>
-                                        <option value="grants">כללים למתרימים (מענקים)</option>
-                                    </select>
-                                </div>
-                                <div class="liveview-setting-row" id="liveviewUpdateTypeRow">
-                                    <label>סוג העדכון להרצה (בסיום מחזור) / תוך כדי גלילה תמיד: בדוק סכום + סנכרון + טען מגליון:</label>
-                                    <select id="liveviewUpdateType" onchange="updateLiveViewSettings()">
-                                        <option value="all">כל העדכונים (נדרים + גליון)</option>
-                                        <option value="check">בדוק סכום כולל מ-API</option>
-                                        <option value="loadSheet">טען מהגליון</option>
-                                        <option value="sync">סנכרון תרומות לנדרים פלוס</option>
-                                        <option value="loadMatrim">טען מתרימים מנדרים פלוס</option>
-                                    </select>
-                                </div>
-                            </div>
-
                             <div class="liveview-setting-group">
                                 <h4>מהירות גלילה</h4>
                                 <div class="liveview-setting-row">
@@ -6131,10 +6097,15 @@
                     </div>
                 </div>
 
-                <!-- עדכונים -->
+                <!-- רובוט אוטומטי -->
                 <div class="management-content" id="syncContent">
                     <div class="sync-settings-panel">
-                        <h3>עדכונים מנדרים פלוס</h3>
+                        <h3>הגדרות רובוט אוטומטי</h3>
+                        
+                        <div style="background: #e3f2fd; border: 1px solid #2196f3; border-radius: 10px; padding: 12px; margin-bottom: 20px;">
+                            <span style="font-size: 18px;">💡</span>
+                            <strong>טיפ:</strong> אם אתה רואה הגדרות ישנות, נסה לרענן את הדף עם Ctrl+Shift+R (או Cmd+Shift+R ב-Mac) כדי לנקות את ה-cache.
+                        </div>
                         
                         <!-- אזהרה על הגבלת פניות -->
                         <div style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 10px; padding: 15px; margin-bottom: 20px;">
@@ -6143,10 +6114,7 @@
                                 <strong style="color: #856404; font-size: 16px;">אזהרה חשובה - הגבלת פניות</strong>
                             </div>
                             <p style="color: #856404; margin: 0; line-height: 1.6;">
-                                נדרים פלוס מגבילים לעד <strong>500 פניות לשעה</strong>. יש להקפיד על כך שהעדכון לא יהיה בתדירות גבוהה בפרט שזה מוצג בכמה מסכים ויש כמה קריאות מכל מסך בפני עצמו.
-                            </p>
-                            <p style="color: #856404; margin-top: 10px; margin-bottom: 0; line-height: 1.6;">
-                                <strong>המלצה:</strong> הגדר תדירות של לפחות 10-15 דקות בין עדכונים, במיוחד אם יש לך מספר מסכים פתוחים בו-זמנית.
+                                נדרים פלוס מגבילים לעד <strong>500 פניות לשעה</strong>. מומלץ להגדיר תדירות של לפחות 10–15 דקות, במיוחד עם מספר מסכים פתוחים.
                             </p>
                         </div>
                         
@@ -6155,27 +6123,21 @@
                             <div class="default-goal-controls">
                                 <input type="number" id="defaultDonorGoalInput" min="1" step="1" placeholder="לדוגמה: 2100">
                                 <button class="btn" onclick="updateDefaultDonorGoal()">עדכן יעד כללי</button>
-                                    </div>
-                                    </div>
+                            </div>
+                        </div>
                         
                         <div style="margin-bottom: 20px;">
-                            <h4 style="margin-bottom: 15px;">פעולות עדכון ידניות</h4>
+                            <h4 style="margin-bottom: 15px;">פעולות ידניות</h4>
                             <div class="default-goal-controls" style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                <button class="btn btn-success" onclick="syncWithNedarimPlus()" id="nedarimSyncBtn">
-                                    🔄 סנכרון תרומות
-                                </button>
-                                <button class="btn btn-primary" onclick="loadMatrimFromNedarim()" id="nedarimLoadMatrimBtn">
-                                    📥 טען מתרימים מנדרים פלוס
-                                </button>
-                                <button class="btn btn-info" onclick="checkTotalAmountFromAPI()" id="checkTotalBtn" style="background: #17a2b8; color: white;">
-                                    🔍 בדוק סכום כולל מ-API
-                                </button>
+                                <button class="btn btn-success" onclick="syncWithNedarimPlus()" id="nedarimSyncBtn">🔄 סנכרון תרומות</button>
+                                <button class="btn btn-primary" onclick="loadMatrimFromNedarim()" id="nedarimLoadMatrimBtn">📥 טען מתרימים מנדרים פלוס</button>
+                                <button class="btn btn-info" onclick="checkTotalAmountFromAPI()" id="checkTotalBtn" style="background: #17a2b8; color: white;">🔍 בדוק סכום כולל מ-API</button>
                             </div>
                             <div style="margin-top: 12px; padding: 12px; background: #f5f5f5; border-radius: 8px; border: 1px solid #ddd;">
                                 <strong>סכום מוצג בנדרים פלוס (מקור API):</strong>
                                 <span id="nedarimRealTotalInSync" style="font-weight: 700; margin-right: 8px;">—</span>
                                 <button type="button" class="btn btn-small" onclick="refreshNedarimRealTotalDisplay()" style="padding: 4px 10px; font-size: 12px;">רענן</button>
-                                <span style="font-size: 12px; color: #666; margin-right: 10px;">מה שבאמת מופיע בנדרים פלוס (כולל סליקות ללא שם מתרים)</span>
+                                <span style="font-size: 12px; color: #666; margin-right: 10px;">מה שבאמת מופיע בנדרים פלוס</span>
                             </div>
                         </div>
 
@@ -6196,38 +6158,49 @@
                             <p id="addToNedarimResult" style="margin-top: 10px; font-size: 12px; min-height: 20px;"></p>
                         </div>
 
-                        <div class="auto-sync-control" style="margin-top: 15px; padding: 15px; background: rgba(255, 255, 255, 0.6); border-radius: 10px; border: 1px solid var(--border);">
-                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 500;">
-                                <input type="checkbox" id="autoSyncNedarimCheckbox" onchange="saveAutoSyncNedarimSetting()" style="width: 20px; height: 20px; cursor: pointer;">
-                                <span>🔄 הפעל עדכון אוטומטי – הפעולה הנבחרת למטה תרוץ אוטומטית כל התדירות שתגדיר (למשל "בדוק סכום כולל מ-API" כל X דקות)</span>
+                        <!-- פאנל רובוט אוטומטי -->
+                        <div id="robotPanel" style="margin-top: 24px; padding: 20px; background: rgba(255,255,255,0.7); border: 2px solid var(--border); border-radius: 12px;">
+                            <h4 style="margin-bottom: 16px;">🤖 רובוט אוטומטי</h4>
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; margin-bottom: 16px;">
+                                <input type="checkbox" id="robotEnabledCheckbox" onchange="saveRobotSettings(); toggleRobot();" style="width: 20px; height: 20px; cursor: pointer;">
+                                <span>הפעל רובוט אוטומטי</span>
                             </label>
-                            <div style="margin-top: 12px; padding-right: 30px;">
-                                <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text);">בחר איזה כפתור להפעיל אוטומטית:</label>
-                                <select id="autoSyncActionSelect" onchange="saveAutoSyncNedarimSetting()" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: white; cursor: pointer; margin-bottom: 12px;">
-                                    <option value="sync">🔄 סנכרון תרומות</option>
-                                    <option value="load">📥 טען מתרימים מנדרים פלוס</option>
-                                    <option value="check">🔍 בדוק סכום כולל מ-API</option>
-                                    <option value="all">⚡ כל הכפתורים בו-זמנית</option>
-                                </select>
-                                <div style="margin-top: 12px;">
-                                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text);">תדירות עדכון אוטומטי:</label>
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <input type="number" id="autoSyncIntervalInput" min="1" step="1" value="5" onchange="updateAutoSyncIntervalDisplay(); saveAutoSyncNedarimSetting();" oninput="updateAutoSyncIntervalDisplay();" style="width: 80px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: white;">
-                                        <select id="autoSyncIntervalUnit" onchange="updateAutoSyncIntervalDisplay(); saveAutoSyncNedarimSetting();" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: white; cursor: pointer;">
-                                            <option value="minutes">דקות</option>
-                                            <option value="hours">שעות</option>
-                                        </select>
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">בחר איזה כפתורים להפעיל אוטומטית:</label>
+                                <div style="display: flex; flex-wrap: wrap; gap: 12px 20px;">
+                                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" id="robotActionSync" onchange="saveRobotSettings()"> 🔄 סנכרון תרומות לנדרים פלוס</label>
+                                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" id="robotActionCheck" onchange="saveRobotSettings()"> 🔍 בדוק סכום כולל מ-API</label>
+                                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" id="robotActionLoadSheet" onchange="saveRobotSettings()"> 📥 טען מהגליון</label>
+                                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" id="robotActionSaveSheet" onchange="saveRobotSettings()"> 💾 שמור לגליון</label>
+                                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" id="robotActionLoadMatrim" onchange="saveRobotSettings()"> 📋 טען מתרימים מנדרים פלוס</label>
+                                </div>
                             </div>
-                                    <div style="margin-top: 8px; font-size: 12px; color: var(--muted);">
-                                        💡 העדכון יתבצע כל <span id="autoSyncIntervalDisplay">5 דקות</span>
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">תדירות הפעלה:</label>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="number" id="robotIntervalInput" min="1" max="120" value="10" onchange="saveRobotSettings(); updateRobotStatus();" style="width: 70px; padding: 8px; border: 1px solid var(--border); border-radius: 6px;">
+                                    <span>דקות</span>
+                                </div>
+                                <p style="font-size: 12px; color: var(--muted); margin-top: 6px;">הרובוט יפעיל את הכפתורים הנבחרים ברצף כל X דקות.</p>
                             </div>
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">אופן ביצוע פעולות:</label>
+                                <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; cursor: pointer;">
+                                    <input type="radio" name="robotExecutionMode" value="sequential" checked onchange="saveRobotSettings()">
+                                    <span>רציף (זה אחר זה) – כל פעולה מתחילה רק אחרי שהקודמת מסתיימת. מומלץ – מונע רעידות ודריסת נתונים.</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="radio" name="robotExecutionMode" value="parallel" onchange="saveRobotSettings()">
+                                    <span>מקבילי (בו-זמנית) – כל הפעולות מתחילות יחד.</span>
+                                </label>
                             </div>
-                                <div style="margin-top: 8px; font-size: 12px; color: var(--muted);" id="autoSyncWarningText">
-                                    💡 בחירת כפתור אחד בלבד עוזרת להימנע מהגבלת 500 קריאות לשעה
-                        </div>
+                            <div style="margin-bottom: 16px; padding: 12px; background: #e3f2fd; border-radius: 8px; border: 1px solid #2196f3;">
+                                <strong>סטטוס רובוט:</strong>
+                                <span id="robotStatusText" style="margin-right: 8px;">הרובוט כבוי</span>
                             </div>
-                            <div style="margin-top: 8px; font-size: 14px; color: var(--muted); padding-right: 30px;">
-                                ההגדרה נשמרת ונשארת פעילה גם כשפותחים את התוכנה ממחשב אחר
+                            <div style="margin-top: 16px;">
+                                <strong>היסטוריית פעולות (הצלחה / כישלון):</strong>
+                                <div id="robotHistoryList" style="margin-top: 8px; max-height: 220px; overflow-y: auto; font-size: 13px; line-height: 1.6;"></div>
                             </div>
                         </div>
 
@@ -6864,9 +6837,18 @@
         let nedarimSyncTimer = null;
         
         // הגדרת עדכון אוטומטי של נדרים פלוס (נשמרת ב-localStorage)
-        let autoSyncNedarimEnabled = false; // ברירת מחדל: מושבת – מונע קפיצות 2000 ₪
-        let autoSyncSelectedAction = 'sync'; // ברירת מחדל: סנכרון תרומות ('sync', 'load', 'check')
-        let autoSyncIntervalMinutes = 5; // ברירת מחדל: 5 דקות
+        let autoSyncNedarimEnabled = false;
+        let autoSyncSelectedAction = 'sync';
+        let autoSyncIntervalMinutes = 5;
+        // רובוט אוטומטי
+        let robotEnabled = false;
+        let robotActions = ['sync', 'check', 'loadSheet', 'saveSheet', 'loadMatrim'];
+        let robotIntervalMinutes = 10;
+        let robotExecutionMode = 'sequential';
+        let robotHistory = [];
+        const ROBOT_HISTORY_MAX = 50;
+        let robotTimerId = null;
+        let robotRunning = false;
         // ===== סוף הגדרות נדרים פלוס =====
         
         const SECTION_OPTIONS = [
@@ -6877,7 +6859,7 @@
             { id: 'management-groups', label: 'ניהול → ניהול קבוצות' },
             { id: 'management-donors', label: 'ניהול → ניהול מתרימים' },
             { id: 'management-liveview', label: 'ניהול → הגדרות תצוגת לייב' },
-            { id: 'management-sync', label: 'ניהול → עדכונים' },
+            { id: 'management-sync', label: 'ניהול → רובוט אוטומטי' },
             { id: 'management-reset', label: 'ניהול → אפשרויות איפוס' },
             { id: 'management-password', label: 'ניהול → הגדרת סיסמה' },
             { id: 'liveview', label: 'תצוגה בלייב' },
@@ -7902,208 +7884,212 @@
             }
         }
         
-        // פונקציה להפעלת טיימר עדכון אוטומטי
+        // פונקציה להפעלת טיימר עדכון אוטומטי (לא בשימוש – הרובוט מחליף)
         function startAutoRefreshTimer() {
             if (autoRefreshTimer) {
                 clearInterval(autoRefreshTimer);
-            }
-            
-            if (autoSyncNedarimEnabled) {
-                // משתמש בתדירות שנשמרה, או 5 דקות כברירת מחדל
-                const intervalMs = (autoSyncIntervalMinutes || 5) * 60 * 1000;
-                autoRefreshTimer = setInterval(async () => {
-                    if (typeof isLiveViewActive === 'function' && isLiveViewActive() && liveViewSettings.enableAutoScroll && donorsScrollIsRunning) {
-                        return;
-                    }
-                    await performAutoRefresh();
-                }, intervalMs);
-                console.log(`🔄 [הגדרות] טיימר עדכון אוטומטי הוגדר ל-${autoSyncIntervalMinutes || 5} דקות (בתצוגת לייב – עדכון רק בסיום מחזור גלילה)`);
+                autoRefreshTimer = null;
             }
         }
-        
-        // פונקציות לשמירה וטעינה של הגדרת עדכון אוטומטי נדרים פלוס
-        function loadAutoSyncNedarimSetting() {
+
+        // ========== רובוט אוטומטי ==========
+        const ROBOT_ACTION_IDS = ['sync', 'check', 'loadSheet', 'saveSheet', 'loadMatrim'];
+        const ROBOT_ACTION_LABELS = {
+            sync: 'סנכרון תרומות לנדרים פלוס',
+            check: 'בדוק סכום כולל מ-API',
+            loadSheet: 'טען מהגליון',
+            saveSheet: 'שמור לגליון',
+            loadMatrim: 'טען מתרימים מנדרים פלוס'
+        };
+
+        function getRobotEnabledActions() {
+            const out = [];
+            const syncEl = document.getElementById('robotActionSync');
+            const checkEl = document.getElementById('robotActionCheck');
+            const loadSheetEl = document.getElementById('robotActionLoadSheet');
+            const saveSheetEl = document.getElementById('robotActionSaveSheet');
+            const loadMatrimEl = document.getElementById('robotActionLoadMatrim');
+            if (syncEl && syncEl.checked) out.push('sync');
+            if (checkEl && checkEl.checked) out.push('check');
+            if (loadSheetEl && loadSheetEl.checked) out.push('loadSheet');
+            if (saveSheetEl && saveSheetEl.checked) out.push('saveSheet');
+            if (loadMatrimEl && loadMatrimEl.checked) out.push('loadMatrim');
+            return out;
+        }
+
+        function runRobotAction(actionId) {
+            switch (actionId) {
+                case 'sync': return typeof syncWithNedarimPlus === 'function' ? syncWithNedarimPlus(true) : Promise.resolve();
+                case 'check': return typeof checkTotalAmountFromAPI === 'function' ? checkTotalAmountFromAPI(true) : Promise.resolve();
+                case 'loadSheet': return typeof loadFromGoogleSheets === 'function' ? loadFromGoogleSheets(true) : Promise.resolve({ success: false });
+                case 'saveSheet': return typeof saveToGoogleSheets === 'function' ? saveToGoogleSheets() : Promise.resolve();
+                case 'loadMatrim': return typeof loadMatrimFromNedarim === 'function' ? loadMatrimFromNedarim(true) : Promise.resolve();
+                default: return Promise.resolve();
+            }
+        }
+
+        async function runRobotCycle() {
+            if (robotRunning || !robotEnabled) return;
+            const actions = getRobotEnabledActions();
+            if (actions.length === 0) return;
+            robotRunning = true;
+            const entry = { time: new Date().toLocaleTimeString('he-IL'), results: [] };
+            const sequential = (document.querySelector('input[name="robotExecutionMode"]:checked') || {}).value !== 'parallel';
             try {
-                storageGetItem('autoSyncNedarimEnabled', (saved) => {
-                    if (saved !== null && saved !== undefined) {
-                        autoSyncNedarimEnabled = saved === true || saved === 'true';
-                    } else {
-                        autoSyncNedarimEnabled = false; // ברירת מחדל: מושבת (מונע קפיצות 2000 ₪)
-                    }
-                    // מעדכן את ה-checkbox
-                    const checkbox = document.getElementById('autoSyncNedarimCheckbox');
-                    if (checkbox) {
-                        checkbox.checked = autoSyncNedarimEnabled;
-                    }
-                    
-                    // טעינת בחירת הכפתור
-                    storageGetItem('autoSyncSelectedAction', (savedAction) => {
-                        if (savedAction !== null && savedAction !== undefined) {
-                            autoSyncSelectedAction = savedAction;
-                        } else {
-                            autoSyncSelectedAction = 'sync'; // ברירת מחדל: סנכרון תרומות
+                if (sequential) {
+                    for (const actionId of actions) {
+                        try {
+                            await runRobotAction(actionId);
+                            entry.results.push({ actionId, label: ROBOT_ACTION_LABELS[actionId] || actionId, success: true });
+                        } catch (err) {
+                            entry.results.push({ actionId, label: ROBOT_ACTION_LABELS[actionId] || actionId, success: false, error: (err && err.message) || String(err) });
                         }
-                        // מעדכן את ה-select
-                        const select = document.getElementById('autoSyncActionSelect');
-                        if (select) {
-                            select.value = autoSyncSelectedAction;
+                    }
+                } else {
+                    const promises = actions.map(async (actionId) => {
+                        try {
+                            await runRobotAction(actionId);
+                            return { actionId, label: ROBOT_ACTION_LABELS[actionId] || actionId, success: true };
+                        } catch (err) {
+                            return { actionId, label: ROBOT_ACTION_LABELS[actionId] || actionId, success: false, error: (err && err.message) || String(err) };
                         }
-                        
-                        // טעינת תדירות העדכון
-                        storageGetItem('autoSyncIntervalMinutes', (savedInterval) => {
-                            if (savedInterval !== null && savedInterval !== undefined) {
-                                autoSyncIntervalMinutes = parseInt(savedInterval) || 5;
-                            } else {
-                                autoSyncIntervalMinutes = 5; // ברירת מחדל: 5 דקות
-                            }
-                            
-                            // טעינת יחידת זמן (דקות/שעות)
-                            storageGetItem('autoSyncIntervalUnit', (savedUnit) => {
-                                const unit = savedUnit || 'minutes';
-                                const intervalInput = document.getElementById('autoSyncIntervalInput');
-                                const unitSelect = document.getElementById('autoSyncIntervalUnit');
-                                
-                                if (intervalInput && unitSelect) {
-                                    // אם היחידה היא שעות, ממיר לדקות
-                                    if (unit === 'hours') {
-                                        const hoursValue = autoSyncIntervalMinutes / 60;
-                                        intervalInput.value = hoursValue;
-                                        unitSelect.value = 'hours';
-                                    } else {
-                                        intervalInput.value = autoSyncIntervalMinutes;
-                                        unitSelect.value = 'minutes';
-                                    }
-                                    
-                                    updateAutoSyncIntervalDisplay();
-                                    
-                                    // מתחיל את הטיימר עם ההגדרות שנטענו
-                                    startAutoRefreshTimer();
-                                }
-                                
-                                console.log(`✅ [הגדרות] עדכון אוטומטי נדרים פלוס: ${autoSyncNedarimEnabled ? 'מופעל' : 'מושבת'}, כפתור נבחר: ${autoSyncSelectedAction}, תדירות: ${autoSyncIntervalMinutes} דקות`);
-                                
-                                // עדכון אזהרה על הגבלת פניות
-                                const warningText = document.getElementById('autoSyncWarningText');
-                                if (warningText) {
-                                    if (autoSyncSelectedAction === 'all') {
-                                        warningText.textContent = '⚠️ שים לב: הפעלת כל הכפתורים בו-זמנית עלולה להגביר את הסיכון להגבלת 500 קריאות לשעה. מומלץ להגדיר תדירות של לפחות 10-15 דקות.';
-                                        warningText.style.color = '#dc3545';
-                                    } else {
-                                        warningText.textContent = '💡 בחירת כפתור אחד בלבד עוזרת להימנע מהגבלת 500 קריאות לשעה';
-                                        warningText.style.color = 'var(--muted)';
-                                    }
-                                }
+                    });
+                    const res = await Promise.all(promises);
+                    entry.results = res;
+                }
+            } finally {
+                robotRunning = false;
+            }
+            robotHistory.unshift(entry);
+            if (robotHistory.length > ROBOT_HISTORY_MAX) robotHistory.pop();
+            try { storageSetItem('robotHistory', JSON.stringify(robotHistory)); } catch (e) {}
+            renderRobotHistory();
+            updateRobotStatus();
+        }
+
+        function renderRobotHistory() {
+            const el = document.getElementById('robotHistoryList');
+            if (!el) return;
+            if (robotHistory.length === 0) {
+                el.innerHTML = '<p style="color: var(--muted);">אין עדיין היסטוריה. הרובוט ירוץ לפי התדירות שהגדרת.</p>';
+                return;
+            }
+            el.innerHTML = robotHistory.map(entry => {
+                const lines = entry.results.map(r => {
+                    const icon = r.success ? '✅' : '❌';
+                    const msg = r.success ? r.label : (r.label + ' – ' + (r.error || 'שגיאה'));
+                    return `<div>${icon} ${msg}</div>`;
+                }).join('');
+                return `<div style="margin-bottom: 10px; padding: 8px; background: rgba(0,0,0,0.04); border-radius: 6px;"><strong>${entry.time}</strong>${lines ? '<br>' + lines : ''}</div>`;
+            }).join('');
+        }
+
+        function updateRobotStatus() {
+            const el = document.getElementById('robotStatusText');
+            if (!el) return;
+            if (!robotEnabled) {
+                el.textContent = 'הרובוט כבוי';
+                return;
+            }
+            if (robotRunning) {
+                el.textContent = 'הרובוט מריץ פעולות...';
+                return;
+            }
+            const actions = getRobotEnabledActions();
+            const interval = parseInt(document.getElementById('robotIntervalInput') && document.getElementById('robotIntervalInput').value, 10) || robotIntervalMinutes;
+            el.textContent = `הרובוט פעיל – ${actions.length} פעולות כל ${interval} דקות`;
+        }
+
+        function startRobotTimer() {
+            if (robotTimerId) clearInterval(robotTimerId);
+            robotTimerId = null;
+            if (!robotEnabled) return;
+            const intervalMs = (robotIntervalMinutes || 10) * 60 * 1000;
+            robotTimerId = setInterval(runRobotCycle, intervalMs);
+            console.log('🤖 [רובוט] טיימר הוגדר – כל ' + (robotIntervalMinutes || 10) + ' דקות');
+        }
+
+        function stopRobotTimer() {
+            if (robotTimerId) {
+                clearInterval(robotTimerId);
+                robotTimerId = null;
+            }
+        }
+
+        function toggleRobot() {
+            const cb = document.getElementById('robotEnabledCheckbox');
+            robotEnabled = cb ? cb.checked : false;
+            try { storageSetItem('robotEnabled', robotEnabled); } catch (e) {}
+            stopRobotTimer();
+            if (robotEnabled) startRobotTimer();
+            updateRobotStatus();
+        }
+
+        function saveRobotSettings() {
+            const cb = document.getElementById('robotEnabledCheckbox');
+            const intervalInput = document.getElementById('robotIntervalInput');
+            robotEnabled = cb ? cb.checked : false;
+            robotIntervalMinutes = Math.max(1, Math.min(120, parseInt(intervalInput && intervalInput.value, 10) || 10));
+            const actions = getRobotEnabledActions();
+            robotActions = actions.length ? actions : ['sync', 'check'];
+            const modeEl = document.querySelector('input[name="robotExecutionMode"]:checked');
+            robotExecutionMode = (modeEl && modeEl.value) || 'sequential';
+            try {
+                storageSetItem('robotEnabled', robotEnabled);
+                storageSetItem('robotIntervalMinutes', robotIntervalMinutes);
+                storageSetItem('robotActions', JSON.stringify(robotActions));
+                storageSetItem('robotExecutionMode', robotExecutionMode);
+            } catch (e) {}
+            stopRobotTimer();
+            if (robotEnabled) startRobotTimer();
+            updateRobotStatus();
+        }
+
+        function loadRobotSettings() {
+            try {
+                storageGetItem('robotEnabled', (v) => {
+                    robotEnabled = v === true || v === 'true';
+                    const cb = document.getElementById('robotEnabledCheckbox');
+                    if (cb) cb.checked = robotEnabled;
+                    storageGetItem('robotIntervalMinutes', (m) => {
+                        robotIntervalMinutes = Math.max(1, Math.min(120, parseInt(m, 10) || 10));
+                        const intervalInput = document.getElementById('robotIntervalInput');
+                        if (intervalInput) intervalInput.value = robotIntervalMinutes;
+                        storageGetItem('robotActions', (a) => {
+                            try { robotActions = (a && JSON.parse(a)) || ['sync', 'check', 'loadSheet', 'saveSheet', 'loadMatrim']; } catch (_) { robotActions = ['sync', 'check']; }
+                            const syncEl = document.getElementById('robotActionSync'); if (syncEl) syncEl.checked = robotActions.includes('sync');
+                            const checkEl = document.getElementById('robotActionCheck'); if (checkEl) checkEl.checked = robotActions.includes('check');
+                            const loadSheetEl = document.getElementById('robotActionLoadSheet'); if (loadSheetEl) loadSheetEl.checked = robotActions.includes('loadSheet');
+                            const saveSheetEl = document.getElementById('robotActionSaveSheet'); if (saveSheetEl) saveSheetEl.checked = robotActions.includes('saveSheet');
+                            const loadMatrimEl = document.getElementById('robotActionLoadMatrim'); if (loadMatrimEl) loadMatrimEl.checked = robotActions.includes('loadMatrim');
+                            storageGetItem('robotExecutionMode', (mode) => {
+                                robotExecutionMode = (mode === 'parallel' || mode === 'sequential') ? mode : 'sequential';
+                                const seq = document.querySelector('input[name="robotExecutionMode"][value="sequential"]');
+                                const par = document.querySelector('input[name="robotExecutionMode"][value="parallel"]');
+                                if (seq) seq.checked = (robotExecutionMode === 'sequential');
+                                if (par) par.checked = (robotExecutionMode === 'parallel');
+                                storageGetItem('robotHistory', (h) => {
+                                    try { robotHistory = (h && JSON.parse(h)) || []; } catch (_) { robotHistory = []; }
+                                    renderRobotHistory();
+                                    stopRobotTimer();
+                                    if (robotEnabled) startRobotTimer();
+                                    updateRobotStatus();
+                                });
                             });
                         });
                     });
                 });
-            } catch (error) {
-                console.warn('שגיאה בטעינת הגדרת עדכון אוטומטי נדרים פלוס:', error);
-                autoSyncNedarimEnabled = true; // ברירת מחדל
-                autoSyncSelectedAction = 'sync'; // ברירת מחדל
-            }
+            } catch (e) { console.warn('שגיאה בטעינת הגדרות רובוט:', e); }
         }
         
-        function updateAutoSyncIntervalDisplay() {
-            const intervalInput = document.getElementById('autoSyncIntervalInput');
-            const unitSelect = document.getElementById('autoSyncIntervalUnit');
-            const display = document.getElementById('autoSyncIntervalDisplay');
-            
-            if (intervalInput && unitSelect && display) {
-                const value = parseInt(intervalInput.value) || 1;
-                const unit = unitSelect.value;
-                
-                if (unit === 'hours') {
-                    display.textContent = value === 1 ? 'שעה אחת' : `${value} שעות`;
-                } else {
-                    display.textContent = value === 1 ? 'דקה אחת' : `${value} דקות`;
-                }
-            }
+        function loadAutoSyncNedarimSetting() {
+            loadRobotSettings();
         }
         
+        function updateAutoSyncIntervalDisplay() {}
+
         function saveAutoSyncNedarimSetting() {
-            const checkbox = document.getElementById('autoSyncNedarimCheckbox');
-            const select = document.getElementById('autoSyncActionSelect');
-            const intervalInput = document.getElementById('autoSyncIntervalInput');
-            const unitSelect = document.getElementById('autoSyncIntervalUnit');
-            
-            if (checkbox) {
-                autoSyncNedarimEnabled = checkbox.checked;
-                try {
-                    storageSetItem('autoSyncNedarimEnabled', autoSyncNedarimEnabled);
-                    console.log(`💾 [הגדרות] עדכון אוטומטי נדרים פלוס נשמר: ${autoSyncNedarimEnabled ? 'מופעל' : 'מושבת'}`);
-                } catch (error) {
-                    console.error('שגיאה בשמירת הגדרת עדכון אוטומטי נדרים פלוס:', error);
-                }
-            }
-            
-            if (select) {
-                autoSyncSelectedAction = select.value;
-                try {
-                    storageSetItem('autoSyncSelectedAction', autoSyncSelectedAction);
-                    console.log(`💾 [הגדרות] כפתור נבחר נשמר: ${autoSyncSelectedAction}`);
-                } catch (error) {
-                    console.error('שגיאה בשמירת בחירת כפתור:', error);
-                }
-            }
-            
-            if (intervalInput && unitSelect) {
-                const value = parseInt(intervalInput.value) || 1;
-                const unit = unitSelect.value;
-                
-                // ממיר הכל לדקות לשמירה
-                if (unit === 'hours') {
-                    autoSyncIntervalMinutes = value * 60;
-                } else {
-                    autoSyncIntervalMinutes = value;
-                }
-                
-                try {
-                    storageSetItem('autoSyncIntervalMinutes', autoSyncIntervalMinutes);
-                    storageSetItem('autoSyncIntervalUnit', unit);
-                    console.log(`💾 [הגדרות] תדירות עדכון נשמרה: ${autoSyncIntervalMinutes} דקות (${value} ${unit === 'hours' ? 'שעות' : 'דקות'})`);
-                    
-                    // מעדכן את התצוגה
-                    updateAutoSyncIntervalDisplay();
-                    
-                    // מאפס את הטיימר עם התדירות החדשה
-                    startAutoRefreshTimer();
-                } catch (error) {
-                    console.error('שגיאה בשמירת תדירות עדכון:', error);
-                }
-            }
-            
-            // שמירה לבסיס הנתונים הלוקאלי (IndexedDB)
-            saveSettingsToDatabase().catch(err => {
-                console.warn('⚠️ שגיאה בשמירת הגדרות לבסיס הנתונים:', err);
-            });
-            
-            if (checkbox && select) {
-                const actionNames = {
-                    'sync': 'סנכרון תרומות',
-                    'load': 'טען מתרימים מנדרים פלוס',
-                    'check': 'בדוק סכום כולל מ-API',
-                    'all': 'כל הכפתורים בו-זמנית'
-                };
-                const intervalText = intervalInput && unitSelect ? 
-                    (unitSelect.value === 'hours' ? 
-                        `${parseInt(intervalInput.value) || 1} שעות` : 
-                        `${parseInt(intervalInput.value) || 1} דקות`) : 
-                    '5 דקות';
-                showNotification(`✅ עדכון אוטומטי ${autoSyncNedarimEnabled ? 'הופעל' : 'הושבת'} - ${autoSyncNedarimEnabled ? actionNames[autoSyncSelectedAction] + ` כל ${intervalText}` : ''}`);
-                
-                // עדכון אזהרה על הגבלת פניות
-                const warningText = document.getElementById('autoSyncWarningText');
-                if (warningText) {
-                    if (autoSyncSelectedAction === 'all') {
-                        warningText.textContent = '⚠️ שים לב: הפעלת כל הכפתורים בו-זמנית עלולה להגביר את הסיכון להגבלת 500 קריאות לשעה. מומלץ להגדיר תדירות של לפחות 10-15 דקות.';
-                        warningText.style.color = '#dc3545';
-                    } else {
-                        warningText.textContent = '💡 בחירת כפתור אחד בלבד עוזרת להימנע מהגבלת 500 קריאות לשעה';
-                        warningText.style.color = 'var(--muted)';
-                    }
-                }
-            }
+            saveRobotSettings();
         }
 
         function loadAccessControl() {
@@ -9706,11 +9692,7 @@
             donorsSortBy: 'name',
             donorsFilter: 'all',
             maxDonorsPerGroup: 0,
-            showNotificationsOnLiveView: false,
-            liveViewUpdateShow: 'loading',
-            liveViewUpdateType: 'all',
-            liveViewUpdateWhen: 'end',       // 'end' = בסיום מחזור (עוצר + overlay) | 'during' = תוך כדי גלילה בלי לעצור
-            liveViewUpdateDuringMinutes: 5   // כל כמה דקות כשעובדים במצב "תוך כדי גלילה"
+            showNotificationsOnLiveView: false
         };
 
         function loadLiveViewSettings() {
@@ -9765,18 +9747,6 @@
             if (enableAutoScroll) enableAutoScroll.checked = liveViewSettings.enableAutoScroll;
             const showNotificationsOnLiveView = document.getElementById('liveviewShowNotificationsOnLiveView');
             if (showNotificationsOnLiveView) showNotificationsOnLiveView.checked = !!liveViewSettings.showNotificationsOnLiveView;
-            const liveviewUpdateShow = document.getElementById('liveviewUpdateShow');
-            if (liveviewUpdateShow) liveviewUpdateShow.value = liveViewSettings.liveViewUpdateShow || 'loading';
-            const liveviewUpdateType = document.getElementById('liveviewUpdateType');
-            if (liveviewUpdateType) liveviewUpdateType.value = liveViewSettings.liveViewUpdateType || 'all';
-            const liveviewUpdateWhen = document.getElementById('liveviewUpdateWhen');
-            if (liveviewUpdateWhen) liveviewUpdateWhen.value = liveViewSettings.liveViewUpdateWhen || 'end';
-            const liveviewUpdateDuringMinutes = document.getElementById('liveviewUpdateDuringMinutes');
-            if (liveviewUpdateDuringMinutes) liveviewUpdateDuringMinutes.value = liveViewSettings.liveViewUpdateDuringMinutes || 5;
-            var duringRow = document.getElementById('liveviewUpdateDuringIntervalRow');
-            var endOptionsRow = document.getElementById('liveviewUpdateEndOptionsRow');
-            if (duringRow) duringRow.style.display = (liveViewSettings.liveViewUpdateWhen === 'during') ? '' : 'none';
-            if (endOptionsRow) endOptionsRow.style.display = (liveViewSettings.liveViewUpdateWhen === 'end') ? '' : 'none';
             
             // המרת #ffffff ל-rgba עבור groupHeaderBg אם צריך
             if (liveViewSettings.groupHeaderBg === '#ffffff' || liveViewSettings.groupHeaderBg === '#FFFFFF') {
@@ -9958,12 +9928,6 @@
         }
 
         function updateLiveViewSettings() {
-            var whenEl = document.getElementById('liveviewUpdateWhen');
-            var whenVal = whenEl ? whenEl.value : 'end';
-            var duringRow = document.getElementById('liveviewUpdateDuringIntervalRow');
-            var endOptionsRow = document.getElementById('liveviewUpdateEndOptionsRow');
-            if (duringRow) duringRow.style.display = (whenVal === 'during') ? '' : 'none';
-            if (endOptionsRow) endOptionsRow.style.display = (whenVal === 'end') ? '' : 'none';
             const titleSize = document.getElementById('liveviewTitleSize');
             const titleSizeValue = document.getElementById('liveviewTitleSizeValue');
             const donorNameSize = document.getElementById('liveviewDonorNameSize');
@@ -10157,11 +10121,7 @@
                 donorsSortBy: donorsSortBy ? donorsSortBy.value : liveViewSettings.donorsSortBy,
                 donorsFilter: donorsFilter ? donorsFilter.value : liveViewSettings.donorsFilter,
                 maxDonorsPerGroup: maxDonorsPerGroup ? parseInt(maxDonorsPerGroup.value) || 0 : liveViewSettings.maxDonorsPerGroup,
-                showNotificationsOnLiveView: document.getElementById('liveviewShowNotificationsOnLiveView') ? document.getElementById('liveviewShowNotificationsOnLiveView').checked : !!liveViewSettings.showNotificationsOnLiveView,
-                liveViewUpdateShow: document.getElementById('liveviewUpdateShow') ? document.getElementById('liveviewUpdateShow').value : (liveViewSettings.liveViewUpdateShow || 'loading'),
-                liveViewUpdateType: document.getElementById('liveviewUpdateType') ? document.getElementById('liveviewUpdateType').value : (liveViewSettings.liveViewUpdateType || 'all'),
-                liveViewUpdateWhen: document.getElementById('liveviewUpdateWhen') ? document.getElementById('liveviewUpdateWhen').value : (liveViewSettings.liveViewUpdateWhen || 'end'),
-                liveViewUpdateDuringMinutes: Math.min(60, Math.max(1, parseInt(document.getElementById('liveviewUpdateDuringMinutes') ? document.getElementById('liveviewUpdateDuringMinutes').value : 5, 10) || 5))
+                showNotificationsOnLiveView: document.getElementById('liveviewShowNotificationsOnLiveView') ? document.getElementById('liveviewShowNotificationsOnLiveView').checked : !!liveViewSettings.showNotificationsOnLiveView
             };
 
             storageSetItem('liveViewSettings', liveViewSettings);
@@ -10231,11 +10191,7 @@
                 donorsSortBy: 'name',
                 donorsFilter: 'all',
                 maxDonorsPerGroup: 0,
-                showNotificationsOnLiveView: false,
-                liveViewUpdateShow: 'loading',
-                liveViewUpdateType: 'all',
-                liveViewUpdateWhen: 'end',
-                liveViewUpdateDuringMinutes: 5
+                showNotificationsOnLiveView: false
             };
             storageSetItem('liveViewSettings', liveViewSettings);
             loadLiveViewSettings();
@@ -11269,7 +11225,6 @@
                 if (offset >= halfHeight) {
                     offset -= halfHeight;
                     state.cycleCompleteFired = false;
-                    if ((liveViewSettings.liveViewUpdateWhen || 'end') === 'end') onDonorsScrollCycleComplete().catch(() => {});
                 }
                 if (offset < 10) state.cycleCompleteFired = false;
                 state.offset = offset;
@@ -11353,7 +11308,6 @@
                 await syncWithNedarimPlus(true);
                 // בנוסף – לפי סוג העדכון בהגדרות
                 if (updateType === 'all') {
-                    if (autoSyncNedarimEnabled) await performAutoRefresh();
                     const url = (googleSheetsWebAppUrl || (typeof localStorage !== 'undefined' && localStorage.getItem('googleSheetsWebAppUrl')) || '').trim();
                     if (url && googleSheetsSyncEnabled) {
                         if (sheetSyncLoadEnabled) {
@@ -11494,13 +11448,6 @@
             
             const now = performance.now();
             
-            // עדכון אוטומטי: לפי ההגדרה – תוך כדי גלילה (כל X דקות) או גיבוי 10 דקות (בסיום מחזור)
-            if ((liveViewSettings.liveViewUpdateWhen || 'end') === 'during') {
-                if (typeof triggerLiveViewUpdateDuring === 'function') triggerLiveViewUpdateDuring();
-            } else {
-                if (typeof triggerLiveViewUpdateByTimer === 'function') triggerLiveViewUpdateByTimer();
-            }
-            
             // בדיקת גלילת תורמים
             if (donorsScrollIsRunning) {
                 // אם עברו יותר מ-2 שניות מהעדכון האחרון, משהו תקוע
@@ -11608,14 +11555,15 @@
             let suppressNotifications = false;
             
             function showNotification(message, force = false) {
-                // אם ההודעות מדוכאות ולא נכפה - לא מציג
-                if (suppressNotifications && !force) {
+                // force רק כשמועבר במפורש true (בוליאני) – לא 'error'/'success' וכו'
+                const reallyForce = force === true;
+                // אם ההודעות מדוכאות ולא נכפה – לא מציג
+                if (suppressNotifications && !reallyForce) {
                     console.log('📢 [הודעה מדוכאת]:', message);
                     return;
                 }
-                
-                // לא מציג הודעות בתצוגת לייב אלא אם הופעלה האפשרות בהגדרות (או נכפה)
-                if (typeof isLiveViewActive === 'function' && isLiveViewActive() && !force) {
+                // בתצוגת לייב: לא מציג הודעות אלא אם "הצג הודעות" מופעל בהגדרות, או נכפה במפורש (true)
+                if (typeof isLiveViewActive === 'function' && isLiveViewActive() && !reallyForce) {
                     if (!(liveViewSettings && liveViewSettings.showNotificationsOnLiveView)) {
                         console.log('📢 [הודעה מדוכאת בלייב]:', message);
                         return;
@@ -11811,6 +11759,9 @@
                     updateGroupSelect();
                 } else if (tabName === 'liveview') {
                     loadLiveViewSettings();
+                } else if (tabName === 'sync') {
+                    if (typeof updateRobotStatus === 'function') updateRobotStatus();
+                    if (typeof renderRobotHistory === 'function') renderRobotHistory();
                 } else if (tabName === 'password') {
                     initPasswordSettingsUI();
                 } else if (tabName === 'sync') {
@@ -12264,7 +12215,11 @@
                     }
                     return String(g.id) !== String(groupId);
                 });
-                
+                // אם נמחקה קבוצת "נדרים" – נשמר כדי לא ליצור אותה שוב בטעינת מתרימים מנדרים
+                const nedarimName = (groupToDelete.name || '').trim();
+                if (nedarimName === 'נדרים פלוס' || nedarimName.includes('נדרים') || nedarimName.toLowerCase().includes('nedarim')) {
+                    try { storageSetItem('userRemovedNedarimGroup', '1'); } catch (e) {}
+                }
                 saveData();
                 
                 // עדכון כל המדורים - מדור ניהול הוא המקור האמתי
@@ -14811,35 +14766,17 @@
             console.log('✅ בסיס הנתונים מוכן');
             // טעינת הגדרות מבסיס הנתונים
             await loadSettingsFromDatabase();
-            // עדכון ה-UI עם ההגדרות שנטענו
-            const checkbox = document.getElementById('autoSyncNedarimCheckbox');
-            const select = document.getElementById('autoSyncActionSelect');
-            const intervalInput = document.getElementById('autoSyncIntervalInput');
-            const unitSelect = document.getElementById('autoSyncIntervalUnit');
-            
-            if (checkbox) checkbox.checked = autoSyncNedarimEnabled;
-            if (select) select.value = autoSyncSelectedAction;
-            if (intervalInput && unitSelect) {
-                if (autoSyncIntervalMinutes >= 60) {
-                    intervalInput.value = autoSyncIntervalMinutes / 60;
-                    unitSelect.value = 'hours';
-                } else {
-                    intervalInput.value = autoSyncIntervalMinutes;
-                    unitSelect.value = 'minutes';
-                }
-                updateAutoSyncIntervalDisplay();
-            }
+            if (typeof loadRobotSettings === 'function') loadRobotSettings();
             if (typeof fillAddToNedarimDonorSelect === 'function') fillAddToNedarimDonorSelect();
-            // סנכרון ראשוני של הנתונים הקיימים
             syncAllDataToDatabase();
         }).catch(error => {
             console.error('❌ שגיאה באתחול בסיס הנתונים:', error);
         });
         
-        // טעינה ראשונית אחרי 2 שניות
         setTimeout(async () => {
-            await performAutoRefresh();
-            // סנכרון לבסיס הנתונים אחרי העדכון
+            if (typeof robotEnabled !== 'undefined' && robotEnabled && typeof runRobotCycle === 'function') {
+                runRobotCycle();
+            }
             await syncAllDataToDatabase();
         }, 2000);
             // בכל זאת נפעיל את הפונקציות גם אם יש שגיאה
@@ -16328,13 +16265,16 @@
                 });
 
                 // מחפש קבוצה "נדרים פלוס" – נוצרת רק אם יש מתרים בנדרים שאין בתוכנה (לפי מספר מתרים)
+                // אלא אם המשתמש מחק את הקבוצה במכוון – אז לא יוצרים אותה שוב
+                let userRemovedNedarim = false;
+                try { userRemovedNedarim = (localStorage && localStorage.getItem('userRemovedNedarimGroup')) === '1'; } catch (e) {}
                 let nedarimGroup = groups.find(g => {
                     const gName = (g.name || '').trim().toLowerCase();
                     return gName === 'נדרים פלוס' || 
                            gName.includes('נדרים') || 
                            gName.includes('nedarim');
                 });
-                if (!nedarimGroup && hasNewByMatrimId) {
+                if (!nedarimGroup && hasNewByMatrimId && !userRemovedNedarim) {
                     nedarimGroup = {
                         id: Date.now(),
                         name: 'נדרים פלוס',
@@ -18362,28 +18302,7 @@
                     storageSetItem('autoSyncSelectedAction', autoSyncSelectedAction);
                     storageSetItem('autoSyncIntervalMinutes', autoSyncIntervalMinutes);
                     
-                    const checkbox = document.getElementById('autoSyncNedarimCheckbox');
-                    const select = document.getElementById('autoSyncActionSelect');
-                    const intervalInput = document.getElementById('autoSyncIntervalInput');
-                    const unitSelect = document.getElementById('autoSyncIntervalUnit');
-                    
-                    if (checkbox) checkbox.checked = autoSyncNedarimEnabled;
-                    if (select) select.value = autoSyncSelectedAction;
-                    if (intervalInput && unitSelect) {
-                        if (autoSyncIntervalMinutes >= 60) {
-                            intervalInput.value = autoSyncIntervalMinutes / 60;
-                            unitSelect.value = 'hours';
-                        } else {
-                            intervalInput.value = autoSyncIntervalMinutes;
-                            unitSelect.value = 'minutes';
-                        }
-                        if (typeof updateAutoSyncIntervalDisplay === 'function') {
-                            updateAutoSyncIntervalDisplay();
-                        }
-                    }
-                    if (typeof startAutoRefreshTimer === 'function') {
-                        startAutoRefreshTimer();
-                    }
+                    if (typeof loadRobotSettings === 'function') loadRobotSettings();
                 }
                 
                 // שמירה מקומית
@@ -20011,7 +19930,7 @@
                 }
             } else {
                 console.log('ℹ️ [אתחול] אין Gist ID - משתמש בנתונים מקומיים');
-                console.log('💡 [אתחול] כדי להפעיל סנכרון, הזן Gist ID במדור "ניהול" → "עדכונים"');
+                console.log('💡 [אתחול] כדי להפעיל סנכרון, הזן Gist ID במדור "ניהול" → "רובוט אוטומטי"');
             }
         });
         
