@@ -11950,23 +11950,35 @@
                 clearRequest.onsuccess = () => {
                     console.log('🗑️ טבלת מתרימים נוקתה');
                     
-                    // מוסיף את כל המתרימים
+                    // מבטיח id ייחודי לכל מתרים (מונע ConstraintError: Key already exists)
+                    const seenIds = new Set();
+                    const donorsToAdd = donors.map((d, idx) => {
+                        let id = d.id;
+                        if (seenIds.has(id)) {
+                            id = (d.nedarimMatrimId ? 'nedarim_' + d.nedarimMatrimId + '_' : '') + Date.now() + '_' + idx + '_' + Math.random().toString(36).slice(2, 9);
+                            d.id = id; // מעדכן גם במערך המקורי
+                        }
+                        seenIds.add(id);
+                        return d;
+                    });
+                    
                     let added = 0;
-                    donors.forEach((donor, index) => {
-                        const addRequest = store.add(donor);
+                    donorsToAdd.forEach((donor) => {
+                        const addRequest = store.put(donor); // put במקום add – דורס אם קיים, מונע Key already exists
                         addRequest.onsuccess = () => {
                             added++;
-                            if (added === donors.length) {
+                            if (added === donorsToAdd.length) {
                                 console.log(`✅ ${added} מתרימים נוספו לבסיס הנתונים`);
                                 resolve();
                             }
                         };
                         addRequest.onerror = () => {
                             console.error('❌ שגיאה בהוספת מתרים:', addRequest.error);
+                            reject(addRequest.error);
                         };
                     });
                     
-                    if (donors.length === 0) {
+                    if (donorsToAdd.length === 0) {
                         console.log('ℹ️ אין מתרימים לסנכרון');
                         resolve();
                     }
@@ -17495,7 +17507,8 @@
             try {
                 console.log('🚀 מושך את כל המתרימים מנדרים פלוס (MatchPlus)...');
                 
-                // ניסיון 1: getAllNedarimRecruiters (קודם light=1 – חוסך קוטה)
+                // ניסיון 1: getAllNedarimRecruiters – light=1 מחזיר רק חיפוש ריק (מקסימום 200)
+                // אם יש 200+ מתרימים – חובה גרסה מלאה (א-ת) כדי לקבל את כולם
                 let result = await fetchAppsScript(url, { action: 'getAllNedarimRecruiters', light: '1', _: Date.now() }, { retries: 2 });
                 
                 if (result.error && result.error.includes('פעולה לא מוכרת')) {
@@ -17503,6 +17516,15 @@
                     result = null;
                 } else if (result.success && result.recruiters) {
                     if (result.recruiters.length > 0) {
+                        // אם קיבלנו בדיוק 200 – ייתכן שחסרים עוד (מגבלת API). ננסה גרסה מלאה
+                        if (result.recruiters.length >= 200) {
+                            console.log('🔄 קיבלנו 200 מתרימים – עשויים להיות עוד. מנסה גרסה מלאה (א-ת)...');
+                            const fullResult = await fetchAppsScript(url, { action: 'getAllNedarimRecruiters', _: Date.now() }, { retries: 1 });
+                            if (fullResult.success && fullResult.recruiters && fullResult.recruiters.length > result.recruiters.length) {
+                                console.log(`✅ נטענו ${fullResult.recruiters.length} מתרימים (גרסה מלאה)`);
+                                return fullResult.recruiters;
+                            }
+                        }
                         console.log(`✅ נטענו ${result.recruiters.length} מתרימים מנדרים פלוס`);
                         return result.recruiters;
                     }
@@ -17801,7 +17823,7 @@
                             return;
                         }
                         const newDonor = {
-                            id: Date.now() + Math.random(),
+                            id: 'nedarim_' + matrimIdStr, // מזהה ייחודי לפי מספר מתרים – מונע כפילויות ב-IndexedDB
                             name: matrimName,
                             originalName: matrimName,
                             displayName: '',
