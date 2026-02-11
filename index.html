@@ -14147,9 +14147,7 @@
                 }
                 if (!matchedNeedle) return;
                 const cleaned = replaceFlexible(toCheck, matchedNeedle);
-                if (nameStr && stringIncludesFlexible(nameStr, matchedNeedle)) {
-                    d.name = cleaned;
-                }
+                // מעדכן רק displayName (עמודה C). השם המקורי (עמודה B) נשאר מנדרים ולא משתנה
                 d.displayName = cleaned;
                 d.updatedAt = new Date().toISOString();
                 modifiedDonorIds.push(d.id);
@@ -17805,6 +17803,7 @@
                         const newDonor = {
                             id: Date.now() + Math.random(),
                             name: matrimName,
+                            originalName: matrimName,
                             displayName: '',
                             groupId: targetGroup ? targetGroup.id : null,
                             amount: matrimAmount,
