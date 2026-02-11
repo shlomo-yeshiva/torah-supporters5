@@ -14101,27 +14101,51 @@
             function escapeRegExp(s) {
                 return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             }
+            // וריאציות של גרש/אפוסטרוף – א׳ יכולה להופיע כ-א+גרש עברי (׳) או א+אפוסטרוף רגיל (')
+            const GERESH = '\u05F3';
+            const APOSTROPHE = "'";
+            const GERESH_OR_APOS = `[${GERESH}${APOSTROPHE}]`;
+            function buildFlexiblePattern(txt) {
+                const escaped = escapeRegExp(txt);
+                return escaped.split('').map(ch => (ch === GERESH || ch === APOSTROPHE) ? GERESH_OR_APOS : ch).join('');
+            }
+            function stringIncludesFlexible(haystack, needle) {
+                if (!haystack || !needle) return false;
+                if (haystack.includes(needle)) return true;
+                const re = new RegExp(buildFlexiblePattern(needle));
+                return re.test(haystack);
+            }
+            function replaceFlexible(haystack, needle) {
+                const re = new RegExp(buildFlexiblePattern(needle), 'g');
+                return haystack.replace(re, '').replace(/\s+/g, ' ').trim();
+            }
             ensureDonorsNormalized();
             let changedCount = 0;
             let totalRemovals = 0;
             // מעדכן רק displayName (עמודה C) – לא נוגע ב-name (עמודה B) כדי לא לשבור חיבור לנדרים פלוס
+            const modifiedDonorIds = [];
             (donors || []).forEach(d => {
                 const currentDisplay = (d.displayName !== undefined && d.displayName !== null && String(d.displayName).trim() !== '') ? String(d.displayName) : (d.name || '');
-                if (!currentDisplay || !currentDisplay.includes(textToRemove)) return;
-                const cleaned = currentDisplay.replace(new RegExp(escapeRegExp(textToRemove), 'g'), '').replace(/\s+/g, ' ').trim();
+                if (!currentDisplay || !stringIncludesFlexible(currentDisplay, textToRemove)) return;
+                const cleaned = replaceFlexible(currentDisplay, textToRemove);
                 d.displayName = cleaned;
                 d.updatedAt = new Date().toISOString();
+                modifiedDonorIds.push(d.id);
                 changedCount++;
                 totalRemovals++;
             });
+            // מסמן את המתרים ששונו – מונע שטעינה מהגליון תדרוס את השינויים לפני השמירה
+            const protectionEnd = Date.now() + 120000; // 2 דקות
+            modifiedDonorIds.forEach(id => { if (typeof recentlyUpdatedDonors !== 'undefined') recentlyUpdatedDonors.set(id, protectionEnd); });
             saveData();
+            notifyDataChanged();
             updateDonorsList();
             updateHomeStats();
             updateLeadersList();
             updateLiveTargets();
             updateLiveView();
             const msg = changedCount > 0
-                ? `הוסר "${textToRemove}" מ־שם התצוגה (עמודה C) אצל ${changedCount} מתרימים. השם המקורי (עמודה B) לא שונה. שמור לגליון לעדכון.`
+                ? `הוסר "${textToRemove}" מ־שם התצוגה (עמודה C) אצל ${changedCount} מתרימים. השם המקורי (עמודה B) לא שונה. נשמר לגליון.`
                 : `הטקסט "${textToRemove}" לא נמצא בשם התצוגה אצל אף מתרים.`;
             if (resultEl) {
                 resultEl.textContent = msg;
@@ -14129,6 +14153,15 @@
             }
             showNotification(changedCount > 0 ? msg : 'לא נמצאה התאמה להסרה.', changedCount > 0 ? 'success' : 'info');
             if (input && changedCount > 0) input.value = '';
+            // שמירה מיידית לגליון – לא מחכים ללחיצה על "שמור לגליון"
+            if (changedCount > 0 && typeof saveToGoogleSheets === 'function') {
+                const url = (typeof googleSheetsWebAppUrl !== 'undefined' ? googleSheetsWebAppUrl : '') || (typeof localStorage !== 'undefined' && localStorage.getItem('googleSheetsWebAppUrl')) || '';
+                if (url) {
+                    saveToGoogleSheets().then(r => {
+                        if (r && r.success) console.log('✅ שם התצוגה עודכן בגליון (עמודה C)');
+                    }).catch(e => console.warn('⚠️ שגיאה בשמירה לגליון אחרי מחיקה מירבית:', e));
+                }
+            }
         }
 
         // מחיקת מתרים (מקומית בלבד - לא מוחק מנדרים פלוס)
