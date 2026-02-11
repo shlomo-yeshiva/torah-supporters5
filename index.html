@@ -6681,19 +6681,19 @@
                         <div style="margin-bottom: 20px;">
                             <h4 style="margin-bottom: 15px;">פעולות עדכון ידניות</h4>
                             <div class="default-goal-controls" style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                <button class="btn btn-success" onclick="syncWithNedarimPlus()" id="nedarimSyncBtn">
+                                <button class="btn btn-success" onclick="runSequentialOp(()=>syncWithNedarimPlus(), 'סנכרון תרומות')" id="nedarimSyncBtn">
                                     🔄 סנכרון תרומות
                                 </button>
-                                <button class="btn btn-primary" onclick="loadMatrimFromNedarim()" id="nedarimLoadMatrimBtn">
+                                <button class="btn btn-primary" onclick="runSequentialOp(()=>loadMatrimFromNedarim(), 'טען מתרימים מנדרים פלוס')" id="nedarimLoadMatrimBtn">
                                     📥 טען מתרימים מנדרים פלוס
                                 </button>
-                                <button class="btn btn-warning" onclick="cleanupAndReloadDonorsWithInvalidMatrimId()" id="cleanupDonorsBtn" style="background: #ffc107; color: #000;">
+                                <button class="btn btn-warning" onclick="runSequentialOp(()=>cleanupAndReloadDonorsWithInvalidMatrimId(), 'ניקוי מתרים')" id="cleanupDonorsBtn" style="background: #ffc107; color: #000;">
                                     🧹 נקה וטען מחדש מתרים ללא מספר מתרים תקין
                                 </button>
-                                <button class="btn btn-secondary" onclick="loadMatrimIdsByNameFromNedarim()" id="loadMatrimIdsBtn" style="background: #6c757d; color: white;">
+                                <button class="btn btn-secondary" onclick="runSequentialOp(()=>loadMatrimIdsByNameFromNedarim(), 'טען מספרי מתרים')" id="loadMatrimIdsBtn" style="background: #6c757d; color: white;">
                                     🔗 טען מספרי מתרים לפי שם (עמודה B)
                                 </button>
-                                <button class="btn btn-info" onclick="checkTotalAmountFromAPI()" id="checkTotalBtn" style="background: #17a2b8; color: white;">
+                                <button class="btn btn-info" onclick="runSequentialOp(()=>checkTotalAmountFromAPI(), 'בדוק סכום כולל')" id="checkTotalBtn" style="background: #17a2b8; color: white;">
                                     🔍 בדוק סכום כולל מ-API
                                 </button>
                             </div>
@@ -6710,7 +6710,7 @@
                             <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 8px;">
                                 <span id="nedarimFixCurrentSumLabel" style="font-weight: 600;">סה"כ נוכחי בתוכנה: —</span>
                                 <input type="number" id="nedarimFixRealAmountInput" min="0" step="1" placeholder="הסכום האמיתי (₪)" style="width: 160px; padding: 8px 12px; border: 2px solid #1976d2; border-radius: 6px; font-size: 14px;">
-                                <button type="button" class="btn btn-primary" onclick="applyRealAmountFix()" style="background: #1976d2;">
+                                <button type="button" class="btn btn-primary" onclick="runSequentialOp(()=>applyRealAmountFix(), 'התאם סכומים')" style="background: #1976d2;">
                                     התאם סכומים בתוכנה
                                 </button>
                             </div>
@@ -6732,7 +6732,7 @@
                                     <label style="display: block; margin-bottom: 4px; font-size: 12px;">סכום להפחתה (₪):</label>
                                     <input type="number" id="nedarimCorrectionAmount" min="1" step="1" placeholder="למשל 200000" style="width: 120px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;">
                                 </div>
-                                <button type="button" class="btn btn-warning" onclick="applyNedarimCorrectionSubtraction()" style="background: #ff9800; color: white;">
+                                <button type="button" class="btn btn-warning" onclick="runSequentialOp(()=>applyNedarimCorrectionSubtraction(), 'הפחת סכום מנדרים')" style="background: #ff9800; color: white;">
                                     ➖ הפחת סכום מנדרים פלוס
                                 </button>
                             </div>
@@ -6758,7 +6758,7 @@
                                     <label style="display: block; margin-bottom: 4px; font-size: 12px;">הערה (אופציונלי):</label>
                                     <input type="text" id="updateByApiComments" placeholder="הערה" style="width: 160px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;">
                                 </div>
-                                <button type="button" class="btn btn-success" onclick="updateAmountByAPI()" id="updateByApiBtn" style="background: #2e7d32; color: white;">
+                                <button type="button" class="btn btn-success" onclick="runSequentialOp(()=>updateAmountByAPI(), 'עדכון סכום ב-API')" id="updateByApiBtn" style="background: #2e7d32; color: white;">
                                     📤 עדכן סכום ב-API
                                 </button>
                             </div>
@@ -6793,13 +6793,13 @@
                             </div>
                             
                             <div class="sync-actions" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
-                                <button class="btn btn-success" onclick="testGoogleSheetsConnection()">🔌 בדוק חיבור</button>
-                                <button class="btn btn-primary" onclick="loadFromGoogleSheets()">📥 טען מהגליון</button>
-                                <button class="btn btn-secondary" onclick="saveToGoogleSheets()">💾 שמור לגליון</button>
-                                <button class="btn btn-info" onclick="syncWithGoogleSheets()">🔄 סנכרון דו-כיווני</button>
+                                <button class="btn btn-success" onclick="runSequentialOp(()=>testGoogleSheetsConnection(), 'בדוק חיבור')">🔌 בדוק חיבור</button>
+                                <button class="btn btn-primary" onclick="runSequentialOp(()=>loadFromGoogleSheets(), 'טען מהגליון')">📥 טען מהגליון</button>
+                                <button class="btn btn-secondary" onclick="runSequentialOp(()=>saveToGoogleSheets(), 'שמור לגליון')">💾 שמור לגליון</button>
+                                <button class="btn btn-info" onclick="runSequentialOp(()=>syncWithGoogleSheets(), 'סנכרון דו-כיווני')">🔄 סנכרון דו-כיווני</button>
                             </div>
                             <div class="sync-actions" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; padding-top: 10px; border-top: 1px dashed var(--border);">
-                                <button class="btn btn-warning" onclick="loadFromSimpleSheet()" style="background: #ff9800; color: white;">📋 טען מגיליון פשוט (שם+קבוצה)</button>
+                                <button class="btn btn-warning" onclick="runSequentialOp(()=>loadFromSimpleSheet(), 'טען מגיליון פשוט')" style="background: #ff9800; color: white;">📋 טען מגיליון פשוט (שם+קבוצה)</button>
                                 <span style="color: var(--muted); font-size: 12px; align-self: center;">לייבוא ראשוני מגיליון עם שתי עמודות</span>
                             </div>
                             
@@ -7580,6 +7580,33 @@
         let nedarimSyncTimer = null;
         let syncWithNedarimPlusInProgress = false; // 🛡️ מנע סנכרונים מקבילים – כל סנכרון שולח דלתות; אם רץ פעמיים = כפילות!
         let lastSyncEndTime = 0; // 🛡️ מונע סנכרונים תכופים מרובוט – מרווח מינימלי 5 דקות
+        
+        // 🛡️ תור פעולות גלובלי – כפתורים ורובוט רצים רק אחד אחרי השני (מונע דריסת נתונים)
+        let nedarimOpsQueue = [];
+        let nedarimOpsInProgress = false;
+        async function runSequentialOp(fn, name) {
+            return new Promise((resolve, reject) => {
+                const item = { fn: () => Promise.resolve(fn()), name, resolve, reject };
+                const wasQueued = nedarimOpsInProgress || nedarimOpsQueue.length > 0;
+                nedarimOpsQueue.push(item);
+                if (wasQueued && name && typeof showNotification === 'function') {
+                    showNotification('הפעולה "' + name + '" נוספה לתור – תפעל אחרי סיום הפעולה הנוכחית', 'info');
+                }
+                const processQueue = () => {
+                    if (nedarimOpsInProgress || nedarimOpsQueue.length === 0) return;
+                    nedarimOpsInProgress = true;
+                    const next = nedarimOpsQueue.shift();
+                    next.fn().then(r => { next.resolve(r); }).catch(e => { next.reject(e); }).finally(() => {
+                        nedarimOpsInProgress = false;
+                        processQueue();
+                    });
+                };
+                processQueue();
+            });
+        }
+        function getSequentialOpsQueueLength() { return nedarimOpsQueue.length; }
+        function isSequentialOpRunning() { return nedarimOpsInProgress; }
+        if (typeof window !== 'undefined') { window.runSequentialOp = runSequentialOp; }
         const lastNedarimPushByKey = new Map(); // 🛡️ מונע שליחת אותו עדכון פעמיים – מפתח: matrimId_delta
         const NEDARIM_PUSH_COOLDOWN_MS = 120000; // 2 דקות – אותו מתרים+דלתה לא נשלח שוב
         
@@ -16029,13 +16056,13 @@
             window.__robotInited = true;
             const ROBOT_ACTION_IDS = ['sync', 'loadMatrim', 'checkTotal', 'loadSheet', 'saveSheet', 'pushToNedarim', 'syncGoogleSheets'];
             const robotActionsConfig = {
-                sync: { id: 'sync', name: 'משיכת נתונים מנדרים פלוס (ללא דחיפה – לתצוגת לייב)', func: () => syncWithNedarimPlus(true, true) },
-                pushToNedarim: { id: 'pushToNedarim', name: 'דחיפה לנדרים פלוס (שליחת סכומים – מונע כפילות)', func: () => syncWithNedarimPlus(true, false) },
-                loadMatrim: { id: 'loadMatrim', name: 'טען מתרימים מנדרים פלוס', func: () => loadMatrimFromNedarim(true) },
-                checkTotal: { id: 'checkTotal', name: 'בדוק סכום כולל מ-API', func: () => checkTotalAmountFromAPI(true) },
-                loadSheet: { id: 'loadSheet', name: 'טען מהגליון', func: () => loadFromGoogleSheets(true) },
-                saveSheet: { id: 'saveSheet', name: 'שמור לגליון', func: () => saveToGoogleSheets() },
-                syncGoogleSheets: { id: 'syncGoogleSheets', name: 'סנכרון דו-כיווני גליון', func: () => syncWithGoogleSheets(true) }
+                sync: { id: 'sync', name: 'משיכת נתונים מנדרים פלוס (ללא דחיפה – לתצוגת לייב)', func: () => runSequentialOp(() => syncWithNedarimPlus(true, true), 'משיכה מנדרים פלוס') },
+                pushToNedarim: { id: 'pushToNedarim', name: 'דחיפה לנדרים פלוס (שליחת סכומים – מונע כפילות)', func: () => runSequentialOp(() => syncWithNedarimPlus(true, false), 'דחיפה לנדרים פלוס') },
+                loadMatrim: { id: 'loadMatrim', name: 'טען מתרימים מנדרים פלוס', func: () => runSequentialOp(() => loadMatrimFromNedarim(true), 'טען מתרימים מנדרים פלוס') },
+                checkTotal: { id: 'checkTotal', name: 'בדוק סכום כולל מ-API', func: () => runSequentialOp(() => checkTotalAmountFromAPI(true), 'בדוק סכום כולל') },
+                loadSheet: { id: 'loadSheet', name: 'טען מהגליון', func: () => runSequentialOp(() => loadFromGoogleSheets(true), 'טען מהגליון') },
+                saveSheet: { id: 'saveSheet', name: 'שמור לגליון', func: () => runSequentialOp(() => saveToGoogleSheets(), 'שמור לגליון') },
+                syncGoogleSheets: { id: 'syncGoogleSheets', name: 'סנכרון דו-כיווני גליון', func: () => runSequentialOp(() => syncWithGoogleSheets(true), 'סנכרון דו-כיווני') }
             };
             const defaultActionEnabled = { sync: false, pushToNedarim: false, loadMatrim: false, checkTotal: false, loadSheet: false, saveSheet: false, syncGoogleSheets: false };
             let robotEnabled = false, robotTimer = null, robotContinuousRunning = false, robotNextRunTime = null, robotHistory = [];
@@ -19312,7 +19339,7 @@
             // סנכרון אוטומטי מלא (דחיפה + משיכה) – אותה עמותה, תרומות מסליקה באשראי יסתנכרנו
             nedarimSyncTimer = setInterval(() => {
                 console.log('🔄 [אוטומטי] מסנכרן עם נדרים פלוס (סנכרון מלא)...');
-                syncWithNedarimPlus(true); // silent – סנכרון מלא
+                runSequentialOp(() => syncWithNedarimPlus(true), 'סנכרון אוטומטי'); // silent – סנכרון מלא
             }, NEDARIM_CONFIG.autoSyncInterval);
 
             // מפעיל בדיקת שינויים בנתונים מקומיים כל 10 שניות
@@ -21127,7 +21154,7 @@
                         if (resultEl) resultEl.textContent = '✅ העדכון נשלח בהצלחה. הסכום בתוכנה ובגליון עודכן בהתאם.';
                     }
                 } else {
-                    setTimeout(() => syncWithNedarimPlus(true), 60000); // דקה – מונע לולאת סנכרון
+                    setTimeout(() => runSequentialOp(() => syncWithNedarimPlus(true), 'סנכרון לאחר עדכון'), 60000); // דקה – מונע לולאת סנכרון
                 }
                 showNotification('עדכון הסכום נשלח בהצלחה והתוכנה עודכנה בהתאם.', 'success');
             } catch (e) {
@@ -21194,7 +21221,7 @@
                         }
                     } else {
                         // מתרים ידני – מרענן מנדרים כדי שהסיכום יתעדכן
-                        setTimeout(() => syncWithNedarimPlus(true), 60000); // דקה – מונע לולאת סנכרון
+                        setTimeout(() => runSequentialOp(() => syncWithNedarimPlus(true), 'סנכרון לאחר עדכון'), 60000); // דקה – מונע לולאת סנכרון
                     }
                 } else {
                     setResult('❌ ' + (res && res.error ? res.error : 'ההפחתה נכשלה.'), true);
