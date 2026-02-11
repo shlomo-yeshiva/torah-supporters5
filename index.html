@@ -7530,7 +7530,8 @@
         // מפה של מתרימים ששונו לאחרונה - מונע עדכון מהגליון עד שהשמירה תסתיים
         const recentlyUpdatedDonors = new Map(); // Map<donorId, timestamp>
         const recentlyUpdatedGroups = new Map(); // Map<groupId, timestamp> – מונע דריסת שם קבוצה מטעינה מהגליון
-        const PROTECTION_WINDOW_MS = 120000; // 2 דקות הגנה מפני עדכון מהגליון
+        const PROTECTION_WINDOW_MS = 300000; // 5 דקות הגנה – מונע דריסת שמות/סכומים שעודכנו לאחרונה
+        let lastSaveToSheetsTime = 0; // אחרי שמירה – לא לטעון מהגליון 15 שניות (מונע דריסה)
         // דגל: במהלך עדכון לנדרים/גליון – לא לטעון מהגליון כדי לא לדרוס נתונים
         let isUpdatingDonorForNedarim = false;
         let accessControl = {
@@ -14101,33 +14102,54 @@
             function escapeRegExp(s) {
                 return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             }
-            // וריאציות של גרש/אפוסטרוף – א׳ יכולה להופיע כ-א+גרש עברי (׳) או א+אפוסטרוף רגיל (')
+            // וריאציות: גרש/אפוסטרוף (א׳↔א') + רווחים מרובים
             const GERESH = '\u05F3';
             const APOSTROPHE = "'";
             const GERESH_OR_APOS = `[${GERESH}${APOSTROPHE}]`;
             function buildFlexiblePattern(txt) {
                 const escaped = escapeRegExp(txt);
-                return escaped.split('').map(ch => (ch === GERESH || ch === APOSTROPHE) ? GERESH_OR_APOS : ch).join('');
+                let out = escaped.split('').map(ch => (ch === GERESH || ch === APOSTROPHE) ? GERESH_OR_APOS : ch).join('');
+                out = out.replace(/\s+/g, '\\s+'); // רווח אחד או יותר מתואם ל-\s+
+                return out;
             }
             function stringIncludesFlexible(haystack, needle) {
                 if (!haystack || !needle) return false;
                 if (haystack.includes(needle)) return true;
-                const re = new RegExp(buildFlexiblePattern(needle));
-                return re.test(haystack);
+                try {
+                    const re = new RegExp(buildFlexiblePattern(needle));
+                    return re.test(haystack);
+                } catch (e) { return false; }
             }
             function replaceFlexible(haystack, needle) {
-                const re = new RegExp(buildFlexiblePattern(needle), 'g');
-                return haystack.replace(re, '').replace(/\s+/g, ' ').trim();
+                try {
+                    const re = new RegExp(buildFlexiblePattern(needle), 'g');
+                    return haystack.replace(re, '').replace(/\s+/g, ' ').trim();
+                } catch (e) { return haystack; }
             }
+            // וריאציות נפוצות – אם "שיעור א׳" לא נמצא, ננסה גם "שיעור א'", "שיעור א" וכו'
+            const needleVariants = [textToRemove];
+            if (textToRemove.indexOf(GERESH) >= 0) needleVariants.push(textToRemove.replace(new RegExp(GERESH, 'g'), APOSTROPHE));
+            if (textToRemove.indexOf(APOSTROPHE) >= 0) needleVariants.push(textToRemove.replace(new RegExp(APOSTROPHE, 'g'), GERESH));
+            if (textToRemove.includes('א׳') || textToRemove.includes("א'")) needleVariants.push(textToRemove.replace(/[׳']/g, '').replace(/\s+/g, ' ').trim()); // "שיעור א"
             ensureDonorsNormalized();
             let changedCount = 0;
             let totalRemovals = 0;
-            // מעדכן רק displayName (עמודה C) – לא נוגע ב-name (עמודה B) כדי לא לשבור חיבור לנדרים פלוס
             const modifiedDonorIds = [];
+            // מעדכן name ו-displayName – שניהם נשמרים לעמודות B ו-C בגליון
             (donors || []).forEach(d => {
-                const currentDisplay = (d.displayName !== undefined && d.displayName !== null && String(d.displayName).trim() !== '') ? String(d.displayName) : (d.name || '');
-                if (!currentDisplay || !stringIncludesFlexible(currentDisplay, textToRemove)) return;
-                const cleaned = replaceFlexible(currentDisplay, textToRemove);
+                const nameStr = String(d.name || '').trim();
+                const displayStr = (d.displayName !== undefined && d.displayName !== null && String(d.displayName).trim() !== '') ? String(d.displayName).trim() : '';
+                const toCheck = displayStr || nameStr;
+                if (!toCheck) return;
+                let matchedNeedle = null;
+                for (const v of needleVariants) {
+                    if (v && stringIncludesFlexible(toCheck, v)) { matchedNeedle = v; break; }
+                }
+                if (!matchedNeedle) return;
+                const cleaned = replaceFlexible(toCheck, matchedNeedle);
+                if (nameStr && stringIncludesFlexible(nameStr, matchedNeedle)) {
+                    d.name = cleaned;
+                }
                 d.displayName = cleaned;
                 d.updatedAt = new Date().toISOString();
                 modifiedDonorIds.push(d.id);
@@ -14152,6 +14174,10 @@
                 resultEl.style.color = changedCount > 0 ? '#2e7d32' : '#555';
             }
             showNotification(changedCount > 0 ? msg : 'לא נמצאה התאמה להסרה.', changedCount > 0 ? 'success' : 'info');
+            if (changedCount === 0 && donors && donors.length > 0) {
+                const samples = donors.slice(0, 5).map(d => (d.displayName || d.name || '')).filter(Boolean);
+                console.log('🔍 דוגמאות שמות למתרים (לבדיקה):', samples);
+            }
             if (input && changedCount > 0) input.value = '';
             // שמירה מיידית לגליון – לא מחכים ללחיצה על "שמור לגליון"
             if (changedCount > 0 && typeof saveToGoogleSheets === 'function') {
@@ -20016,6 +20042,13 @@
                 return { success: false };
             }
             
+            // לא לטעון מהגליון אם עכשיו סיימנו שמירה – מונע דריסת שינויים מקומיים
+            const SKIP_LOAD_AFTER_SAVE_MS = 15000;
+            if (lastSaveToSheetsTime && (Date.now() - lastSaveToSheetsTime) < SKIP_LOAD_AFTER_SAVE_MS) {
+                if (!silent) console.log('📥 [Google Sheets] דילוג על טעינה – שמירה לאחרונה, לא לדרוס שינויים מקומיים');
+                return { success: true, skipped: true };
+            }
+            
             if (!silent) {
                 console.log('📥 [Google Sheets] מתחיל טעינה...');
                 showGoogleSheetsStatus('📥 טוען נתונים מהגליון...', 'info');
@@ -20188,16 +20221,15 @@
                             // שומר את המתרים המקומי כפי שהוא - לא מעדכן מהגליון בכלל!
                             updatedDonors.push(existingDonor);
                         } else if (isRecentlyUpdated) {
-                            // מתרים שונה לאחרונה (אבל לא בעריכה) - שומר את השינויים המקומיים
+                            // מתרים שונה לאחרונה – שומר את כל השינויים המקומיים (שם, תצוגה) כדי שלא ידרסו
                             if (sheetDonor) {
-                                // מעדכן מהגליון אבל שומר את השינויים המקומיים
                                 updatedDonors.push({
                                     ...sheetDonor,
-                                    amount: existingDonor.amount, // שומר את הסכום המקומי
-                                    displayName: existingDonor.displayName || sheetDonor.displayName,
+                                    name: existingDonor.name !== undefined && existingDonor.name !== null ? existingDonor.name : sheetDonor.name,
+                                    displayName: existingDonor.displayName !== undefined && existingDonor.displayName !== null ? existingDonor.displayName : (sheetDonor.displayName !== undefined ? sheetDonor.displayName : existingDonor.name),
+                                    amount: existingDonor.amount,
                                     groupId: existingDonor.groupId || sheetDonor.groupId,
                                     personalGoal: existingDonor.personalGoal || sheetDonor.personalGoal,
-                                    // ⚠️ חשוב: שומר את מספר המתרים המקומי אם הוא תקין
                                     nedarimMatrimId: hasValidMatrimId ? existingDonor.nedarimMatrimId : (sheetDonor.nedarimMatrimId || existingDonor.nedarimMatrimId)
                                 });
                             } else {
@@ -20562,6 +20594,7 @@
                     throw new Error(result.error);
                 }
                 
+                lastSaveToSheetsTime = Date.now(); // מונע טעינה מהגליון 15 שניות אחרי שמירה
                 const message = `✅ נשמרו ${donors.length} מתרימים, ${groups.length} קבוצות + כתובות והגדרות לגליון`;
                 console.log('💾 [Google Sheets] הצלחה!', message);
                 
