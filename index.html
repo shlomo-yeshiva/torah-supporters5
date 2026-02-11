@@ -5515,10 +5515,16 @@
 </head>
 <body>
     <div class="app-lock-overlay" id="entryCodeOverlay" role="dialog" aria-modal="true" aria-labelledby="entryCodeTitle">
-        <div class="app-lock-dialog">
+        <div class="app-lock-dialog" style="max-width: 480px;">
             <div class="app-lock-logo"><img src="https://i.postimg.cc/ZRMCLxgW/wgw-t-t-dhws.png" alt="לוגו" style="height:64px;"></div>
             <h2 id="entryCodeTitle">כניסה לתוכנה</h2>
             <p>הזן את קוד הכניסה כדי להמשיך.</p>
+            <div style="margin-bottom: 16px; padding: 12px; background: #f8f9fa; border-radius: 8px; border: 1px solid var(--border);">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px;">קישור לשרת (אם החלפת גליון – הזן כאן את הקישור החדש):</label>
+                <input type="url" id="entryCodeSheetUrlInput" class="app-lock-password-input" placeholder="https://script.google.com/macros/s/xxxx/exec" style="width: 100%; margin-bottom: 6px; font-size: 13px;">
+                <button type="button" class="btn" onclick="saveEntryCodeSheetUrl()" style="font-size: 13px;">שמור קישור</button>
+                <span id="entryCodeUrlSavedMsg" style="display: none; margin-right: 8px; color: var(--success); font-size: 12px;">✓ נשמר</span>
+            </div>
             <input type="text" id="entryCodeInput" class="app-lock-password-input" placeholder="הזן קוד כניסה" autocomplete="one-time-code" onkeydown="handleEntryCodeKeyDown(event)">
             <div class="app-lock-actions">
                 <button class="btn btn-primary" type="button" onclick="handleEntryCodeSubmit()">כניסה</button>
@@ -5874,8 +5880,8 @@
                 </div>
                 
                 <div class="management-tabs">
-                    <button class="management-tab active" data-tab="groups">הגדרות מתרימים</button>
-                    <button class="management-tab" data-tab="donors">ניהול מתרימים</button>
+                    <button class="management-tab active" data-tab="donors">ניהול מתרימים</button>
+                    <button class="management-tab" data-tab="groups">הגדרת מתרימים</button>
                     <button class="management-tab" data-tab="liveview">הגדרות תצוגת לייב</button>
                     <button class="management-tab" data-tab="calculator">מחשבון</button>
                     <button class="management-tab" data-tab="sync">עדכונים</button>
@@ -5915,8 +5921,8 @@
                     </div>
                 </div>
 
-                <!-- הגדרות מתרימים (קבוצות) -->
-                <div class="management-content active" id="groupsContent">
+                <!-- הגדרת מתרימים (קבוצות) -->
+                <div class="management-content" id="groupsContent">
                     <div class="management-actions-row" style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
                         <button class="btn" onclick="addNewGroup()">הוסף קבוצה חדשה</button>
                         <span style="color: var(--muted); font-size: 13px;">💡 טיפ: גרור כרטיסיות כדי לשנות סדר</span>
@@ -5927,8 +5933,8 @@
                 </div>
 
                 <!-- ניהול מתרימים -->
-                <div class="management-content" id="donorsContent">
-                    <div class="donors-management donors-management-simple">
+                <div class="management-content active" id="donorsContent">
+                    <div class="donors-management">
                         <div class="donors-search-bar">
                             <div class="donors-search-input-wrapper">
                                 <input type="text" id="donorSearchInput" class="donors-search-input" placeholder="חיפוש מתרימים לפי שם">
@@ -5936,7 +5942,7 @@
                             </div>
                             <div class="donors-search-meta" id="donorsSearchMeta"></div>
                         </div>
-                        <div class="donors-list donors-list-simple" id="donorsListContainer">
+                        <div class="donors-list" id="donorsListContainer">
                             <!-- יוטען דינמית -->
                         </div>
                     </div>
@@ -7505,7 +7511,7 @@
             { id: 'home', label: 'דף הבית' },
             { id: 'breakdown', label: 'פילוח נתונים' },
             { id: 'management', label: 'ניהול (כל המדור)' },
-            { id: 'management-groups', label: 'ניהול → הגדרות מתרימים' },
+            { id: 'management-groups', label: 'ניהול → הגדרת מתרימים' },
             { id: 'management-donors', label: 'ניהול → ניהול מתרימים' },
             { id: 'management-liveview', label: 'ניהול → הגדרות תצוגת לייב' },
             { id: 'management-sync', label: 'ניהול → עדכונים' },
@@ -8457,6 +8463,7 @@
         function initEntryCodeGate() {
             const overlay = document.getElementById('entryCodeOverlay');
             const input = document.getElementById('entryCodeInput');
+            const urlInput = document.getElementById('entryCodeSheetUrlInput');
             const error = document.getElementById('entryCodeError');
             if (!overlay || !input) return;
             if (entryCodeVerified) {
@@ -8467,8 +8474,35 @@
             overlay.classList.remove('hidden');
             input.value = '';
             if (error) error.textContent = '';
+            if (urlInput && typeof localStorage !== 'undefined') {
+                urlInput.value = localStorage.getItem('googleSheetsWebAppUrl') || '';
+            }
             setTimeout(() => input.focus(), 100);
         }
+
+        function saveEntryCodeSheetUrl() {
+            const urlInput = document.getElementById('entryCodeSheetUrlInput');
+            const msg = document.getElementById('entryCodeUrlSavedMsg');
+            if (!urlInput) return;
+            const url = (urlInput.value || '').trim();
+            if (!url) {
+                if (msg) { msg.style.display = 'none'; msg.textContent = ''; }
+                return;
+            }
+            if (typeof localStorage !== 'undefined') {
+                localStorage.setItem('googleSheetsWebAppUrl', url);
+            }
+            if (typeof googleSheetsWebAppUrl !== 'undefined') {
+                googleSheetsWebAppUrl = url;
+            }
+            if (msg) {
+                msg.textContent = '✓ נשמר';
+                msg.style.display = 'inline';
+                setTimeout(() => { msg.style.display = 'none'; }, 3000);
+            }
+        }
+
+        window.saveEntryCodeSheetUrl = saveEntryCodeSheetUrl;
 
         function runAppBootstrap() {
             entryCodeVerified = true;
@@ -8524,6 +8558,7 @@
 
         async function handleEntryCodeSubmit() {
             const input = document.getElementById('entryCodeInput');
+            const urlInput = document.getElementById('entryCodeSheetUrlInput');
             const error = document.getElementById('entryCodeError');
             const entered = (input?.value || '').trim();
             if (!entered) {
@@ -8531,9 +8566,12 @@
                 input?.focus();
                 return;
             }
-            const url = (typeof localStorage !== 'undefined' && localStorage.getItem('googleSheetsWebAppUrl')) || (typeof googleSheetsWebAppUrl !== 'undefined' ? googleSheetsWebAppUrl : '') || (typeof DEFAULT_GOOGLE_SHEETS_URL !== 'undefined' ? DEFAULT_GOOGLE_SHEETS_URL : '') || '';
+            var url = (urlInput && (urlInput.value || '').trim()) || (typeof localStorage !== 'undefined' && localStorage.getItem('googleSheetsWebAppUrl')) || (typeof googleSheetsWebAppUrl !== 'undefined' ? googleSheetsWebAppUrl : '') || (typeof DEFAULT_GOOGLE_SHEETS_URL !== 'undefined' ? DEFAULT_GOOGLE_SHEETS_URL : '') || '';
+            if (urlInput && (urlInput.value || '').trim() && typeof localStorage !== 'undefined') {
+                localStorage.setItem('googleSheetsWebAppUrl', (urlInput.value || '').trim());
+            }
             if (!url || !url.trim()) {
-                if (error) error.textContent = 'לא הוגדר חיבור לשרת – לא ניתן לאמת קוד.';
+                if (error) error.textContent = 'הזן את קישור השרת (מהגליון החדש) בשדה למעלה ושמור, או הזן קוד.';
                 return;
             }
             if (error) error.textContent = 'מאמת...';
@@ -8551,6 +8589,8 @@
                 }
             } catch (e) {
                 console.warn('שגיאה באימות קוד:', e);
+                if (error) error.textContent = 'שגיאת חיבור – ודא שהקישור לשרת נכון (מהגליון החדש). הזן קישור בשדה למעלה ולחץ שמור.';
+                return;
             }
             if (error) error.textContent = 'קוד שגוי, נסה שוב.';
             if (input) { input.value = ''; input.focus(); }
