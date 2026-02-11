@@ -20148,12 +20148,13 @@
                 let loadedGroups = 0;
                 
                 // טעינת קבוצות – מיזוג חכם: קבוצות ששונו לאחרונה נשמרות מקומית (מונע דריסת שם)
-                if (result.groups && Array.isArray(result.groups) && result.groups.length > 0) {
+                    if (result.groups && Array.isArray(result.groups) && result.groups.length > 0) {
                     const now = Date.now();
+                    const GROUP_PROTECTION_MS = 35000; // כפי מתרימים – עדכונים מהגליון עוברים אחרי 35 שניות
                     const mergedGroups = result.groups.map(sheetGroup => {
                         const localGroup = groups.find(g => g.id === sheetGroup.id);
                         const lastUpdate = localGroup ? recentlyUpdatedGroups.get(sheetGroup.id) : null;
-                        if (localGroup && lastUpdate != null && (now - lastUpdate < PROTECTION_WINDOW_MS)) {
+                        if (localGroup && lastUpdate != null && (now - lastUpdate < GROUP_PROTECTION_MS)) {
                             // שומר את השם והשינויים המקומיים
                             return { ...sheetGroup, name: localGroup.name, goal: localGroup.goal, orderNumber: localGroup.orderNumber, showInLiveView: localGroup.showInLiveView, updatedAt: localGroup.updatedAt };
                         }
@@ -20219,7 +20220,7 @@
                     const existingIds = new Set();
                     const existingMatrimIds = new Set(); // Set של מספרי מתרים קיימים
                     const now = Date.now();
-                    const PROTECTION_WINDOW_MS = 120000; // 2 דקות - זמן הגנה מפני עדכון מהגליון אחרי שינוי מקומי (מונע קפיצה חזרה לסכום ישן)
+                    const PROTECTION_WINDOW_MS = 35000; // 35 שניות – הגנה מפני דריסה לפני שהשמירה מסתיימת; אחר כך העדכונים מהגליון (מחשבים אחרים) עוברים
                     
                     // אוסף את כל מספרי המתרים הקיימים
                     donors.forEach(d => {
@@ -21724,7 +21725,7 @@
             if (hasSheetsUrl) {
                 // דילוג אם כבר טענו ב-loadData (מחשב חדש – מונע טעינה כפולה וקפיצות)
                 if (typeof window._sheetDataLoadedOnInit === 'boolean' && window._sheetDataLoadedOnInit) {
-                    console.log('ℹ️ [אתחול] הנתונים כבר נטענו מהגליון ב-loadData (מחשב חדש)');
+                    console.log('ℹ️ [אתחול] הנתונים כבר נטענו מהגליון ב-loadData');
                 } else {
                     console.log('🔄 [אתחול] נמצא Google Sheets URL, טוען נתונים מהגליון...');
                     const sheetsStatusEl = document.getElementById('googleSheetsSyncStatus');
@@ -21734,7 +21735,6 @@
                         sheetsStatusEl.style.color = '#004085';
                         sheetsStatusEl.textContent = '🔄 טוען נתונים מהגליון...';
                     }
-                    
                     try {
                         await loadFromGoogleSheets(!googleSheetsSyncEnabled);
                         console.log('✅ [אתחול] הנתונים נטענו בהצלחה מ-Google Sheets');
@@ -21742,6 +21742,10 @@
                     } catch (error) {
                         console.error('❌ [אתחול] שגיאה בטעינה מ-Google Sheets:', error);
                     }
+                }
+                // סנכרון תקופתי – עדכונים מהגליון יגיעו לכל מחשב כל 5 דקות
+                if (typeof startLiveViewSyncPolling === 'function') {
+                    startLiveViewSyncPolling();
                 }
             } else {
                 console.log('ℹ️ [אתחול] אין כתובת גליון – משתמש בנתונים מקומיים');
