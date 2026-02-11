@@ -12261,7 +12261,7 @@
                 var url = (googleSheetsWebAppUrl || (typeof localStorage !== 'undefined' && localStorage.getItem('googleSheetsWebAppUrl')) || '').trim();
                 if (url && typeof loadFromGoogleSheets === 'function') {
                     var r = await loadFromGoogleSheets(true);
-                    if (r && r.success && typeof notifyDataChanged === 'function') notifyDataChanged();
+                    if (r && r.success && typeof notifyDataChanged === 'function') notifyDataChanged(true);
                 }
                 if (typeof syncAllDataToDatabase === 'function') await syncAllDataToDatabase();
                 if (typeof updateLiveView === 'function') updateLiveView();
@@ -12950,6 +12950,15 @@
             };
             step();
         }
+        // סכום לתצוגה: כשהמקומי נמוך משמעותית מ-API (למשל 101 vs 139k) – משתמשים ב-API כדי לא להציג נתון שגוי
+        function getDisplayTotal() {
+            const localSum = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
+            if (NEDARIM_CONFIG.apiDataLoaded && NEDARIM_CONFIG.totalDonatedFromAPI != null && 
+                NEDARIM_CONFIG.totalDonatedFromAPI > localSum + 1000) {
+                return NEDARIM_CONFIG.totalDonatedFromAPI;
+            }
+            return localSum;
+        }
         function updateHomeStats() {
             // יעד המצינג – מ-API אם נטען וערכו סביר, אחרת מהיעד המקומי
             const currentGoal = (NEDARIM_CONFIG.apiDataLoaded && 
@@ -12957,9 +12966,7 @@
                                 NEDARIM_CONFIG.goalFromAPI > 0)
                 ? NEDARIM_CONFIG.goalFromAPI 
                 : matchingGoal;
-            const localSum = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
-            // ⚠️ תמיד מסכום המתרימים (עמודה E) – כמו בגליון, בלי API שגורם להבהוב
-            const totalCollected = localSum;
+            const totalCollected = (typeof getDisplayTotal === 'function') ? getDisplayTotal() : donors.reduce((sum, d) => sum + (d.amount || 0), 0);
             
             const matchingPercentage = currentGoal > 0 ? (totalCollected / currentGoal) * 100 : 0;
             const totalDonors = donors.length;
@@ -14322,12 +14329,14 @@
             if (typeof lastDataHash !== 'undefined' && typeof calculateDataHash === 'function') lastDataHash = calculateDataHash();
         }
 
-        function notifyDataChanged() {
+        // skipAutoSaveToSheets=true: רק BroadcastChannel, ללא השפעה על הגליון – מונע שמירה כפולה אחרי טעינה
+        function notifyDataChanged(skipAutoSaveToSheets) {
             try {
                 syncChannel.postMessage({ type: 'data-updated', timestamp: Date.now() });
             } catch (err) {
                 console.warn('שגיאה בשליחת עדכון סנכרון', err);
             }
+            if (skipAutoSaveToSheets) return; // אחרי טעינה מהגליון – לא להפעיל autoSave (מונע שמירה כפולה והבהובים)
             var url = (typeof googleSheetsWebAppUrl !== 'undefined' ? googleSheetsWebAppUrl : '') || (typeof localStorage !== 'undefined' && localStorage.getItem('googleSheetsWebAppUrl')) || '';
             if (url && typeof autoSaveToGoogleSheets === 'function' && (typeof sheetSyncSaveOnChange === 'undefined' || sheetSyncSaveOnChange)) {
                 autoSaveToGoogleSheets();
@@ -15238,14 +15247,12 @@
                 .sort((a, b) => b.amount - a.amount)
                 .slice(0, 5);
             
-            // ⚠️ סכום כולל תמיד מסכום המתרימים (עמודה E) – כמו בגליון, בלי API שגורם להבהוב
-            const localSum = donors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0);
+            const totalCollected = (typeof getDisplayTotal === 'function') ? getDisplayTotal() : donors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0);
             const goal = (NEDARIM_CONFIG.apiDataLoaded && 
                          NEDARIM_CONFIG.goalFromAPI !== null &&
                          NEDARIM_CONFIG.goalFromAPI > 0)
                 ? NEDARIM_CONFIG.goalFromAPI
                 : Math.max(0, Math.round(parseFloat(matchingGoal) || 0));
-            const totalCollected = localSum;
             const percentage = goal > 0 ? (totalCollected / goal) * 100 : 0;
             const percentDisplay = percentage >= 100 ? Math.round(percentage) : Math.max(0, percentage).toFixed(1);
             
@@ -15449,14 +15456,12 @@
                 const text = overallContainer.querySelector('.leaders-overall-progress-text');
                 const note = overallContainer.querySelector('.leaders-overall-progress-note');
 
-                // ⚠️ סכום כולל תמיד מסכום המתרימים (עמודה E) – כמו בגליון, בלי API שגורם להבהוב
-                const localSumT = donors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0);
+                const totalCollected = (typeof getDisplayTotal === 'function') ? getDisplayTotal() : donors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0);
                 const goal = (NEDARIM_CONFIG.apiDataLoaded &&
                              NEDARIM_CONFIG.goalFromAPI !== null &&
                              NEDARIM_CONFIG.goalFromAPI > 0)
                     ? NEDARIM_CONFIG.goalFromAPI
                     : Math.max(0, Math.round(parseFloat(matchingGoal) || 0));
-                const totalCollected = localSumT;
 
                 if (goal > 0) {
                     const percentRaw = (totalCollected / goal) * 100;
@@ -19619,11 +19624,14 @@
             try {
                 const totalData = await fetchTotalFromMatchPlus();
                 if (totalData && totalData.Donated >= 0) {
+                    NEDARIM_CONFIG.totalDonatedFromAPI = totalData.Donated;
+                    NEDARIM_CONFIG.goalFromAPI = totalData.Goal;
+                    NEDARIM_CONFIG.apiDataLoaded = true;
                     console.log('✅ [בדיקה] הסכום מ-API (נדרים פלוס):', totalData.Donated.toLocaleString(), 'ש"ח');
                     console.log('📊 [מקומי] סכום שצריך להיות (מנדרים פלוס):', totalData.Donated.toLocaleString(), 'ש"ח');
                     console.log('📊 [מקומי] ההפרש:', (totalData.Donated - totalFromDonors).toLocaleString(), 'ש"ח');
                     console.log('📊 [API - חדש] יעד:', totalData.Goal.toLocaleString(), 'ש"ח');
-                    // מיד מרעננים את כל התצוגות עם הסכום מנדרים (מקור האמת) – כולל תצוגת לייב
+                    // מיד מרעננים את כל התצוגות – getDisplayTotal ישתמש ב-API כשהמקומי נמוך משמעותית
                     updateHomeStats();
                     updateLeadersList();
                     updateLiveTargets();
@@ -20510,7 +20518,7 @@
             }
             const r = await loadFromGoogleSheets(true);
             if (r && r.success && typeof notifyDataChanged === 'function') {
-                notifyDataChanged();
+                notifyDataChanged(true);
             }
             return r;
         }
@@ -20535,7 +20543,7 @@
                         const r = await loadFromGoogleSheets(true);
                         if (r && r.success) {
                             if (typeof refreshAllScreensFromData === 'function') refreshAllScreensFromData();
-                            if (typeof notifyDataChanged === 'function') notifyDataChanged();
+                            if (typeof notifyDataChanged === 'function') notifyDataChanged(true); // true=לא להפעיל autoSave – מונע שמירה כפולה והבהובים
                             if (typeof updateLiveView === 'function') updateLiveView(true);
                         }
                     } else if (isUpdatingDonorForNedarim) {
@@ -20559,7 +20567,7 @@
                         if (r && r.success) {
                             if (typeof window !== 'undefined') window._lastSheetLoadTime = Date.now();
                             console.log('🔄 [סנכרון] טעינה ראשונה מהגליון הושלמה');
-                            if (typeof notifyDataChanged === 'function') notifyDataChanged();
+                            if (typeof notifyDataChanged === 'function') notifyDataChanged(true); // true=לא להפעיל autoSave – מונע שמירה כפולה
                         }
                     }).catch(err => console.warn('⚠️ [סנכרון] שגיאה בטעינה ראשונה:', err));
                 }
@@ -20587,6 +20595,11 @@
         
         // שמירת נתונים ל-Google Sheets
         async function saveToGoogleSheets() {
+            // מבטל שמירה אוטומטית ממתינה – מונע שמירה כפולה (גליון מתעדכן מיד + אחרי 800ms)
+            if (typeof saveToGoogleSheetsTimeout !== 'undefined' && saveToGoogleSheetsTimeout) {
+                clearTimeout(saveToGoogleSheetsTimeout);
+                saveToGoogleSheetsTimeout = null;
+            }
             // משתמש ב-URL מכל מקור אפשרי
             const urlInput = document.getElementById('googleSheetsWebAppUrl');
             const url = (urlInput ? urlInput.value.trim() : '') || 
@@ -21777,7 +21790,7 @@
                             if (typeof window !== 'undefined') window._sheetDataLoadedOnInit = true;
                         }
                         console.log('✅ [אתחול] הנתונים נטענו בהצלחה מ-Google Sheets');
-                        if (typeof notifyDataChanged === 'function') notifyDataChanged();
+                        if (typeof notifyDataChanged === 'function') notifyDataChanged(true);
                     } catch (error) {
                         console.error('❌ [אתחול] שגיאה בטעינה מ-Google Sheets:', error);
                     }
