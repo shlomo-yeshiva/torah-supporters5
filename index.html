@@ -5919,6 +5919,7 @@
                 
                 <div class="management-tabs">
                     <button class="management-tab active" data-tab="donors">ניהול מתרימים</button>
+                    <button class="management-tab" data-tab="manualDonation">הוספת תרומה באופן ידני מהחפ״ק</button>
                     <button class="management-tab" data-tab="groups">הגדרת מתרימים</button>
                     <button class="management-tab" data-tab="liveview">הגדרות תצוגת לייב</button>
                     <button class="management-tab" data-tab="calculator">מחשבון</button>
@@ -5980,7 +5981,39 @@
                             </div>
                             <div class="donors-search-meta" id="donorsSearchMeta"></div>
                         </div>
+                        <div id="donorsBulkActions" class="donors-bulk-actions" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; padding: 12px 16px; background: #f8f9fa; border-radius: 10px; border: 1px solid var(--border);">
+                            <button type="button" class="btn btn-secondary btn-small" onclick="selectAllDonors()">בחר הכל</button>
+                            <button type="button" class="btn btn-secondary btn-small" onclick="deselectAllDonors()">בטל בחירה</button>
+                            <span id="selectedDonorsCount" style="font-size: 14px; color: var(--muted);">0 מתרימים נבחרו</span>
+                            <button type="button" id="moveToGroupBtn" class="btn btn-primary btn-small" onclick="moveSelectedDonorsToGroup()" style="display: none;">העבר לקבוצה</button>
+                            <span style="font-size: 12px; color: var(--muted); margin-right: auto;">💡 חפש מתרימים (למשל "שיעור ג"), לחץ "בחר הכל" והעבר לקבוצה</span>
+                        </div>
                         <div class="donors-list" id="donorsListContainer">
+                            <!-- יוטען דינמית -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- הוספת תרומה באופן ידני מהחפ״ק -->
+                <div class="management-content" id="manualDonationContent">
+                    <div class="donors-management">
+                        <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <label for="manualDonationYearSelect" style="font-weight: 600; color: var(--brown-dark);">שנה:</label>
+                                <select id="manualDonationYearSelect" onchange="updateManualDonorsList()" style="padding: 10px 16px; border: 2px solid var(--border); border-radius: 8px; font-size: 15px; min-width: 100px;">
+                                    <!-- יוטען דינמית -->
+                                </select>
+                            </div>
+                            <span style="font-size: 13px; color: var(--muted);">מדור זה מאפשר הוספת תרומות באופן ידני שנאספו מהחפ״ק, לפי שנה.</span>
+                        </div>
+                        <div class="donors-search-bar">
+                            <div class="donors-search-input-wrapper">
+                                <input type="text" id="manualDonorSearchInput" class="donors-search-input" placeholder="חיפוש מתרימים לפי שם">
+                                <button type="button" id="manualDonorSearchClear" class="donor-search-clear" aria-label="נקה חיפוש">×</button>
+                            </div>
+                            <div class="donors-search-meta" id="manualDonorsSearchMeta"></div>
+                        </div>
+                        <div class="donors-list" id="manualDonorsListContainer">
                             <!-- יוטען דינמית -->
                         </div>
                     </div>
@@ -7462,6 +7495,7 @@
         let totalRecruiters = TOTAL_DONORS_DEFAULT;
         let donors = [];
         let donorSearchTerm = '';
+        let manualDonorSearchTerm = '';
         let addresses = [];
         let groups = [
             { id: 'group1', name: 'קבוצה 1', goal: defaultGroupGoal, orderNumber: 1 },
@@ -7551,6 +7585,7 @@
             { id: 'management', label: 'ניהול (כל המדור)' },
             { id: 'management-groups', label: 'ניהול → הגדרת מתרימים' },
             { id: 'management-donors', label: 'ניהול → ניהול מתרימים' },
+            { id: 'management-manualDonation', label: 'ניהול → הוספת תרומה באופן ידני מהחפ״ק' },
             { id: 'management-liveview', label: 'ניהול → הגדרות תצוגת לייב' },
             { id: 'management-sync', label: 'ניהול → עדכונים' },
             { id: 'management-reset', label: 'ניהול → אפשרויות איפוס' },
@@ -12381,6 +12416,106 @@
             });
         }
 
+        const manualDonorSearchInput = document.getElementById('manualDonorSearchInput');
+        const manualDonorSearchClear = document.getElementById('manualDonorSearchClear');
+        if (manualDonorSearchInput) {
+            manualDonorSearchInput.addEventListener('input', () => {
+                manualDonorSearchTerm = manualDonorSearchInput.value;
+                updateManualDonorsList();
+            });
+            manualDonorSearchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    manualDonorSearchTerm = '';
+                    manualDonorSearchInput.value = '';
+                    updateManualDonorsList();
+                }
+            });
+        }
+        if (manualDonorSearchClear) {
+            manualDonorSearchClear.addEventListener('click', () => {
+                manualDonorSearchTerm = '';
+                if (manualDonorSearchInput) {
+                    manualDonorSearchInput.value = '';
+                    manualDonorSearchInput.focus();
+                }
+                updateManualDonorsList();
+            });
+        }
+
+        function initManualDonationYearSelect() {
+            const sel = document.getElementById('manualDonationYearSelect');
+            if (!sel || sel.options.length > 0) return;
+            const currentYear = new Date().getFullYear();
+            for (let y = currentYear + 2; y >= currentYear - 5; y--) {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = String(y);
+                if (y === currentYear) opt.selected = true;
+                sel.appendChild(opt);
+            }
+        }
+
+        function updateManualDonorsList() {
+            const container = document.getElementById('manualDonorsListContainer');
+            if (!container) return;
+            ensureDonorsNormalized();
+            const meta = document.getElementById('manualDonorsSearchMeta');
+            const searchTerm = manualDonorSearchTerm.trim();
+            const tokens = tokenizeSearchInput(searchTerm);
+
+            let filteredDonors = donors;
+            if (tokens.length) {
+                filteredDonors = donors.filter(donor => donorMatchesSearch(donor, tokens));
+            }
+            filteredDonors = [...filteredDonors].sort((a, b) => {
+                const nameA = (a.displayName || a.name || '').trim();
+                const nameB = (b.displayName || b.name || '').trim();
+                return nameA.localeCompare(nameB, 'he');
+            });
+
+            if (meta) {
+                if (searchTerm) {
+                    meta.textContent = filteredDonors.length
+                        ? `נמצאו ${filteredDonors.length} מתרימים מתאימים לחיפוש "${searchTerm}"`
+                        : `לא נמצאו מתרימים מתאימים לחיפוש "${searchTerm}"`;
+                } else {
+                    meta.textContent = donors.length
+                        ? `סה"כ ${donors.length} מתרימים במערכת`
+                        : 'אין מתרימים במערכת';
+                }
+            }
+
+            if (filteredDonors.length === 0) {
+                const message = searchTerm
+                    ? `לא נמצאו מתרימים שעונים לחיפוש "${escapeHtml(searchTerm)}"`
+                    : 'אין מתרימים עדיין';
+                container.innerHTML = `<div style="text-align: center; color: var(--muted); padding: 20px;">${message}</div>`;
+                return;
+            }
+
+            container.innerHTML = filteredDonors.map(donor => {
+                const group = groups.find(g => g.id === donor.groupId) || groups[0];
+                const progress = donor.personalGoal > 0 ? (donor.amount / donor.personalGoal) * 100 : 0;
+                const displayName = donor.displayName || donor.name;
+                return `
+                    <div class="donor-item" data-donor-id="${donor.id}">
+                        <div class="donor-info">
+                            <div class="donor-name">${escapeHtml(displayName)}</div>
+                            <div class="donor-details">
+                                ${donor.nedarimMatrimId ? `מספר מתרים: ${donor.nedarimMatrimId} | ` : ''}
+                                קבוצה: ${group ? escapeHtml(group.name) : 'ללא קבוצה'} | 
+                                תרומה: ₪${donor.amount.toLocaleString()} | 
+                                יעד: ₪${donor.personalGoal.toLocaleString()} (${Math.round(progress)}%)
+                            </div>
+                        </div>
+                        <div class="donor-actions">
+                            <button class="btn btn-primary btn-small" onclick="addDonorPayment(${donor.id})">הוסף תשלום</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
         function syncDefaultDonorGoalInput() {
             const input = document.getElementById('defaultDonorGoalInput');
             if (input) {
@@ -12685,6 +12820,9 @@
                 } else if (tabName === 'donors') {
                     updateDonorsList();
                     updateGroupSelect();
+                } else if (tabName === 'manualDonation') {
+                    initManualDonationYearSelect();
+                    updateManualDonorsList();
                 } else if (tabName === 'liveview') {
                     loadLiveViewSettings();
                 } else if (tabName === 'robot') {
