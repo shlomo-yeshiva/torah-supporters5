@@ -14341,6 +14341,7 @@
         // עדכון ממסך/טאב אחר – טוען רק מ-localStorage, בלי לדרוס מהגליון (מונע קפיצות)
         function reloadFromLocalStorageOnly() {
             try {
+                _lastLocalSyncFromOtherTab = Date.now(); // 🛡️ מסמן שעדכון מקומי חדש התקבל – טעינות מהגליון שחזרו אחרי כן ידולגו
                 const savedDonors = localStorage.getItem('donors');
                 const savedGroups = localStorage.getItem('groups');
                 if (savedDonors) {
@@ -19873,6 +19874,10 @@
         let sheetSyncSaveOnChange = true;
         let liveViewSyncIntervalId = null;
         
+        // 🛡️ מניעת הבהוב: טעינה ישנה לא תדרוס טעינה/עדכון חדש יותר
+        let _loadFromSheetsSeq = 0;           // כל טעינה מקבלת מספר סידורי
+        let _lastLocalSyncFromOtherTab = 0;   // מתי התקבל עדכון מ-BroadcastChannel/storage (טאב/מחשב אחר)
+        
         // שמירת הגדרות Google Sheets
         function saveGoogleSheetsSettings() {
             const urlInput = document.getElementById('googleSheetsWebAppUrl');
@@ -20076,6 +20081,8 @@
         // טעינת נתונים מ-Google Sheets
         // silent: true = ללא הודעות (לסנכרון אוטומטי בתצוגת לייב)
         async function loadFromGoogleSheets(silent = false) {
+            const loadSeq = ++_loadFromSheetsSeq;
+            const loadStartTime = Date.now();
             const urlInput = document.getElementById('googleSheetsWebAppUrl');
             const entryUrlInput = document.getElementById('entryCodeSheetUrlInput');
             const savedUrl = (typeof localStorage !== 'undefined' && localStorage.getItem('googleSheetsWebAppUrl')) || '';
@@ -20155,6 +20162,16 @@
                 
                 if (!result.success && result.error) {
                     throw new Error(result.error);
+                }
+                
+                // 🛡️ מניעת הבהוב: לא להחיל טעינה שחזרה אחרי עדכון מקומי או טעינה חדשה יותר
+                if (_lastLocalSyncFromOtherTab > loadStartTime) {
+                    if (!silent) console.log('⏭️ [סנכרון] דילוג – התקבל עדכון מ-BroadcastChannel/storage אחרי תחילת הטעינה');
+                    return { success: true, skipped: true, reason: 'local-sync-newer' };
+                }
+                if (loadSeq !== _loadFromSheetsSeq) {
+                    if (!silent) console.log('⏭️ [סנכרון] דילוג – התחילה טעינה חדשה יותר');
+                    return { success: true, skipped: true, reason: 'newer-load-started' };
                 }
                 
                 let loadedDonors = 0;
@@ -20518,24 +20535,21 @@
                 // בתצוגת לייב – לא מעדכן בטיימר כדי לשמור על גלילה חלקה; בחזרה לטאב (forceLoadWhenVisible) תמיד טוענים
                 if (!forceLoadWhenVisible && typeof isLiveViewActive === 'function' && isLiveViewActive()) return;
                 try {
-                    // ⚠️ חשוב: שמירה קודם, טעינה אחרי – מונע דריסת displayName (עמודה C) בנתונים מקומיים
+                    // ⚠️ חשוב: טעינה קודם, שמירה אחרי – מונע דריסת עמודה C (displayName) בגליון
+                    // כשטוענים קודם, מתמזגים displayName מהגליון לתוך donors מקומיים (כש displayName מקומי ריק),
+                    // כך שבשמירה לא נדרוס שמות תצוגה קיימים בגליון
+                    if (sheetSyncLoadEnabled && !isUpdatingDonorForNedarim) {
+                        const r = await loadFromGoogleSheets(true);
+                        if (r && r.success) {
+                            if (typeof refreshAllScreensFromData === 'function') refreshAllScreensFromData();
+                            if (typeof notifyDataChanged === 'function') notifyDataChanged();
+                            if (typeof updateLiveView === 'function') updateLiveView(true);
+                        }
+                    } else if (isUpdatingDonorForNedarim) {
+                        console.log(`⏸️ [סנכרון] עדכון לנדרים/גליון בתהליך - מדלג על טעינה`);
+                    }
                     if (sheetSyncSaveEnabled) {
                         await saveToGoogleSheets();
-                    }
-                    if (sheetSyncLoadEnabled) {
-                        if (isUpdatingDonorForNedarim) {
-                            console.log(`⏸️ [סנכרון] עדכון לנדרים/גליון בתהליך - מדלג על טעינה`);
-                        } else {
-                            const r = await loadFromGoogleSheets(true);
-                            if (r && r.success) {
-                                if (typeof refreshAllScreensFromData === 'function') refreshAllScreensFromData();
-                                if (typeof notifyDataChanged === 'function') notifyDataChanged();
-                                // עדכון מיידי של Live View אחרי טעינה מהגליון
-                                if (typeof updateLiveView === 'function') {
-                                    updateLiveView(true); // immediate = true
-                                }
-                            }
-                        }
                     }
                 } catch (err) {
                     console.warn('⚠️ [סנכרון] שגיאה בעדכון תקופתי לגליון:', err);
