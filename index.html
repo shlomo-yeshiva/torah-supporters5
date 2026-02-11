@@ -7740,10 +7740,19 @@
             if (!donor) return null;
             donor.id = donor.id || Date.now();
             donor.name = donor.name || 'ללא שם';
-            // נרמול groupId להתאמה לטיפוס הקבוצה – מונע "היעלמות" מובילים בתצוגת לייב
-            if (donor.groupId != null && Array.isArray(groups) && groups.length > 0) {
-                const match = groups.find(g => groupIdsMatch(donor.groupId, g.id));
-                if (match) donor.groupId = match.id;
+            // נרמול groupId – מונע "היעלמות" מובילים בתצוגת לייב (התאמת טיפוס, fallback לפי שם קבוצה)
+            if (Array.isArray(groups) && groups.length > 0) {
+                let match = donor.groupId != null ? groups.find(g => groupIdsMatch(donor.groupId, g.id)) : null;
+                if (!match && (donor.groupName || '').toString().trim()) {
+                    const dn = (donor.groupName || '').toString().trim();
+                    match = groups.find(g => (g.name || '').toString().trim() === dn);
+                }
+                if (match) {
+                    donor.groupId = match.id;
+                    if (!donor.groupName || (donor.groupName || '').toString().trim() !== (match.name || '').toString().trim()) {
+                        donor.groupName = match.name || '';
+                    }
+                }
             }
             donor.amount = Math.max(0, Math.round(parseFloat(donor.amount) || 0));
             donor.personalGoal = Math.max(0, Math.round(parseFloat(donor.personalGoal) || defaultDonorGoal));
@@ -7783,11 +7792,34 @@
             return false;
         }
 
-        /** מחזיר מתרימים ששייכים לקבוצה – עם השוואת groupId גמישה */
+        /** מפתח קנוני לקבוצה – לטבלת donorsByGroup (מטפל ב-scientific notation) */
+        function getCanonicalGroupKey(groupOrId) {
+            const id = typeof groupOrId === 'object' && groupOrId !== null ? groupOrId.id : groupOrId;
+            if (id == null || id === '') return '';
+            const n = parseFloat(String(id));
+            return !isNaN(n) && isFinite(n) ? String(Math.round(n)) : String(id).trim();
+        }
+
+        /** מחזיר את הקבוצה שמתרים שייך אליה – groupId גמיש + fallback לפי groupName */
+        function getGroupForDonor(donor) {
+            if (!donor || !Array.isArray(groups) || groups.length === 0) return null;
+            const byId = groups.find(g => groupIdsMatch(donor.groupId, g.id));
+            if (byId) return byId;
+            const dn = (donor.groupName || '').toString().trim();
+            if (!dn) return null;
+            const donorMatchesAnyByGroupId = groups.some(g => groupIdsMatch(donor.groupId, g.id));
+            if (donorMatchesAnyByGroupId) return null;
+            return groups.find(g => (g.name || '').toString().trim() === dn) || null;
+        }
+
+        /** מחזיר מתרימים ששייכים לקבוצה – משתמש ב-getGroupForDonor לתאימות מלאה */
         function getDonorsForGroup(group) {
             if (!group) return [];
             const gid = group.id;
-            return donors.filter(d => groupIdsMatch(d.groupId, gid));
+            return donors.filter(d => {
+                const g = getGroupForDonor(d);
+                return g && groupIdsMatch(g.id, gid);
+            });
         }
 
         function ensureFinanceDefaults() {
@@ -14951,11 +14983,11 @@
                 filteredDonors = filteredDonors.filter(d => d.personalGoal > 0 && d.amount < d.personalGoal);
             }
 
-            // קיבוץ מתרימים לפי קבוצה – עם השוואת groupId גמישה (מספר/מחרוזת מהגליון)
+            // קיבוץ מתרימים לפי קבוצה – משתמש ב-getGroupForDonor (groupId גמיש + fallback לפי groupName)
             const donorsByGroup = new Map();
             const getGroupKeyForDonor = (donor) => {
-                const g = groups.find(gr => groupIdsMatch(donor.groupId, gr.id));
-                return g ? String(g.id ?? '') : 'no-group';
+                const g = getGroupForDonor(donor);
+                return g ? getCanonicalGroupKey(g) : 'no-group';
             };
             filteredDonors.forEach(donor => {
                 const groupKey = getGroupKeyForDonor(donor);
@@ -14981,28 +15013,28 @@
                 sortedGroups.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'he'));
             } else if (sortBy === 'collected') {
                 sortedGroups.sort((a, b) => {
-                    const aCollected = (donorsByGroup.get(String(a.id ?? '')) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
-                    const bCollected = (donorsByGroup.get(String(b.id ?? '')) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+                    const aCollected = (donorsByGroup.get(getCanonicalGroupKey(a)) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+                    const bCollected = (donorsByGroup.get(getCanonicalGroupKey(b)) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
                     return bCollected - aCollected;
                 });
             } else if (sortBy === 'collected-asc') {
                 sortedGroups.sort((a, b) => {
-                    const aCollected = (donorsByGroup.get(String(a.id ?? '')) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
-                    const bCollected = (donorsByGroup.get(String(b.id ?? '')) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+                    const aCollected = (donorsByGroup.get(getCanonicalGroupKey(a)) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+                    const bCollected = (donorsByGroup.get(getCanonicalGroupKey(b)) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
                     return aCollected - bCollected;
                 });
             } else if (sortBy === 'percentage') {
                 sortedGroups.sort((a, b) => {
-                    const aCollected = (donorsByGroup.get(String(a.id ?? '')) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
-                    const bCollected = (donorsByGroup.get(String(b.id ?? '')) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+                    const aCollected = (donorsByGroup.get(getCanonicalGroupKey(a)) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+                    const bCollected = (donorsByGroup.get(getCanonicalGroupKey(b)) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
                     const aPercentage = a.goal > 0 ? (aCollected / a.goal) * 100 : 0;
                     const bPercentage = b.goal > 0 ? (bCollected / b.goal) * 100 : 0;
                     return bPercentage - aPercentage;
                 });
             } else if (sortBy === 'percentage-asc') {
                 sortedGroups.sort((a, b) => {
-                    const aCollected = (donorsByGroup.get(String(a.id ?? '')) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
-                    const bCollected = (donorsByGroup.get(String(b.id ?? '')) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+                    const aCollected = (donorsByGroup.get(getCanonicalGroupKey(a)) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+                    const bCollected = (donorsByGroup.get(getCanonicalGroupKey(b)) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
                     const aPercentage = a.goal > 0 ? (aCollected / a.goal) * 100 : 0;
                     const bPercentage = b.goal > 0 ? (bCollected / b.goal) * 100 : 0;
                     return aPercentage - bPercentage;
@@ -15016,23 +15048,23 @@
             // סינון קבוצות לפי ההגדרות
             if (liveViewSettings.groupsFilter === 'with-donors') {
                 sortedGroups = sortedGroups.filter(g => {
-                    const gid = String(g.id ?? '');
-                    return donorsByGroup.has(gid) && donorsByGroup.get(gid).length > 0;
+                    const k = getCanonicalGroupKey(g);
+                    return donorsByGroup.has(k) && donorsByGroup.get(k).length > 0;
                 });
             } else if (liveViewSettings.groupsFilter === 'met-goal') {
                 sortedGroups = sortedGroups.filter(g => {
-                    const collected = (donorsByGroup.get(String(g.id ?? '')) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+                    const collected = (donorsByGroup.get(getCanonicalGroupKey(g)) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
                     return g.goal > 0 && collected >= g.goal;
                 });
             } else if (liveViewSettings.groupsFilter === 'not-met-goal') {
                 sortedGroups = sortedGroups.filter(g => {
-                    const collected = (donorsByGroup.get(String(g.id ?? '')) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+                    const collected = (donorsByGroup.get(getCanonicalGroupKey(g)) || []).reduce((sum, d) => sum + (d.amount || 0), 0);
                     return g.goal > 0 && collected < g.goal;
                 });
             }
 
             const orderedGroups = sortedGroups
-                .map(group => String(group.id ?? ''))
+                .map(group => getCanonicalGroupKey(group))
                 .filter(id => donorsByGroup.has(id));
             const unorderedGroups = Array.from(donorsByGroup.keys())
                 .filter(id => !orderedGroups.includes(id));
