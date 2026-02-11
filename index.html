@@ -5514,6 +5514,18 @@
     </style>
 </head>
 <body>
+    <div class="app-lock-overlay" id="entryCodeOverlay" role="dialog" aria-modal="true" aria-labelledby="entryCodeTitle">
+        <div class="app-lock-dialog">
+            <div class="app-lock-logo"><img src="https://i.postimg.cc/ZRMCLxgW/wgw-t-t-dhws.png" alt="לוגו" style="height:64px;"></div>
+            <h2 id="entryCodeTitle">כניסה לתוכנה</h2>
+            <p>הזן את קוד הכניסה כדי להמשיך.</p>
+            <input type="text" id="entryCodeInput" class="app-lock-password-input" placeholder="הזן קוד כניסה" autocomplete="one-time-code" onkeydown="handleEntryCodeKeyDown(event)">
+            <div class="app-lock-actions">
+                <button class="btn btn-primary" type="button" onclick="handleEntryCodeSubmit()">כניסה</button>
+            </div>
+            <p class="app-lock-error" id="entryCodeError"></p>
+        </div>
+    </div>
     <div class="app-lock-overlay hidden" id="appLockOverlay" role="dialog" aria-modal="true" aria-labelledby="appLockTitle">
         <div class="app-lock-dialog">
             <div class="app-lock-logo"><img src="https://i.postimg.cc/ZRMCLxgW/wgw-t-t-dhws.png" alt="לוגו" style="height:64px;"></div>
@@ -8439,6 +8451,120 @@
             appLockResolved = false;
             toggleAppLockOverlay(true);
         }
+
+        let entryCodeVerified = false;
+
+        function initEntryCodeGate() {
+            const overlay = document.getElementById('entryCodeOverlay');
+            const input = document.getElementById('entryCodeInput');
+            const error = document.getElementById('entryCodeError');
+            if (!overlay || !input) return;
+            if (entryCodeVerified) {
+                overlay.classList.add('hidden');
+                runAppBootstrap();
+                return;
+            }
+            overlay.classList.remove('hidden');
+            input.value = '';
+            if (error) error.textContent = '';
+            setTimeout(() => input.focus(), 100);
+        }
+
+        function runAppBootstrap() {
+            entryCodeVerified = true;
+            const overlay = document.getElementById('entryCodeOverlay');
+            if (overlay) overlay.classList.add('hidden');
+            if (typeof loadData !== 'function') return;
+            loadData().then(async () => {
+                if (typeof loadGoogleSheetsSettings === 'function') loadGoogleSheetsSettings();
+                initRobot();
+                updateHomeStats();
+                updateGroupsDisplay();
+                updateDonorsList();
+                updateLiveView();
+                updateLeadersList();
+                updateLiveTargets();
+                updateFinanceUI();
+                updateGroupSelect();
+                initToolkitTipsUI();
+                initHomeDonorFilters();
+                initScoutsSection();
+                initGroomGrantSection();
+                renderGroomGrantList();
+                hideLiveViewBackButton();
+                initLandingCards();
+                if (typeof initLocalDatabase === 'function') {
+                    initLocalDatabase().then(async () => {
+                        console.log('✅ בסיס הנתונים מוכן');
+                        if (typeof loadSettingsFromDatabase === 'function') await loadSettingsFromDatabase();
+                        if (typeof fillNedarimCorrectionDonorSelect === 'function') fillNedarimCorrectionDonorSelect();
+                        if (typeof fillUpdateByApiDonorSelect === 'function') fillUpdateByApiDonorSelect();
+                        if (typeof updateNedarimFixCurrentSumLabel === 'function') updateNedarimFixCurrentSumLabel();
+                        if (typeof syncNedarimBlockPushCheckbox === 'function') syncNedarimBlockPushCheckbox();
+                        if (typeof syncAllDataToDatabase === 'function') syncAllDataToDatabase();
+                    }).catch(error => console.error('❌ שגיאה באתחול בסיס הנתונים:', error));
+                }
+                updateHomeStats();
+                updateGroupsDisplay();
+                updateDonorsList();
+                updateLiveView();
+                updateLeadersList();
+                updateLiveTargets();
+                updateFinanceUI();
+                updateGroupSelect();
+                initToolkitTipsUI();
+                initHomeDonorFilters();
+                initScoutsSection();
+                initGroomGrantSection();
+                renderGroomGrantList();
+                hideLiveViewBackButton();
+                initLandingCards();
+            }).catch(err => console.error('שגיאה בטעינת נתונים:', err));
+        }
+
+        async function handleEntryCodeSubmit() {
+            const input = document.getElementById('entryCodeInput');
+            const error = document.getElementById('entryCodeError');
+            const entered = (input?.value || '').trim();
+            if (!entered) {
+                if (error) error.textContent = 'אנא הזן קוד כניסה';
+                input?.focus();
+                return;
+            }
+            const url = (typeof localStorage !== 'undefined' && localStorage.getItem('googleSheetsWebAppUrl')) || (typeof googleSheetsWebAppUrl !== 'undefined' ? googleSheetsWebAppUrl : '') || (typeof DEFAULT_GOOGLE_SHEETS_URL !== 'undefined' ? DEFAULT_GOOGLE_SHEETS_URL : '') || '';
+            if (!url || !url.trim()) {
+                if (error) error.textContent = 'לא הוגדר חיבור לשרת – לא ניתן לאמת קוד.';
+                return;
+            }
+            if (error) error.textContent = 'מאמת...';
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+                    body: JSON.stringify({ action: 'verifyEntryCode', code: entered }),
+                    redirect: 'follow'
+                });
+                const data = res.ok ? await res.json() : {};
+                if (data && data.success) {
+                    runAppBootstrap();
+                    return;
+                }
+            } catch (e) {
+                console.warn('שגיאה באימות קוד:', e);
+            }
+            if (error) error.textContent = 'קוד שגוי, נסה שוב.';
+            if (input) { input.value = ''; input.focus(); }
+        }
+
+        function handleEntryCodeKeyDown(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                handleEntryCodeSubmit();
+            }
+        }
+
+        window.handleEntryCodeSubmit = handleEntryCodeSubmit;
+        window.handleEntryCodeKeyDown = handleEntryCodeKeyDown;
 
         async function handleAppLockSubmit() {
             if (!isAppLockRequired()) {
@@ -15664,120 +15790,8 @@
             }
             window.initRobot = initRobot;
 
-            // טעינה ראשונית
-        loadData().then(async () => {
-        if (typeof loadGoogleSheetsSettings === 'function') loadGoogleSheetsSettings();
-        initRobot();
-        updateHomeStats();
-        updateGroupsDisplay();
-        updateDonorsList();
-        updateLiveView();
-        updateLeadersList();
-        updateLiveTargets();
-        updateFinanceUI();
-        updateGroupSelect();
-        initToolkitTipsUI();
-        initHomeDonorFilters();
-        initScoutsSection();
-        initGroomGrantSection();
-        renderGroomGrantList();
-        hideLiveViewBackButton();
-        initLandingCards();
-        
-        // פונקציה זו הוסרה - השתמש ברובוט אוטומטי במדור ניהול
-        async function performAutoRefresh() {
-            return; // בוטל - השתמש ברובוט אוטומטי
-            
-            const actionNames = {
-                'sync': 'סנכרון תרומות',
-                'load': 'טען מתרימים מנדרים פלוס',
-                'check': 'בדוק סכום כולל מ-API',
-                'all': 'כל הכפתורים בו-זמנית'
-            };
-            
-            console.log(`🔄 [עדכון אוטומטי] מתחיל עדכון מנדרים פלוס (מאחורי הקלעים) - ${actionNames[autoSyncSelectedAction]}...`);
-            
-            try {
-                // אם נבחר "כל הכפתורים", מפעיל את כולם בו-זמנית
-                if (autoSyncSelectedAction === 'all') {
-                    console.log('⚡ [עדכון אוטומטי] מפעיל את כל הכפתורים בו-זמנית...');
-                    
-                    // סנכרון מלא (דחיפה + משיכה) – אותה עמותה, תרומות אמיתיות מסליקה באשראי יופיעו
-                    await Promise.all([
-                        checkTotalAmountFromAPI(true).catch(err => {
-                            console.warn('⚠️ [עדכון אוטומטי] שגיאה בבדיקת סכום כולל מ-API:', err);
-                        }),
-                        loadMatrimFromNedarim(true).catch(err => {
-                            console.warn('⚠️ [עדכון אוטומטי] שגיאה בטעינת מתרימים מנדרים פלוס:', err);
-                        }),
-                        syncWithNedarimPlus(true).catch(err => {
-                            console.warn('⚠️ [עדכון אוטומטי] שגיאה בסנכרון תרומות:', err);
-                        })
-                    ]);
-                    
-                    console.log('✅ [עדכון אוטומטי] כל הכפתורים הושלמו (מאחורי הקלעים)');
-                } else {
-                    // מפעיל רק את הפעולה שנבחרה
-                    switch (autoSyncSelectedAction) {
-                        case 'check':
-                            console.log('🔍 [עדכון אוטומטי] בודק סכום כולל מ-API...');
-                            await checkTotalAmountFromAPI(true); // silent mode
-                            break;
-                        case 'load':
-                            console.log('📥 [עדכון אוטומטי] טוען מתרימים מנדרים פלוס...');
-                            await loadMatrimFromNedarim(true); // silent mode
-                            break;
-                        case 'sync':
-                        default:
-                            console.log('🔄 [עדכון אוטומטי] מסנכרן תרומות...');
-                            await syncWithNedarimPlus(true); // silent mode
-                            break;
-                    }
-                    
-                    console.log(`✅ [עדכון אוטומטי] ${actionNames[autoSyncSelectedAction]} הושלם (מאחורי הקלעים)`);
-                }
-                
-                // סנכרון לבסיס הנתונים אחרי העדכון
-                await syncAllDataToDatabase();
-            } catch (error) {
-                console.warn(`⚠️ [עדכון אוטומטי] שגיאה ב-${actionNames[autoSyncSelectedAction]}:`, error);
-            }
-        }
-        
-        // אתחול בסיס הנתונים בעליית התוכנה
-        initLocalDatabase().then(async () => {
-            console.log('✅ בסיס הנתונים מוכן');
-            // טעינת הגדרות מבסיס הנתונים
-            await loadSettingsFromDatabase();
-            // עדכון אוטומטי הישן בוטל - השתמש ברובוט אוטומטי במדור ניהול
-            fillNedarimCorrectionDonorSelect();
-            fillUpdateByApiDonorSelect();
-            if (typeof updateNedarimFixCurrentSumLabel === 'function') updateNedarimFixCurrentSumLabel();
-            if (typeof syncNedarimBlockPushCheckbox === 'function') syncNedarimBlockPushCheckbox();
-            // סנכרון ראשוני של הנתונים הקיימים
-            syncAllDataToDatabase();
-        }).catch(error => {
-            console.error('❌ שגיאה באתחול בסיס הנתונים:', error);
-        });
-        
-        // עדכון אוטומטי הישן בוטל - השתמש ברובוט אוטומטי במדור ניהול
-            // בכל זאת נפעיל את הפונקציות גם אם יש שגיאה
-            updateHomeStats();
-            updateGroupsDisplay();
-            updateDonorsList();
-            updateLiveView();
-            updateLeadersList();
-            updateLiveTargets();
-            updateFinanceUI();
-            updateGroupSelect();
-            initToolkitTipsUI();
-            initHomeDonorFilters();
-            initScoutsSection();
-            initGroomGrantSection();
-            renderGroomGrantList();
-            hideLiveViewBackButton();
-            initLandingCards();
-        });
+            // טעינה ראשונית – מסך קוד כניסה, אחרי אימות מול השרת מתבצע האתחול
+        initEntryCodeGate();
         // initLogoParticleAnimation(); // הושבת - הפונקציה הוסרה
         
         // עדכון אוטומטי - רק כשלא בתצוגת לייב או כל 60 שניות
