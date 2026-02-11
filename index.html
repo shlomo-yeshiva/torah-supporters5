@@ -3152,6 +3152,8 @@
 
         .group-header-amounts {
             color: var(--brown-dark);
+            font-variant-numeric: tabular-nums;
+            min-width: 12ch;
         }
         .live-donor-card {
             flex: 0 0 calc((100% - 20px) / 3);
@@ -3725,7 +3727,8 @@
             color: var(--brown-dark);
         }
         .amount-value, .goal-value {
-            min-width: 6ch;
+            min-width: 8ch;
+            font-variant-numeric: tabular-nums;
             contain: layout;
         }
 
@@ -4111,6 +4114,7 @@
             font-weight: 700;
             color: var(--primary-gold-dark);
             min-width: 10ch;
+            font-variant-numeric: tabular-nums;
             contain: layout;
         }
 
@@ -4269,6 +4273,7 @@
             text-align: center;
             white-space: nowrap;
             min-width: 14ch;
+            font-variant-numeric: tabular-nums;
             contain: layout;
         }
         /* הודעות */
@@ -4392,6 +4397,25 @@
             color: #dc2626;
             font-weight: 600;
             font-size: 14px;
+        }
+
+        .app-lock-contact-note {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .app-lock-contact-note a {
+            color: var(--primary-gold-dark);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .app-lock-contact-note a:hover {
+            text-decoration: underline;
         }
 
         @keyframes fadeInOut {
@@ -5536,6 +5560,7 @@
                 <button class="btn btn-primary" type="button" onclick="handleEntryCodeSubmit()">כניסה</button>
             </div>
             <p class="app-lock-error" id="entryCodeError"></p>
+            <p class="app-lock-contact-note">במקרה ונתקלת בנעילה ואתה לקוח של תוכנה זו – ניתן ליצור קשר עם <strong>S.C. פיתוח אתרים ותוכנות</strong> בדוא"ל <a href="mailto:s0534142893@gmail.com">s0534142893@gmail.com</a>. נשתדל לחזור אליכם בהקדם.</p>
         </div>
     </div>
     <div class="app-lock-overlay hidden" id="appLockOverlay" role="dialog" aria-modal="true" aria-labelledby="appLockTitle">
@@ -5554,6 +5579,7 @@
                 <button class="btn btn-primary" type="button" onclick="handleAppLockSubmit()">כניסה</button>
             </div>
             <p class="app-lock-error" id="appLockError"></p>
+            <p class="app-lock-contact-note">במקרה ונתקלת בנעילה ואתה לקוח של תוכנה זו – ניתן ליצור קשר עם <strong>S.C. פיתוח אתרים ותוכנות</strong> בדוא"ל <a href="mailto:s0534142893@gmail.com">s0534142893@gmail.com</a>. נשתדל לחזור אליכם בהקדם.</p>
         </div>
     </div>
     <div class="app-container">
@@ -12083,14 +12109,18 @@
                 last = timestamp;
                 donorsScrollLastTime = timestamp;
                 
+                // קריאת גובה עדכנית כל פריים – מונע קפיצות כשעדכונים (רובוט וכו') משנים סכומים/תוכן
+                const currentHalf = container.scrollHeight > 0 ? container.scrollHeight / 2 : halfHeight;
+                const h = (currentHalf && isFinite(currentHalf) && currentHalf >= 50) ? currentHalf : halfHeight;
+                
                 // מיפוי המהירות
                 const speedValue = liveViewSettings.donorsScrollSpeed || 50;
                 const speed = 5 + (speedValue - 10) * 65 / 90;
                 offset += speed * delta;
                 
                 // גלילה אינסופית
-                if (offset >= halfHeight) {
-                    offset -= halfHeight;
+                if (offset >= h) {
+                    offset -= h;
                     state.cycleCompleteFired = false;
                 }
                 if (offset < 10) state.cycleCompleteFired = false;
@@ -12263,13 +12293,17 @@
                 last = timestamp;
                 leadersScrollLastTime = timestamp;
                 
+                // קריאת גובה עדכנית כל פריים – מונע קפיצות כשעדכונים (רובוט וכו') משנים את התוכן
+                const currentHeight = primary ? primary.offsetHeight : contentHeight;
+                const h = (currentHeight && isFinite(currentHeight) && currentHeight >= 50) ? currentHeight : contentHeight;
+                
                 // מהירות קבועה למובילים - 30 פיקסלים לשנייה
                 const speed = 30;
                 offset += speed * delta;
                 
                 // גלילה אינסופית חלקה – כמו במתרימים, בלי קפיצה
-                if (offset >= contentHeight) {
-                    offset -= contentHeight;
+                if (offset >= h) {
+                    offset -= h;
                 }
                 
                 state.offset = offset;
@@ -14502,7 +14536,7 @@
         let isUpdatingLiveView = false;
         let lastLiveViewUpdateWhenActive = 0;
         let updateLiveViewScheduledWhenActive = null;
-        const LIVE_VIEW_BACKGROUND_UPDATE_INTERVAL_MS = 45000; // בתצוגת לייב – עדכון רקע לכל היותר כל 45 שניות (גלילה חלקה, ללא קפיצות)
+        const LIVE_VIEW_BACKGROUND_UPDATE_INTERVAL_MS = 60000; // בתצוגת לייב – עדכון רקע לכל היותר כל 60 שניות (גלילה חלקה, ללא קפיצות)
         function updateLiveView(immediate = false) {
             // Debouncing - מניעת עדכונים תכופים מדי
             if (updateLiveViewTimeout && !immediate) {
@@ -14536,6 +14570,7 @@
                         updateLiveViewScheduledWhenActive = setTimeout(() => {
                             updateLiveViewScheduledWhenActive = null;
                             updateLiveView(false);
+                            if (typeof updateLeadersList === 'function') updateLeadersList();
                         }, delay);
                     }
                     isUpdatingLiveView = false;
@@ -15041,6 +15076,7 @@
 
                 if (sortedDonors.length > 0) {
                     const anchor = existingGroupCards[0] || existingSummary || null;
+                    const parent = anchor ? anchor.parentNode : leadersList;
                     sortedDonors.forEach((donor, index) => {
                         let el = idToEl.get(String(donor.id || ''));
                         if (!el) {
@@ -15048,11 +15084,18 @@
                             el.className = 'leader-item';
                             el.dataset.donorId = String(donor.id || '');
                             el.innerHTML = '<div class="leader-rank"></div><div class="leader-info"><div class="leader-name"></div></div><div class="leader-total"></div>';
-                            if (firstLeaderParent && anchor) firstLeaderParent.insertBefore(el, anchor);
+                            if (parent && anchor) parent.insertBefore(el, anchor);
                         }
                         el.style.display = '';
                         updateLeaderItem(el, donor, index + 1);
                     });
+                    // סדר מחדש: המקום הראשון חייב להיות ראשון ב-DOM (תיקון באג: עדכון חלקי לא שינה סדר)
+                    if (parent && anchor) {
+                        for (let i = sortedDonors.length - 1; i >= 0; i--) {
+                            const el = idToEl.get(String(sortedDonors[i].id || ''));
+                            if (el) parent.insertBefore(el, anchor);
+                        }
+                    }
                     existingLeaders.forEach(el => {
                         const id = el.dataset.donorId || '';
                         if (!sortedDonors.some(d => String(d.id) === id)) el.style.display = 'none';
