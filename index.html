@@ -614,7 +614,7 @@
             background: linear-gradient(135deg, rgba(245, 230, 211, 0.95) 0%, rgba(255, 248, 220, 0.95) 100%);
         }
         #instructionsSection.instructions-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #F5E6D3 0%, #FFF8DC 50%, #E8D5B7 100%);
         }
 
         .instructions-panel {
@@ -814,7 +814,7 @@
             display: inline-flex;
             align-items: center;
             gap: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #D4AF37 0%, #B8941F 100%);
             color: white !important;
             padding: 16px 32px;
             border-radius: 12px;
@@ -822,7 +822,7 @@
             font-size: clamp(16px, 1.5vw, 18px);
             font-weight: 600;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
             border: none;
             cursor: pointer;
             font-family: inherit;
@@ -830,7 +830,7 @@
 
         .support-button:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.6);
         }
 
         .support-button:active {
@@ -8575,13 +8575,22 @@
                 return;
             }
             if (error) error.textContent = 'מאמת...';
+            const baseUrl = (url || '').split('?')[0] || url;
+            const directUrl = baseUrl + '?action=verifyEntryCode&code=' + encodeURIComponent(entered) + '&_=' + Date.now();
             try {
-                const res = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json; charset=utf-8' },
-                    body: JSON.stringify({ action: 'verifyEntryCode', code: entered }),
-                    redirect: 'follow'
-                });
+                const isNetlify = typeof window !== 'undefined' && window.location && window.location.hostname && window.location.hostname.includes('netlify');
+                let res = null;
+                if (isNetlify) {
+                    try {
+                        const proxyUrl = '/.netlify/functions/sheets-proxy?url=' + encodeURIComponent(url) + '&action=verifyEntryCode&code=' + encodeURIComponent(entered) + '&_=' + Date.now();
+                        res = await fetch(proxyUrl, { method: 'GET', redirect: 'follow' });
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data && data.success) { runAppBootstrap(); return; }
+                        }
+                    } catch (proxyErr) { console.warn('Proxy נכשל, מנסה קריאה ישירה:', proxyErr); }
+                }
+                res = await fetch(directUrl, { method: 'GET', redirect: 'follow' });
                 const data = res.ok ? await res.json() : {};
                 if (data && data.success) {
                     runAppBootstrap();
