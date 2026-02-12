@@ -2856,6 +2856,11 @@
             width: 100%;
         }
 
+        /* פרוגרס ומעקב עדכונים ב-overlay */
+        #liveViewUpdateProgressBar[style*="display: block"] { display: block !important; }
+        .live-view-update-donors-preview-item { padding: 4px 8px; animation: donorPreviewFade 0.5s ease; }
+        @keyframes donorPreviewFade { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
         /* שכבת overlay בזמן עדכון אוטומטי (סיום גלילה) */
         .live-view-update-overlay {
             display: none;
@@ -6476,12 +6481,21 @@
                                     <select id="liveviewUpdateWhen" onchange="updateLiveViewSettings()">
                                         <option value="end">בסיום מחזור גלילה (עוצר, מציג overlay, מעדכן, ממשיך)</option>
                                         <option value="during">תוך כדי גלילה (בלי לעצור, בלי קפיצות)</option>
+                                        <option value="custom">זמן מותאם אישית (כל X דקות/שניות)</option>
                                     </select>
                                 </div>
                                 <div class="liveview-setting-row" id="liveviewUpdateDuringIntervalRow" style="display: none;">
                                     <label>כל כמה דקות (תוך כדי גלילה):</label>
                                     <input type="number" id="liveviewUpdateDuringMinutes" min="1" max="60" value="5" onchange="updateLiveViewSettings()" style="width: 60px;">
                                     <span style="font-size: 12px; color: var(--muted);">דקות</span>
+                                </div>
+                                <div class="liveview-setting-row" id="liveviewUpdateCustomIntervalRow" style="display: none;">
+                                    <label>כל כמה:</label>
+                                    <input type="number" id="liveviewUpdateCustomValue" min="0.5" max="120" step="0.5" value="5" onchange="updateLiveViewSettings()" style="width: 70px;">
+                                    <select id="liveviewUpdateCustomUnit" onchange="updateLiveViewSettings()" style="width: 90px;">
+                                        <option value="minutes">דקות</option>
+                                        <option value="seconds">שניות</option>
+                                    </select>
                                 </div>
                                 <div class="liveview-setting-row" id="liveviewUpdateEndOptionsRow">
                                     <label>מה להציג על המסך בזמן העדכון (רק במצב "בסיום מחזור"):</label>
@@ -6932,7 +6946,11 @@
                 <div class="live-view-update-overlay" id="liveViewUpdateOverlay">
                     <div class="live-view-update-loading">
                         <div class="live-view-update-loading-spinner"></div>
-                        <span>מעדכן...</span>
+                        <span id="liveViewUpdateProgressText">מעדכן...</span>
+                        <div id="liveViewUpdateProgressBar" style="width: 280px; height: 8px; background: rgba(0,0,0,0.1); border-radius: 4px; overflow: hidden; display: none;">
+                            <div id="liveViewUpdateProgressFill" style="height: 100%; background: linear-gradient(90deg, var(--primary-gold), var(--primary-gold-dark)); border-radius: 4px; width: 0%; transition: width 0.3s ease;"></div>
+                        </div>
+                        <div id="liveViewUpdateDonorsPreview" style="max-height: 180px; overflow: hidden; width: 100%; max-width: 400px; font-size: 14px; color: var(--muted); text-align: center; margin-top: 12px;"></div>
                     </div>
                     <div class="live-view-update-grants">
                         <h1>קבלת מענקים למתרמים</h1>
@@ -7566,6 +7584,24 @@
         let nedarimSyncTimer = null;
         let syncWithNedarimPlusInProgress = false; // 🛡️ מנע סנכרונים מקבילים – כל סנכרון שולח דלתות; אם רץ פעמיים = כפילות!
         let lastSyncEndTime = 0; // 🛡️ מונע סנכרונים תכופים – מרווח מינימלי 5 דקות
+        /** עדכון פרוגרס ב-overlay של תצוגת לייב בזמן סנכרון */
+        function updateLiveViewSyncProgress(current, total, lastUpdatedNames) {
+            const textEl = document.getElementById('liveViewUpdateProgressText');
+            const barEl = document.getElementById('liveViewUpdateProgressBar');
+            const fillEl = document.getElementById('liveViewUpdateProgressFill');
+            const previewEl = document.getElementById('liveViewUpdateDonorsPreview');
+            if (textEl) textEl.textContent = total > 0 ? `מעדכן ${current} מ-${total} מתרימים...` : 'מעדכן...';
+            if (barEl && fillEl && total > 0) { barEl.style.display = 'block'; fillEl.style.width = (total > 0 ? (current / total) * 100 : 0) + '%'; }
+            if (previewEl && lastUpdatedNames && lastUpdatedNames.length > 0) {
+                previewEl.innerHTML = '<strong>עודכנו:</strong> ' + lastUpdatedNames.slice(-6).reverse().map(n => `<span class="live-view-update-donors-preview-item">${n}</span>`).join(' • ');
+            }
+        }
+        function hideLiveViewSyncProgress() {
+            const barEl = document.getElementById('liveViewUpdateProgressBar');
+            const previewEl = document.getElementById('liveViewUpdateDonorsPreview');
+            if (barEl) barEl.style.display = 'none';
+            if (previewEl) previewEl.innerHTML = '';
+        }
         
         // 🛡️ תור פעולות גלובלי – כפתורים רצים רק אחד אחרי השני (מונע דריסת נתונים)
         let nedarimOpsQueue = [];
@@ -10703,6 +10739,8 @@
             liveViewUpdateType: 'all',
             liveViewUpdateWhen: 'end',
             liveViewUpdateDuringMinutes: 5,
+            liveViewUpdateCustomValue: 5,
+            liveViewUpdateCustomUnit: 'minutes',
         };
 
         function loadLiveViewSettings(skipStorage) {
@@ -10769,13 +10807,19 @@
             const liveviewUpdateType = document.getElementById('liveviewUpdateType');
             const liveviewUpdateWhen = document.getElementById('liveviewUpdateWhen');
             const liveviewUpdateDuringMinutes = document.getElementById('liveviewUpdateDuringMinutes');
+            const liveviewUpdateCustomValue = document.getElementById('liveviewUpdateCustomValue');
+            const liveviewUpdateCustomUnit = document.getElementById('liveviewUpdateCustomUnit');
             const duringRow = document.getElementById('liveviewUpdateDuringIntervalRow');
+            const customRow = document.getElementById('liveviewUpdateCustomIntervalRow');
             const endOptionsRow = document.getElementById('liveviewUpdateEndOptionsRow');
             if (liveviewUpdateShow) liveviewUpdateShow.value = liveViewSettings.liveViewUpdateShow || 'loading';
             if (liveviewUpdateType) liveviewUpdateType.value = liveViewSettings.liveViewUpdateType || 'all';
             if (liveviewUpdateWhen) liveviewUpdateWhen.value = liveViewSettings.liveViewUpdateWhen || 'end';
             if (liveviewUpdateDuringMinutes) liveviewUpdateDuringMinutes.value = liveViewSettings.liveViewUpdateDuringMinutes || 5;
+            if (liveviewUpdateCustomValue) liveviewUpdateCustomValue.value = liveViewSettings.liveViewUpdateCustomValue || 5;
+            if (liveviewUpdateCustomUnit) liveviewUpdateCustomUnit.value = liveViewSettings.liveViewUpdateCustomUnit || 'minutes';
             if (duringRow) duringRow.style.display = (liveViewSettings.liveViewUpdateWhen === 'during') ? '' : 'none';
+            if (customRow) customRow.style.display = (liveViewSettings.liveViewUpdateWhen === 'custom') ? '' : 'none';
             if (endOptionsRow) endOptionsRow.style.display = (liveViewSettings.liveViewUpdateWhen === 'end') ? '' : 'none';
             
             // המרת #ffffff ל-rgba עבור groupHeaderBg אם צריך
@@ -10966,8 +11010,10 @@
             var whenEl = document.getElementById('liveviewUpdateWhen');
             var whenVal = whenEl ? whenEl.value : 'end';
             var duringRow = document.getElementById('liveviewUpdateDuringIntervalRow');
+            var customRow = document.getElementById('liveviewUpdateCustomIntervalRow');
             var endOptionsRow = document.getElementById('liveviewUpdateEndOptionsRow');
             if (duringRow) duringRow.style.display = (whenVal === 'during') ? '' : 'none';
+            if (customRow) customRow.style.display = (whenVal === 'custom') ? '' : 'none';
             if (endOptionsRow) endOptionsRow.style.display = (whenVal === 'end') ? '' : 'none';
             const titleSize = document.getElementById('liveviewTitleSize');
             const titleSizeValue = document.getElementById('liveviewTitleSizeValue');
@@ -11167,6 +11213,8 @@
                 liveViewUpdateType: document.getElementById('liveviewUpdateType') ? document.getElementById('liveviewUpdateType').value : (liveViewSettings.liveViewUpdateType || 'all'),
                 liveViewUpdateWhen: document.getElementById('liveviewUpdateWhen') ? document.getElementById('liveviewUpdateWhen').value : (liveViewSettings.liveViewUpdateWhen || 'end'),
                 liveViewUpdateDuringMinutes: document.getElementById('liveviewUpdateDuringMinutes') ? parseInt(document.getElementById('liveviewUpdateDuringMinutes').value) || 5 : (liveViewSettings.liveViewUpdateDuringMinutes || 5),
+                liveViewUpdateCustomValue: document.getElementById('liveviewUpdateCustomValue') ? parseFloat(document.getElementById('liveviewUpdateCustomValue').value) || 5 : (liveViewSettings.liveViewUpdateCustomValue || 5),
+                liveViewUpdateCustomUnit: document.getElementById('liveviewUpdateCustomUnit') ? document.getElementById('liveviewUpdateCustomUnit').value : (liveViewSettings.liveViewUpdateCustomUnit || 'minutes'),
             };
 
             // שמירת ההגדרות
@@ -11264,6 +11312,8 @@
                 liveViewUpdateType: 'all',
                 liveViewUpdateWhen: 'end',
                 liveViewUpdateDuringMinutes: 5,
+                liveViewUpdateCustomValue: 5,
+                liveViewUpdateCustomUnit: 'minutes',
             };
             liveViewSettings = defaults;
             try { localStorage.setItem('liveViewSettings', JSON.stringify(defaults)); } catch (e) {}
@@ -12401,11 +12451,25 @@
             runLiveViewUpdateDuring().catch(function() {});
         }
 
+        /** זמן מותאם אישית – מריץ עדכון כל X דקות/שניות שמוגדר */
+        function triggerLiveViewUpdateCustom() {
+            if (typeof isLiveViewActive !== 'function' || !isLiveViewActive() || !liveViewSettings.enableAutoScroll) return;
+            if (liveViewSettings.liveViewUpdateWhen !== 'custom') return;
+            var val = parseFloat(liveViewSettings.liveViewUpdateCustomValue) || 5;
+            var unit = liveViewSettings.liveViewUpdateCustomUnit || 'minutes';
+            if (unit === 'seconds') val = Math.max(15, Math.min(3600, val)); // 15 שניות עד שעה
+            else val = Math.max(0.5, Math.min(120, val)); // 0.5 עד 120 דקות
+            var intervalMs = unit === 'seconds' ? val * 1000 : val * 60 * 1000;
+            var nowMs = Date.now();
+            if (lastLiveViewUpdateAt > 0 && (nowMs - lastLiveViewUpdateAt) < intervalMs) return;
+            runLiveViewUpdateDuring().catch(function() {});
+        }
+
         /** אחרי סיום גלילה מלאה – עוצר גלילה, מציג overlay, מריץ עדכון לפי ההגדרה, ואז ממשיך גלילה (רק כשההגדרה "בסיום מחזור") */
         async function onDonorsScrollCycleComplete() {
             if (typeof isLiveViewActive !== 'function' || !isLiveViewActive()) return;
             if (!liveViewSettings.enableAutoScroll) return;
-            if ((liveViewSettings.liveViewUpdateWhen || 'end') === 'during') return;
+            if ((liveViewSettings.liveViewUpdateWhen || 'end') === 'during' || (liveViewSettings.liveViewUpdateWhen || 'end') === 'custom') return;
             if (!donorsScrollIsRunning) return;
             console.log('🔄 [תצוגת לייב] סיום מחזור גלילה – מציג overlay ומריץ עדכון...');
             lastLiveViewUpdateAt = Date.now();
@@ -12453,6 +12517,7 @@
             }
 
             if (overlay) overlay.classList.remove('show');
+            if (typeof hideLiveViewSyncProgress === 'function') hideLiveViewSyncProgress();
             if (typeof restartDonorsAutoScroll === 'function') restartDonorsAutoScroll();
             if (typeof restartLeadersAutoScroll === 'function' && isLiveViewActive()) setTimeout(() => restartLeadersAutoScroll({ immediate: true }), 50);
         }
@@ -12614,9 +12679,12 @@
             
             const now = performance.now();
             
-            // עדכון אוטומטי: לפי ההגדרה – תוך כדי גלילה (כל X דקות) או גיבוי 10 דקות (בסיום מחזור)
-            if ((liveViewSettings.liveViewUpdateWhen || 'end') === 'during') {
+            // עדכון אוטומטי: לפי ההגדרה – תוך כדי גלילה, זמן מותאם אישית, או גיבוי 10 דקות (בסיום מחזור)
+            var when = liveViewSettings.liveViewUpdateWhen || 'end';
+            if (when === 'during') {
                 if (typeof triggerLiveViewUpdateDuring === 'function') triggerLiveViewUpdateDuring();
+            } else if (when === 'custom') {
+                if (typeof triggerLiveViewUpdateCustom === 'function') triggerLiveViewUpdateCustom();
             } else {
                 if (typeof triggerLiveViewUpdateByTimer === 'function') triggerLiveViewUpdateByTimer();
             }
@@ -19085,93 +19153,68 @@
                     })));
                 }
                 
-                // מעדכן כל מתרים שיש לו שינוי (משתמשים במשתנים שהוגדרו בתחילת הפונקציה)
+                // בונה רשימת מתרים לעדכון (רק אלו עם שינוי) – עובר פעם אחת
                 let invalidMatrimIdCount = 0;
-                
+                const itemsToUpdate = [];
                 for (const donor of donorsToUpdate) {
                     const donorMatrimId = donor.nedarimMatrimId;
                     const matrimIdStr = donorMatrimId !== null && donorMatrimId !== undefined ? String(donorMatrimId).trim() : null;
-                    
-                    // בודק אם מספר המתרים תקין (מספר, לא תאריך)
                     const isDate = matrimIdStr && (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(matrimIdStr) || matrimIdStr.includes('T') || matrimIdStr.includes('Z'));
                     const isNumeric = matrimIdStr && /^\d+$/.test(matrimIdStr);
                     const hasValidMatrimId = matrimIdStr && !isDate && isNumeric;
-                    
                     let localAmount = donor.amount || 0;
                     let nedarimAmount = 0;
                     let matrimIdForUpdate = null;
-                    
                     if (hasValidMatrimId) {
-                        // יש מספר מתרים תקין - משתמש בו
                         nedarimAmount = nedarimAmountsMap.get(matrimIdStr) || 0;
                         matrimIdForUpdate = matrimIdStr;
                     } else {
-                        // אין מספר מתרים תקין - מחפש לפי שם
                         const donorName = (donor.name || '').trim();
                         if (donorName) {
                             nedarimAmount = nedarimAmountsByNameMap.get(donorName) || 0;
                             matrimIdForUpdate = nedarimMatrimIdsByNameMap.get(donorName) || null;
-                            
-                            // אם נמצא לפי שם, מעדכן את מספר המתרים בגליון
                             if (matrimIdForUpdate && /^\d+$/.test(matrimIdForUpdate)) {
-                                const oldMatrimId = donor.nedarimMatrimId;
                                 donor.nedarimMatrimId = matrimIdForUpdate;
-                                console.log(`🔧 תוקן מספר מתרים למתרים "${donor.name}": ${oldMatrimId || 'ללא'} → ${matrimIdForUpdate} (נמצא לפי שם)`);
+                                console.log(`🔧 תוקן מספר מתרים למתרים "${donor.name}": ${matrimIdStr || 'ללא'} → ${matrimIdForUpdate} (נמצא לפי שם)`);
                             }
                         }
                     }
-                    
                     const delta = localAmount - nedarimAmount;
-                    
-                    // בודק אם יש מספר מתרים תקין לעדכון
                     if (!matrimIdForUpdate || !/^\d+$/.test(matrimIdForUpdate)) {
                         invalidMatrimIdCount++;
-                        skippedUpdates++; // נדלגו – לא נכשלו!
-                        console.warn(`⚠️ מתרים ${donor.name} (ID: ${donor.id}) יש לו מספר מתרים לא תקין: ${matrimIdStr || '(חסר)'}`);
-                        console.warn(`   יש לקשר את המתרים למספר מתרים אמיתי מנדרים פלוס דרך כפתור "סנכרון תרומות"`);
-                        continue; // מדלג על מתרים זה
+                        skippedUpdates++;
+                        continue;
                     }
-                    
-                    // לוגים מפורטים למתרים ספציפי (שלמה כהן)
-                    if (donor.name && donor.name.includes('שלמה כהן')) {
-                        console.log('🔍 [דיבוג] נמצא מתרים שלמה כהן:');
-                        console.log('   שם:', donor.name);
-                        console.log('   מספר מתרים:', matrimIdForUpdate);
-                        console.log('   סכום מקומי:', localAmount);
-                        console.log('   סכום מנדרים פלוס:', nedarimAmount);
-                        console.log('   דלתה:', delta);
-                        console.log('   האם יש שינוי?', Math.abs(delta) > 0);
-                    }
-                    
-                    if (Math.abs(delta) > 0) {
-                        console.log(`🔄 מעדכן מתרים ${donor.name} (מספר מתרים: ${matrimIdForUpdate}): ${nedarimAmount} → ${localAmount} (דלתה: ${delta > 0 ? '+' : ''}${delta})`);
-                        
+                    if (Math.abs(delta) > 0) itemsToUpdate.push({ donor, delta, matrimIdForUpdate });
+                }
+                // עדכון במקביל – 5 מתרימים בו-זמנית, 200ms בין אצוות (חוסך זמן משמעותי)
+                const BATCH_SIZE = 5;
+                const BATCH_DELAY_MS = 200;
+                const lastUpdatedNames = [];
+                for (let i = 0; i < itemsToUpdate.length; i += BATCH_SIZE) {
+                    const batch = itemsToUpdate.slice(i, i + BATCH_SIZE);
+                    if (typeof updateLiveViewSyncProgress === 'function') updateLiveViewSyncProgress(Math.min(i + BATCH_SIZE, itemsToUpdate.length), itemsToUpdate.length, lastUpdatedNames);
+                    const results = await Promise.all(batch.map(async ({ donor, delta, matrimIdForUpdate }) => {
                         try {
                             const result = await updateNedarimAmountViaSheets(donor, delta, 'סנכרון דו-כיווני');
-                            
                             if (result && result.success) {
-                                if (result.skipped) {
-                                    skippedUpdates++;
-                                    console.log(`ℹ️ עדכון נדלג: ${donor.name} - ${result.message || 'אין צורך בעדכון'}`);
-                                } else {
-                                    updatedToNedarim++;
-                                    // מונע דריסה בשלב המשיכה – נדרים פלוס עלול להחזיר נתונים ישנים
-                                    recentlyUpdatedDonors.set(donor.id, Date.now() + 120000);
-                                    console.log(`✅ עודכן בהצלחה: ${donor.name} (מספר מתרים: ${matrimIdForUpdate})`);
-                                }
-                            } else {
-                                failedUpdates++;
-                                console.warn(`⚠️ לא עודכן: ${donor.name} (מספר מתרים: ${matrimIdForUpdate}) - ${result?.error || result?.message || 'שגיאה לא ידועה'}`);
+                                if (result.skipped) return { ok: false, skipped: true, name: donor.name };
+                                recentlyUpdatedDonors.set(donor.id, Date.now() + 120000);
+                                return { ok: true, name: donor.name };
                             }
-                        } catch (error) {
-                            failedUpdates++;
-                            console.error(`❌ שגיאה בעדכון ${donor.name} (מספר מתרים: ${matrimIdForUpdate}):`, error);
+                            return { ok: false, name: donor.name };
+                        } catch (e) {
+                            return { ok: false, error: true, name: donor.name };
                         }
-                        
-                        // ממתין קצת בין עדכונים כדי לא להעמיס על השרת
-                        await new Promise(resolve => setTimeout(resolve, 500));
-                    }
+                    }));
+                    results.forEach(r => {
+                        if (r.skipped) skippedUpdates++;
+                        else if (r.ok) { updatedToNedarim++; if (r.name) lastUpdatedNames.push(r.name); }
+                        else failedUpdates++;
+                    });
+                    if (i + BATCH_SIZE < itemsToUpdate.length) await new Promise(resolve => setTimeout(resolve, BATCH_DELAY_MS));
                 }
+                if (typeof hideLiveViewSyncProgress === 'function') hideLiveViewSyncProgress();
                 
                 // שומר את המתרים המעודכנים חזרה לגליון (עם מספרי המתרים המתוקנים)
                 if (donorsToUpdate.length > 0) {
