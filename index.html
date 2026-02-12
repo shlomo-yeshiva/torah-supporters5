@@ -1265,6 +1265,23 @@
             flex: 1;
         }
 
+        .toolkit-tip-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .toolkit-tip-edit-textarea {
+            flex: 1;
+            min-height: 60px;
+            padding: 8px 12px;
+            border: 2px solid var(--primary-gold);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+        }
+
         .toolkit-tip-empty {
             text-align: center;
             font-style: italic;
@@ -5783,10 +5800,9 @@
             </div>
             <div class="nav-menu">
                 <button class="nav-item active" data-section="home">דף הבית</button>
-                <button class="nav-item" data-section="semifinal">חצי הגמר</button>
                 <button class="nav-item" data-section="liveview">תצוגה בלייב</button>
-                <button class="nav-item" data-section="breakdown">פילוח נתונים</button>
                 <button class="nav-item" data-section="management">ניהול</button>
+                <button class="nav-item" data-section="breakdown">פילוח נתונים</button>
                 <button class="nav-item" data-section="raffle">מערכת הגרלות</button>
                 <button class="nav-item" data-section="scouts">ניהול סיירות</button>
                 <button class="nav-item" data-section="toolkit">ארגז כלים לתתני״ק הצעיר</button>
@@ -5794,6 +5810,7 @@
                 <button class="nav-item" data-section="planning">תכנון קמפיין לשנים הבאות</button>
                 <button class="nav-item" data-section="groomGrant">מענק לחתנים</button>
                 <button class="nav-item" data-section="grants">קבלת מענקים למתרמים</button>
+                <button class="nav-item" data-section="semifinal">חצי הגמר</button>          
                 <button class="nav-item" data-section="addresses">כתובות</button>
                 <button class="nav-item" data-section="instructions">הוראות שימוש בתוכנה</button>
                 </div>
@@ -5856,47 +5873,33 @@
 
             <!-- חצי הגמר -->
             <section class="content-section semifinal-section" id="semifinalSection">
-                <h2 class="section-header">חצי הגמר – סרטון מתי שמגיעים ליעד</h2>
-                <div class="semifinal-panel">
-                    <div class="semifinal-settings">
-                        <h3>הגדרות</h3>
-                        <div class="semifinal-form">
-                            <div class="address-form-row">
-                                <label for="semifinalTargetAmount">יעד להפעלת הסרטון (₪):</label>
-                                <input type="number" id="semifinalTargetAmount" min="0" step="1000" placeholder="למשל 500000" onchange="saveSemifinalSettings()">
-                            </div>
-                            <div class="address-form-row">
-                                <label for="semifinalDuration">משך הסרטון (דקות):</label>
-                                <input type="number" id="semifinalDuration" min="1" max="60" value="30" onchange="saveSemifinalSettings()">
-                            </div>
+                <div class="instructions-panel">
+                    <h2>חצי הגמר</h2>
+                    <p>לחץ על הכפתור להצגת סרטון חצי הגמר במסך מלא:</p>
+                    <div class="external-action-card">
+                        <div class="external-action-content">
+                            <span class="external-action-label">צפייה בסרטון</span>
+                            <strong class="external-action-title">סרטון חצי הגמר</strong>
+                            <p class="external-action-note">הסרטון יופעל במסך מלא. ניתן לשנות את הקישור בהגדרות למטה.</p>
+                        </div>
+                        <a class="external-action-button" href="#" onclick="playSemifinalVideo(); return false;">
+                            לחץ כאן לצפייה בסרטון
+                        </a>
+                    </div>
+                    <details class="semifinal-settings-collapse" style="margin-top: 24px;">
+                        <summary style="cursor: pointer; color: var(--brown-medium); font-weight: 600;">הגדרות (קישור סרטון, משך)</summary>
+                        <div class="semifinal-form" style="margin-top: 16px; padding: 16px; background: rgba(0,0,0,0.03); border-radius: 12px;">
                             <div class="address-form-row">
                                 <label for="semifinalVideoUrl">קישור לסרטון (Google Drive):</label>
                                 <input type="text" id="semifinalVideoUrl" placeholder="https://drive.google.com/..." onchange="saveSemifinalSettings()">
-                                <small style="color: var(--muted); margin-top: 4px;">הדבק קישור לשיתוף מ-Google Drive. ברירת מחדל: סרטון לת״ת</small>
                             </div>
                             <div class="address-form-row">
-                                <label class="switch-label">
-                                    <input type="checkbox" id="semifinalAutoPlay" onchange="saveSemifinalSettings()">
-                                    <span>הפעל אוטומטית כשמגיעים ליעד</span>
-                                </label>
+                                <label for="semifinalDuration">משך הצגה (דקות):</label>
+                                <input type="number" id="semifinalDuration" min="1" max="60" value="30" onchange="saveSemifinalSettings()">
                             </div>
-                            <div class="address-form-actions">
-                                <button class="btn" onclick="saveSemifinalSettings()">שמור הגדרות</button>
-                            </div>
+                            <button class="btn" onclick="saveSemifinalSettings()">שמור הגדרות</button>
                         </div>
-                    </div>
-                    <div class="semifinal-status">
-                        <h3>סטטוס</h3>
-                        <div class="semifinal-status-card">
-                            <div>סה״כ נאסף: <strong id="semifinalCurrentTotal">₪0</strong></div>
-                            <div>יעד: <strong id="semifinalTargetDisplay">₪0</strong></div>
-                            <div id="semifinalProgressText" style="margin-top: 8px; font-size: 14px; color: var(--muted);">הגיעו ליעד? תוכלו להפעיל את הסרטון</div>
-                        </div>
-                        <button class="btn btn-primary btn-large" id="semifinalPlayBtn" onclick="playSemifinalVideo()" disabled>
-                            ▶️ הפעל סרטון חצי הגמר
-                        </button>
-                        <p style="font-size: 12px; color: var(--muted); margin-top: 8px;">הכפתור פעיל רק כשמגיעים ליעד שהגדרתם</p>
-                    </div>
+                    </details>
                 </div>
             </section>
 
@@ -6035,7 +6038,11 @@
                     <h2>ארגז כלים לתתני״ק הצעיר</h2>
                     <div class="toolkit-tips-manager">
                         <h3>טיפים מהשטח</h3>
-                        <p class="toolkit-tip-hint">הוסיפו כאן טיפים קצרים שיסייעו למגייסים הצעירים. הטיפים נשמרים מקומית וניתן לעדכן או להסיר אותם בכל עת.</p>
+                        <p class="toolkit-tip-hint">הוסיפו כאן טיפים קצרים שיסייעו למגייסים הצעירים. הטיפים נשמרים גם לגליון Google (כשיש כתובת Web App) – ניתן לערוך, להסיר ולעדכן בכל עת.</p>
+                        <div style="margin-bottom: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-small btn-secondary" onclick="runSequentialOp(()=>loadFromGoogleSheets(), 'טען מהגליון')" title="משיכת טיפים מהגליון">📥 טען מהגליון</button>
+                            <button type="button" class="btn btn-small btn-secondary" onclick="runSequentialOp(()=>saveToGoogleSheets(), 'שמור לגליון')" title="שמירת טיפים לגליון">💾 שמור לגליון</button>
+                        </div>
                         <div class="toolkit-tips-list" id="toolkitTipsList"></div>
                         <div class="toolkit-tip-form">
                             <label for="toolkitTipInput">הוספת טיפ חדש</label>
@@ -7823,8 +7830,7 @@
         let donorSearchTerm = '';
         let manualDonorSearchTerm = '';
         let addresses = [];
-        let semiFinalSettings = { targetAmount: 0, durationMinutes: 30, videoUrl: 'https://drive.google.com/file/d/1HqEWgthH8jceOP5R5VFwntL5N1jHhf1K/view?usp=sharing', autoPlay: false };
-        let semiFinalVideoAlreadyPlayed = false; // מניעת הפעלה חוזרת אוטומטית
+        let semiFinalSettings = { durationMinutes: 30, videoUrl: 'https://drive.google.com/file/d/1HqEWgthH8jceOP5R5VFwntL5N1jHhf1K/view?usp=sharing' };
         let groups = [
             { id: 'group1', name: 'קבוצה 1', goal: defaultGroupGoal, orderNumber: 1 },
             { id: 'group2', name: 'קבוצה 2', goal: defaultGroupGoal, orderNumber: 2 },
@@ -8625,18 +8631,25 @@
                 return;
             }
             list.innerHTML = toolkitTips.map((tip, index) => `
-                <div class="instructions-note toolkit-tip" data-index="${index}">
+                <div class="instructions-note toolkit-tip" data-index="${index}" data-edit-mode="false">
                 <span class="toolkit-tip-number">${index + 1}.</span>
-                <span>${escapeHtml(tip).replace(/\n/g, '<br>')}</span>
+                <span class="toolkit-tip-content">${escapeHtml(tip).replace(/\n/g, '<br>')}</span>
+                <div class="toolkit-tip-actions">
+                    <button type="button" class="btn btn-small btn-secondary toolkit-tip-edit" data-index="${index}">ערוך</button>
                     <button type="button" class="btn btn-small btn-secondary toolkit-tip-remove" data-index="${index}">הסר</button>
+                </div>
                 </div>
             `).join('');
             list.querySelectorAll('.toolkit-tip-remove').forEach(button => {
                 button.addEventListener('click', (event) => {
                     const idx = parseInt(event.currentTarget.dataset.index, 10);
-                    if (!Number.isNaN(idx)) {
-                        removeToolkitTip(idx);
-                    }
+                    if (!Number.isNaN(idx)) removeToolkitTip(idx);
+                });
+            });
+            list.querySelectorAll('.toolkit-tip-edit').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const idx = parseInt(event.currentTarget.dataset.index, 10);
+                    if (!Number.isNaN(idx)) enterToolkitTipEditMode(idx);
                 });
             });
         }
@@ -8824,7 +8837,8 @@
             renderToolkitTips();
             saveToolkitTipsToStorage();
             notifyDataChanged();
-            showNotification('הטיפ נוסף בהצלחה');
+            if (typeof saveToGoogleSheets === 'function') saveToGoogleSheets().catch(e => console.warn('שמירה לגליון:', e));
+            showNotification('הטיפ נוסף ונשמר לגליון');
         }
 
         function removeToolkitTip(index) {
@@ -8835,7 +8849,58 @@
             renderToolkitTips();
             saveToolkitTipsToStorage();
             if (typeof saveToGoogleSheets === 'function') saveToGoogleSheets().catch(e => console.warn('שמירה לגליון:', e));
-            showNotification('הטיפ הוסר');
+            showNotification('הטיפ הוסר ונשמר לגליון');
+        }
+
+        function enterToolkitTipEditMode(index) {
+            if (!Array.isArray(toolkitTips) || index < 0 || index >= toolkitTips.length) return;
+            const row = document.querySelector(`.toolkit-tip[data-index="${index}"]`);
+            if (!row || row.dataset.editMode === 'true') return;
+            row.dataset.editMode = 'true';
+            const contentSpan = row.querySelector('.toolkit-tip-content');
+            const actionsDiv = row.querySelector('.toolkit-tip-actions');
+            if (!contentSpan || !actionsDiv) return;
+            const currentText = toolkitTips[index] || '';
+            const textarea = document.createElement('textarea');
+            textarea.className = 'toolkit-tip-edit-textarea';
+            textarea.value = currentText;
+            textarea.maxLength = 400;
+            contentSpan.style.display = 'none';
+            row.insertBefore(textarea, actionsDiv);
+            const saveBtn = document.createElement('button');
+            saveBtn.type = 'button';
+            saveBtn.className = 'btn btn-small btn-primary';
+            saveBtn.textContent = 'שמור';
+            saveBtn.onclick = () => {
+                const newVal = textarea.value.trim();
+                if (newVal) {
+                    toolkitTips[index] = newVal;
+                    saveToolkitTipsToStorage();
+                    if (typeof saveToGoogleSheets === 'function') saveToGoogleSheets().catch(e => console.warn('שמירה לגליון:', e));
+                    showNotification('הטיפ עודכן ונשמר לגליון');
+                }
+                exitToolkitTipEditMode(index);
+            };
+            const cancelBtn = document.createElement('button');
+            cancelBtn.type = 'button';
+            cancelBtn.className = 'btn btn-small btn-secondary';
+            cancelBtn.textContent = 'ביטול';
+            cancelBtn.onclick = () => exitToolkitTipEditMode(index);
+            actionsDiv.innerHTML = '';
+            actionsDiv.appendChild(saveBtn);
+            actionsDiv.appendChild(cancelBtn);
+        }
+
+        function exitToolkitTipEditMode(index) {
+            const row = document.querySelector(`.toolkit-tip[data-index="${index}"]`);
+            if (!row) return;
+            row.dataset.editMode = 'false';
+            const textarea = row.querySelector('.toolkit-tip-edit-textarea');
+            const contentSpan = row.querySelector('.toolkit-tip-content');
+            const actionsDiv = row.querySelector('.toolkit-tip-actions');
+            if (textarea) textarea.remove();
+            if (contentSpan) contentSpan.style.display = '';
+            renderToolkitTips();
         }
 
         function initToolkitTipsUI() {
@@ -10725,13 +10790,10 @@
             return m ? 'https://drive.google.com/file/d/' + m[1] + '/preview' : '';
         }
         function saveSemifinalSettings() {
-            const target = parseFloat(document.getElementById('semifinalTargetAmount')?.value) || 0;
             const duration = parseInt(document.getElementById('semifinalDuration')?.value, 10) || 30;
             const url = (document.getElementById('semifinalVideoUrl')?.value || '').trim();
-            const autoPlay = !!(document.getElementById('semifinalAutoPlay')?.checked);
-            semiFinalSettings = { targetAmount: Math.max(0, target), durationMinutes: Math.max(1, Math.min(60, duration)), videoUrl: url || semiFinalSettings.videoUrl, autoPlay };
+            semiFinalSettings = { durationMinutes: Math.max(1, Math.min(60, duration)), videoUrl: url || semiFinalSettings.videoUrl };
             try { localStorage.setItem('semiFinalSettings', JSON.stringify(semiFinalSettings)); } catch (e) {}
-            updateSemifinalStatus();
             if (typeof showNotification === 'function') showNotification('הגדרות חצי הגמר נשמרו');
         }
         function loadSemifinalSettings() {
@@ -10742,15 +10804,10 @@
                     semiFinalSettings = { ...semiFinalSettings, ...parsed };
                 }
             } catch (e) {}
-            const elTarget = document.getElementById('semifinalTargetAmount');
             const elDuration = document.getElementById('semifinalDuration');
             const elUrl = document.getElementById('semifinalVideoUrl');
-            const elAuto = document.getElementById('semifinalAutoPlay');
-            if (elTarget) elTarget.value = semiFinalSettings.targetAmount || '';
             if (elDuration) elDuration.value = semiFinalSettings.durationMinutes || 30;
             if (elUrl) elUrl.value = semiFinalSettings.videoUrl || 'https://drive.google.com/file/d/1HqEWgthH8jceOP5R5VFwntL5N1jHhf1K/view?usp=sharing';
-            if (elAuto) elAuto.checked = !!semiFinalSettings.autoPlay;
-            updateSemifinalStatus();
         }
         function playSemifinalVideo() {
             const embedUrl = getEmbedUrlFromDriveUrl(semiFinalSettings.videoUrl);
@@ -10776,20 +10833,6 @@
             document.body.style.overflow = '';
             if (window._semifinalCloseTimer) { clearTimeout(window._semifinalCloseTimer); window._semifinalCloseTimer = null; }
         }
-        function updateSemifinalStatus() {
-            const total = (typeof getDisplayTotal === 'function') ? getDisplayTotal() : donors.reduce((s, d) => s + (d.amount || 0), 0);
-            const target = semiFinalSettings.targetAmount || 0;
-            const elTotal = document.getElementById('semifinalCurrentTotal');
-            const elTarget = document.getElementById('semifinalTargetDisplay');
-            const elProgress = document.getElementById('semifinalProgressText');
-            const elBtn = document.getElementById('semifinalPlayBtn');
-            if (elTotal) elTotal.textContent = '₪' + (total || 0).toLocaleString('he-IL');
-            if (elTarget) elTarget.textContent = '₪' + (target || 0).toLocaleString('he-IL');
-            const reached = target > 0 && total >= target;
-            if (elProgress) elProgress.textContent = reached ? '🎉 הגעתם ליעד! ניתן להפעיל את הסרטון.' : (target > 0 ? 'נשאר: ₪' + Math.max(0, target - total).toLocaleString('he-IL') + ' ליעד' : 'הגדירו יעד להפעלת הסרטון');
-            if (elBtn) elBtn.disabled = !reached;
-        }
-        
         function exportAllAddressesToExcel() {
             if (addresses.length === 0) {
                 showNotification('אין כתובות לייצוא');
@@ -13642,7 +13685,7 @@
                         initLandingCards();
                     }, 100);
                 } else if (section === 'semifinal') {
-                    updateSemifinalStatus();
+                    if (typeof loadSemifinalSettings === 'function') loadSemifinalSettings();
                 } else if (section === 'management') {
                     updateGroupsDisplay();
                     updateDonorsList();
@@ -13911,14 +13954,6 @@
                 totalDonors,
                 avgDonation: Math.round(avgDonation)
             };
-            
-            // חצי הגמר: הפעלה אוטומטית כשמגיעים ליעד
-            if (typeof semiFinalSettings !== 'undefined' && semiFinalSettings.autoPlay && semiFinalSettings.targetAmount > 0 &&
-                totalCollected >= semiFinalSettings.targetAmount && !semiFinalVideoAlreadyPlayed && typeof playSemifinalVideo === 'function') {
-                semiFinalVideoAlreadyPlayed = true;
-                playSemifinalVideo();
-            }
-            if (typeof updateSemifinalStatus === 'function') updateSemifinalStatus();
             
             // הפעלת אפקט נחיתה לכרטיסיות הסטטיסטיקה
             setTimeout(() => {
