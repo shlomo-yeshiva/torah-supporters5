@@ -15346,16 +15346,11 @@
             const leadersList = document.getElementById('leadersList');
             if (!leadersList) return;
             
-            // קבוצות שמוצגות בלייב – מנורמל ל-string (הגליון יכול להחזיר מספר/מחרוזת)
-            const visibleGroupIds = new Set(groups.filter(g => g.showInLiveView !== false).map(g => String(g.id ?? '')));
-            
-            // מיון מתרימים לפי סכום - רק מקבוצות שמוצגות בלייב
+            // מובילים מחושבים ישירות מרשימת כל המתרימים לפי סכום (מקום 1 = הגבוה ביותר)
+            // בלי סינון לפי קבוצות – מהיר יותר ומונע באגים של groupId שלא מתאים
             const sortedDonors = [...donors]
-                .filter(d => {
-                    if (!d.name || !d.name.trim() || d.amount <= 0) return false;
-                    return visibleGroupIds.has(String(d.groupId ?? ''));
-                })
-                .sort((a, b) => b.amount - a.amount)
+                .filter(d => (d.name || '').trim() && (d.amount || 0) > 0)
+                .sort((a, b) => (b.amount || 0) - (a.amount || 0))
                 .slice(0, 5);
             
             const totalCollected = (typeof getDisplayTotal === 'function') ? getDisplayTotal() : donors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0);
@@ -15427,11 +15422,12 @@
                 else if (rank === 4) rankClass = 'rank-4';
                 else if (rank === 5) rankClass = 'rank-5';
                 
+                const displayName = donor.displayName || donor.name || '';
                 return `
                     <div class="leader-item ${rankClass}" data-donor-id="${donor.id || ''}">
                         <div class="leader-rank">${rank}</div>
                         <div class="leader-info">
-                            <div class="leader-name">${escapeHtml(donor.name || '')}</div>
+                            <div class="leader-name">${escapeHtml(displayName)}</div>
                         </div>
                         <div class="leader-total">₪${donor.amount.toLocaleString()}</div>
                     </div>
@@ -15462,7 +15458,7 @@
                 const nameEl = el.querySelector('.leader-name');
                 const totalEl = el.querySelector('.leader-total');
                 if (rankEl) rankEl.textContent = rank;
-                if (nameEl) nameEl.textContent = donor.name || '';
+                if (nameEl) nameEl.textContent = donor.displayName || donor.name || '';
                 if (totalEl) totalEl.textContent = '₪' + (donor.amount || 0).toLocaleString();
                 el.dataset.donorId = String(donor.id || '');
                 ['rank-1','rank-2','rank-3','rank-4','rank-5'].forEach(c => el.classList.remove(c));
