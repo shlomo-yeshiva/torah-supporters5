@@ -2884,28 +2884,30 @@
         .live-view-update-overlay.grants-only .live-view-update-loading { display: none !important; }
         .live-view-update-overlay.grants-only .live-view-update-grants { display: block !important; }
         .live-view-update-overlay.sidepanel-only { display: none !important; }
-        /* כרטיסיית עדכון בצד – לא מסך מלא, רק פאנל קטן */
+        /* כרטיסיית עדכון בתחתית המסך – רוחב מלא, נמוכה */
         .live-view-update-side-panel {
             display: none;
             position: fixed;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
+            bottom: 0;
+            left: 0;
+            right: 0;
             z-index: 502;
-            width: 200px;
-            padding: 16px 20px;
+            padding: 10px 24px 14px;
             background: linear-gradient(135deg, rgba(255, 248, 220, 0.98) 0%, rgba(245, 230, 211, 0.98) 100%);
-            border: 2px solid var(--primary-gold);
-            border-radius: 14px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-            text-align: center;
+            border-top: 2px solid var(--primary-gold);
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.12);
             direction: rtl;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 6px;
         }
-        .live-view-update-side-panel.show { display: block !important; }
-        .live-view-update-side-panel .side-panel-title { font-size: 16px; font-weight: 600; color: var(--brown-dark); margin-bottom: 10px; }
-        .live-view-update-side-panel .side-panel-percent { font-size: 28px; font-weight: 700; color: var(--primary-gold-dark); margin: 8px 0; }
-        .live-view-update-side-panel .side-panel-bar { width: 100%; height: 10px; background: rgba(0,0,0,0.1); border-radius: 5px; overflow: hidden; margin-top: 8px; }
-        .live-view-update-side-panel .side-panel-fill { height: 100%; background: linear-gradient(90deg, var(--primary-gold), var(--primary-gold-dark)); border-radius: 5px; transition: width 0.3s ease; }
+        .live-view-update-side-panel.show { display: flex !important; }
+        .live-view-update-side-panel .side-panel-row { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; width: 100%; }
+        .live-view-update-side-panel .side-panel-title { font-size: 15px; font-weight: 600; color: var(--brown-dark); }
+        .live-view-update-side-panel .side-panel-percent { font-size: 18px; font-weight: 700; color: var(--primary-gold-dark); min-width: 44px; }
+        .live-view-update-side-panel .side-panel-bar { flex: 1; min-width: 120px; height: 8px; background: rgba(0,0,0,0.12); border-radius: 4px; overflow: hidden; }
+        .live-view-update-side-panel .side-panel-fill { height: 100%; background: linear-gradient(90deg, var(--primary-gold), var(--primary-gold-dark)); border-radius: 4px; transition: width 0.3s ease; }
+        .live-view-update-side-panel .side-panel-warning { font-size: 12px; color: #856404; margin-top: 2px; text-align: center; }
         .live-view-update-loading {
             display: none;
             flex-direction: column;
@@ -6624,6 +6626,12 @@
                                         <option value="sidepanel">כרטיסיה בצד עם אחוזי התקדמות</option>
                                     </select>
                                 </div>
+                                <div class="liveview-setting-row" id="liveviewUpdateSidepanelIntervalRow" style="display: none;">
+                                    <label>תדירות עדכון (כל כמה דקות):</label>
+                                    <input type="number" id="liveviewSidepanelIntervalMinutes" min="1" max="120" value="10" onchange="updateLiveViewSettings()" style="width: 70px;">
+                                    <span style="font-size: 12px; color: var(--muted);">דקות</span>
+                                    <p style="font-size: 12px; color: var(--muted); margin: 6px 0 0 0;">העדכון ירוץ בסיום גלילה. בנוסף, אם הגלילה לא הסתיימה – ירוץ כל X דקות.</p>
+                                </div>
                                 <div class="liveview-setting-row" id="liveviewUpdateTypeRow">
                                     <label>סוג העדכון להרצה (בסיום מחזור) / תוך כדי גלילה תמיד: בדוק סכום + סנכרון + טען מגליון:</label>
                                     <select id="liveviewUpdateType" onchange="updateLiveViewSettings()">
@@ -7084,11 +7092,14 @@
                         <div class="grants-important"><strong>חשוב:</strong> כל הענקת מענקים מתבצעת בפועל בהנחיית מורנו ראש הישיבה שליט"א, ולאחר קבלת אישורו הסופי.</div>
                     </div>
                 </div>
-                <!-- כרטיסיית עדכון בצד (מצב "כרטיסיה בצד עם אחוזים") -->
+                <!-- כרטיסיית עדכון בתחתית (מצב "כרטיסיה בצד עם אחוזים") -->
                 <div class="live-view-update-side-panel" id="liveViewUpdateSidePanel">
-                    <div class="side-panel-title">מעדכן...</div>
-                    <div class="side-panel-percent" id="liveViewSidePanelPercent">0%</div>
-                    <div class="side-panel-bar"><div class="side-panel-fill" id="liveViewSidePanelFill" style="width: 0%;"></div></div>
+                    <div class="side-panel-row">
+                        <span class="side-panel-title" id="liveViewSidePanelTitle">מעדכן...</span>
+                        <span class="side-panel-percent" id="liveViewSidePanelPercent">0%</span>
+                        <div class="side-panel-bar"><div class="side-panel-fill" id="liveViewSidePanelFill" style="width: 0%;"></div></div>
+                    </div>
+                    <div class="side-panel-warning">יתכן שיבושים או נתונים לא מעודכנים זמנית – אל דאגה, העדכון יושלם בקרוב</div>
                 </div>
                 <!-- overlay בזמן עדכון תוך כדי גלילה / זמן מותאם -->
                 <div class="live-view-during-update-overlay" id="liveViewDuringUpdateOverlay">
@@ -7722,6 +7733,7 @@
         let syncWithNedarimPlusInProgress = false; // 🛡️ מנע סנכרונים מקבילים – כל סנכרון שולח דלתות; אם רץ פעמיים = כפילות!
         let lastSyncEndTime = 0; // 🛡️ מונע סנכרונים תכופים – מרווח מינימלי 5 דקות
         let lastSyncUpdatedDonorNames = []; // מתרים שעודכנו בסנכרון האחרון – לשימוש ב-overlay "מתרים שעודכנו"
+        let liveViewSidePanelUpdateInProgress = false; // כשמופעל – כל העדכונים רק בזמן שהכרטיסיה בתחתית מוצגת (מונע קפיצות)
         /** עדכון פרוגרס בכרטיסיה בצד (מצב sidepanel) – אחוזים אמיתיים */
         function updateLiveViewEndProgress(percent, label) {
             var p = Math.min(100, Math.max(0, percent));
@@ -9112,6 +9124,10 @@
                 const intervalMs = (autoSyncIntervalMinutes || 5) * 60 * 1000;
                 autoRefreshTimer = setInterval(async () => {
                     if (typeof isLiveViewActive === 'function' && isLiveViewActive() && liveViewSettings.enableAutoScroll && donorsScrollIsRunning) {
+                        return;
+                    }
+                    // במצב כרטיסיה בתחתית – עדכון רק בזמן שהכרטיסיה מוצגת (מונע קפיצות)
+                    if (typeof isLiveViewActive === 'function' && isLiveViewActive() && (liveViewSettings.liveViewUpdateShow || 'loading') === 'sidepanel') {
                         return;
                     }
                     await performAutoRefresh();
@@ -10903,6 +10919,7 @@
             liveViewUpdateCustomValue: 5,
             liveViewUpdateCustomUnit: 'minutes',
             liveViewUpdateDuringDisplay: 'none',
+            liveViewSidepanelIntervalMinutes: 10,
         };
 
         function loadLiveViewSettings(skipStorage) {
@@ -10980,11 +10997,15 @@
             if (liveviewUpdateDuringMinutes) liveviewUpdateDuringMinutes.value = liveViewSettings.liveViewUpdateDuringMinutes || 5;
             if (liveviewUpdateCustomValue) liveviewUpdateCustomValue.value = liveViewSettings.liveViewUpdateCustomValue || 5;
             if (liveviewUpdateCustomUnit) liveviewUpdateCustomUnit.value = liveViewSettings.liveViewUpdateCustomUnit || 'minutes';
+            var sidepanelIntervalInput = document.getElementById('liveviewSidepanelIntervalMinutes');
+            if (sidepanelIntervalInput) sidepanelIntervalInput.value = liveViewSettings.liveViewSidepanelIntervalMinutes || 10;
             const duringDisplayRow = document.getElementById('liveviewUpdateDuringDisplayRow');
             if (duringRow) duringRow.style.display = (liveViewSettings.liveViewUpdateWhen === 'during') ? '' : 'none';
             if (customRow) customRow.style.display = (liveViewSettings.liveViewUpdateWhen === 'custom') ? '' : 'none';
             if (endOptionsRow) endOptionsRow.style.display = (liveViewSettings.liveViewUpdateWhen === 'end') ? '' : 'none';
             if (duringDisplayRow) duringDisplayRow.style.display = (liveViewSettings.liveViewUpdateWhen === 'during' || liveViewSettings.liveViewUpdateWhen === 'custom') ? '' : 'none';
+            var sidepanelIntervalRow = document.getElementById('liveviewUpdateSidepanelIntervalRow');
+            if (sidepanelIntervalRow) sidepanelIntervalRow.style.display = (liveViewSettings.liveViewUpdateWhen === 'end' && (liveViewSettings.liveViewUpdateShow || 'loading') === 'sidepanel') ? '' : 'none';
             const duringDisplaySelect = document.getElementById('liveviewUpdateDuringDisplay');
             if (duringDisplaySelect) duringDisplaySelect.value = liveViewSettings.liveViewUpdateDuringDisplay || 'none';
             
@@ -11183,6 +11204,9 @@
             if (customRow) customRow.style.display = (whenVal === 'custom') ? '' : 'none';
             if (endOptionsRow) endOptionsRow.style.display = (whenVal === 'end') ? '' : 'none';
             if (duringDisplayRow) duringDisplayRow.style.display = (whenVal === 'during' || whenVal === 'custom') ? '' : 'none';
+            var sidepanelIntervalRow = document.getElementById('liveviewUpdateSidepanelIntervalRow');
+            var showVal = document.getElementById('liveviewUpdateShow') ? document.getElementById('liveviewUpdateShow').value : 'loading';
+            if (sidepanelIntervalRow) sidepanelIntervalRow.style.display = (whenVal === 'end' && showVal === 'sidepanel') ? '' : 'none';
             const titleSize = document.getElementById('liveviewTitleSize');
             const titleSizeValue = document.getElementById('liveviewTitleSizeValue');
             const donorNameSize = document.getElementById('liveviewDonorNameSize');
@@ -11384,6 +11408,7 @@
                 liveViewUpdateCustomValue: document.getElementById('liveviewUpdateCustomValue') ? parseFloat(document.getElementById('liveviewUpdateCustomValue').value) || 5 : (liveViewSettings.liveViewUpdateCustomValue || 5),
                 liveViewUpdateCustomUnit: document.getElementById('liveviewUpdateCustomUnit') ? document.getElementById('liveviewUpdateCustomUnit').value : (liveViewSettings.liveViewUpdateCustomUnit || 'minutes'),
                 liveViewUpdateDuringDisplay: document.getElementById('liveviewUpdateDuringDisplay') ? document.getElementById('liveviewUpdateDuringDisplay').value : (liveViewSettings.liveViewUpdateDuringDisplay || 'none'),
+                liveViewSidepanelIntervalMinutes: document.getElementById('liveviewSidepanelIntervalMinutes') ? (parseInt(document.getElementById('liveviewSidepanelIntervalMinutes').value) || 10) : (liveViewSettings.liveViewSidepanelIntervalMinutes || 10),
             };
 
             // שמירת ההגדרות
@@ -11484,6 +11509,7 @@
                 liveViewUpdateCustomValue: 5,
                 liveViewUpdateCustomUnit: 'minutes',
                 liveViewUpdateDuringDisplay: 'none',
+                liveViewSidepanelIntervalMinutes: 10,
             };
             liveViewSettings = defaults;
             try { localStorage.setItem('liveViewSettings', JSON.stringify(defaults)); } catch (e) {}
@@ -12710,6 +12736,7 @@
             leadersScrollIsRunning = false;
 
             if (showMode === 'sidepanel') {
+                liveViewSidePanelUpdateInProgress = true;
                 if (sidePanel) { sidePanel.classList.add('show'); updateLiveViewEndProgress(0, 'מעדכן...'); }
             } else if (overlay) {
                 overlay.classList.remove('loading-only', 'grants-only', 'sidepanel-only');
@@ -12753,9 +12780,16 @@
 
             if (overlay) overlay.classList.remove('show');
             if (sidePanel) {
-                if (showMode === 'sidepanel') setTimeout(function() { sidePanel.classList.remove('show'); }, 600);
-                else sidePanel.classList.remove('show');
+                if (showMode === 'sidepanel') {
+                    setTimeout(function() {
+                        sidePanel.classList.remove('show');
+                        liveViewSidePanelUpdateInProgress = false;
+                    }, 600);
+                } else {
+                    sidePanel.classList.remove('show');
+                }
             }
+            if (showMode !== 'sidepanel') liveViewSidePanelUpdateInProgress = false;
             if (typeof hideLiveViewSyncProgress === 'function') hideLiveViewSyncProgress();
             if (typeof restartDonorsAutoScroll === 'function') restartDonorsAutoScroll();
             if (typeof restartLeadersAutoScroll === 'function' && isLiveViewActive()) setTimeout(() => restartLeadersAutoScroll({ immediate: true }), 50);
@@ -12765,8 +12799,9 @@
             if (typeof isLiveViewActive !== 'function' || !isLiveViewActive() || !liveViewSettings.enableAutoScroll) return;
             if (!donorsScrollIsRunning) return;
             var nowMs = Date.now();
-            if (lastLiveViewUpdateAt > 0 && (nowMs - lastLiveViewUpdateAt) < 10 * 60 * 1000) return;
-            console.log('🔄 [תצוגת לייב] גיבוי לפי זמן (10 דקות) – מריץ עדכון');
+            var intervalMin = (liveViewSettings.liveViewSidepanelIntervalMinutes || 10);
+            if (lastLiveViewUpdateAt > 0 && (nowMs - lastLiveViewUpdateAt) < intervalMin * 60 * 1000) return;
+            console.log('🔄 [תצוגת לייב] גיבוי לפי זמן (' + intervalMin + ' דקות) – מריץ עדכון');
             onDonorsScrollCycleComplete().catch(function() {});
         }
         
@@ -13344,6 +13379,7 @@
 
         // יציאה מתצוגת לייב
         function exitLiveView() {
+            liveViewSidePanelUpdateInProgress = false;
             const appContainer = document.querySelector('.app-container');
             appContainer.classList.remove('live-mode');
             detachLiveViewInteractionHandlers();
@@ -15328,6 +15364,10 @@
         let updateLiveViewScheduledWhenActive = null;
         const LIVE_VIEW_BACKGROUND_UPDATE_INTERVAL_MS = 60000; // בתצוגת לייב – עדכון רקע לכל היותר כל 60 שניות (גלילה חלקה, ללא קפיצות)
         function updateLiveView(immediate = false) {
+            // במצב כרטיסיה בתחתית – רק כשהכרטיסיה מוצגת (מונע קפיצות מעדכונים מזמן אחר)
+            if (typeof isLiveViewActive === 'function' && isLiveViewActive() && (liveViewSettings.liveViewUpdateShow || 'loading') === 'sidepanel' && !liveViewSidePanelUpdateInProgress) {
+                return;
+            }
             // Debouncing - מניעת עדכונים תכופים מדי
             if (updateLiveViewTimeout && !immediate) {
                 clearTimeout(updateLiveViewTimeout);
@@ -15740,6 +15780,10 @@
         }
         // עדכון רשימת מובילים
         function updateLeadersList() {
+            // במצב כרטיסיה בתחתית – רק כשהכרטיסיה מוצגת (מונע קפיצות)
+            if (typeof isLiveViewActive === 'function' && isLiveViewActive() && (liveViewSettings.liveViewUpdateShow || 'loading') === 'sidepanel' && !liveViewSidePanelUpdateInProgress) {
+                return;
+            }
             const leadersList = document.getElementById('leadersList');
             if (!leadersList) return;
             
