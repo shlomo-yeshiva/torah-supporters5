@@ -5924,7 +5924,6 @@
                     <button class="management-tab" data-tab="liveview">הגדרות תצוגת לייב</button>
                     <button class="management-tab" data-tab="calculator">מחשבון</button>
                     <button class="management-tab" data-tab="sync">עדכונים</button>
-                    <button class="management-tab" data-tab="robot"> רובוט אוטומטי</button>
                     <button class="management-tab" data-tab="history"> היסטוריה</button>
                     <button class="management-tab" data-tab="reset">אפשרויות איפוס</button>
                     <button class="management-tab" data-tab="password">הגדרת סיסמה</button>
@@ -6028,92 +6027,6 @@
                     </div>
                 </div>
 
-                <!-- רובוט אוטומטי -->
-                <div class="management-content" id="robotContent">
-                    <div style="padding: 25px; background: #fafafa; min-height: 100%;">
-                        <h3 style="margin-bottom: 12px; color: var(--brown-dark);">רובוט אוטומטי</h3>
-                        <p style="font-size: 14px; color: var(--muted); margin-bottom: 20px; line-height: 1.5;">
-                            הרובוט מבצע פעולות סנכרון אוטומטיות בזמנים שתגדיר – סנכרון עם נדרים פלוס, טעינה ושמירה לגליון Google, בדיקת סכומים ועוד. ההגדרות נשמרות גם בגליון ולכן זמינות מכל מחשב.
-                        </p>
-                        
-                        <div style="background: #fff8e1; border: 1px solid #ffc107; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #5d4e37;">
-                            <strong>⚠️ הגבלת פניות:</strong> נדרים פלוס מאפשרים עד 500 פניות לשעה. מומלץ להגדיר מרווח של 10–15 דקות לפחות בין ריצות, במיוחד עם כמה מסכים פתוחים.
-                        </div>
-                        <div style="background: #e8f5e9; border: 1px solid #4caf50; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #2e7d32;">
-                            <strong>✅ דחיפה לנדרים:</strong> סמנו &quot;דחיפה לנדרים פלוס&quot; כדי שהסכומים שמוסיפים בתוכנה יישלחו אוטומטית לנדרים. הפעולה מונעת כפילות – שולחת רק דלתות (הפרשים) ולא סכומים מלאים. לתצוגת לייב: &quot;טען מהגליון&quot; + &quot;משיכת נתונים&quot;.
-                        </div>
-                        
-                        <div style="margin-bottom: 25px; display: flex; gap: 12px; flex-wrap: wrap;">
-                            <button class="btn btn-success" id="robotStartBtn" onclick="var cb=document.getElementById('robotEnabledCheckbox');if(cb)cb.checked=true;window.startRobot&&window.startRobot()" style="padding: 16px 32px; font-size: 18px; font-weight: 600; min-width: 200px; border-radius: 10px; box-shadow: 0 2px 8px rgba(16,185,129,0.3);">▶️ הפעל רובוט</button>
-                            <button class="btn btn-danger" id="robotStopBtn" onclick="var cb=document.getElementById('robotEnabledCheckbox');if(cb)cb.checked=false;window.stopRobot&&window.stopRobot()" style="padding: 16px 32px; font-size: 18px; font-weight: 600; min-width: 200px; border-radius: 10px; box-shadow: 0 2px 8px rgba(239,68,68,0.3); display: none;">⏹️ עצור רובוט</button>
-                        </div>
-                        
-                        <div style="background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border);">
-                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; margin-bottom: 18px; font-size: 15px;">
-                                <input type="checkbox" id="robotEnabledCheckbox" onchange="saveRobotSettings()" style="width: 20px; height: 20px; cursor: pointer;">
-                                <span>הפעל רובוט אוטומטי</span>
-                            </label>
-                            
-                            <div id="robotSettingsPanel" style="display: block; padding-top: 20px; border-top: 1px solid var(--border);">
-                                <div style="margin-bottom: 20px;">
-                                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text);">פעולות להפעלה אוטומטית</label>
-                                    <p style="font-size: 12px; color: var(--muted); margin-bottom: 8px;">בחר פעולות וגרור לשינוי סדר הביצוע.</p>
-                                    <div id="robotActionsList" style="display: flex; flex-direction: column; gap: 6px;"></div>
-                                </div>
-                                
-                                <div style="margin-bottom: 20px;">
-                                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text);">תדירות</label>
-                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px; background: #f5f5f5; border-radius: 8px; margin-bottom: 12px;">
-                                        <input type="checkbox" id="robotContinuousMode" onchange="toggleContinuousMode(); saveRobotSettings();" style="width: 18px; height: 18px; cursor: pointer;">
-                                        <span>עדכונים שוטפים (רצוף)</span>
-                                    </label>
-                                    <div id="robotContinuousIntervalContainer" style="display: none; margin-bottom: 12px; margin-right: 20px;">
-                                        <label style="font-size: 13px; color: var(--muted);">מרווח בין ריצות:</label>
-                                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                                            <input type="number" id="robotContinuousIntervalInput" min="15" max="300" value="60" onchange="saveRobotSettings();" style="width: 70px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px;">
-                                            <span>שניות</span>
-                                        </div>
-                                    </div>
-                                    <div id="robotIntervalContainer" style="display: flex; align-items: center; gap: 10px;">
-                                        <input type="number" id="robotIntervalInput" min="0.5" step="0.5" value="10" onchange="updateRobotIntervalDisplay(); saveRobotSettings();" oninput="updateRobotIntervalDisplay();" style="width: 80px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: white;">
-                                        <select id="robotIntervalUnit" onchange="updateRobotIntervalDisplay(); saveRobotSettings();" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: white; cursor: pointer;">
-                                            <option value="minutes">דקות</option>
-                                            <option value="hours">שעות</option>
-                                        </select>
-                                    </div>
-                                    <p style="margin-top: 8px; font-size: 13px; color: var(--muted);"><span id="robotIntervalDisplay">הרובוט יפעיל את הכפתורים הנבחרים כל 10 דקות</span></p>
-                                </div>
-                                
-                                <div style="margin-bottom: 20px;">
-                                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text);">אופן ביצוע</label>
-                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 6px;">
-                                        <input type="radio" name="robotExecutionMode" id="robotSequentialMode" value="sequential" checked onchange="saveRobotSettings();" style="width: 18px; height: 18px; cursor: pointer;">
-                                        <span>רציף – פעולה אחת אחרי השנייה</span>
-                                    </label>
-                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                        <input type="radio" name="robotExecutionMode" id="robotParallelMode" value="parallel" onchange="saveRobotSettings();" style="width: 18px; height: 18px; cursor: pointer;">
-                                        <span>מקבילי – כל הפעולות יחד</span>
-                                    </label>
-                                    <p style="font-size: 12px; color: var(--muted); margin-top: 6px;">מומלץ: רציף – מקטין סיכון לבעיות סנכרון.</p>
-                                </div>
-                                
-                                <div style="background: #e8f5e9; border: 1px solid #4caf50; border-radius: 8px; padding: 12px;">
-                                    <div style="font-weight: 600; margin-bottom: 4px; color: #2e7d32;">סטטוס</div>
-                                    <div id="robotStatus" style="font-size: 14px; color: #1b5e20;">הרובוט כבוי</div>
-                                    <div id="robotNextRun" style="font-size: 12px; color: #666; margin-top: 4px; display: none;">הפעלה הבאה: <span id="robotNextRunTime">—</span></div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div style="background: white; border-radius: 10px; padding: 20px; border: 1px solid var(--border);">
-                            <h4 style="margin-bottom: 12px; color: var(--brown-dark); font-size: 15px;">היסטוריית פעולות</h4>
-                            <div id="robotHistory" style="max-height: 280px; overflow-y: auto; font-size: 13px; color: var(--muted); min-height: 60px;">
-                                <div style="padding: 10px; text-align: center; color: var(--muted);">אין פעולות עדיין</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
                 <!-- היסטוריה -->
                 <div class="management-content" id="historyContent">
                     <div style="padding: 25px; background: #fafafa; min-height: 100%;">
@@ -6555,6 +6468,39 @@
                                 </p>
                             </div>
 
+                            <div class="liveview-setting-group liveview-setting-group-wide">
+                                <h4>עדכון אוטומטי בתצוגת לייב</h4>
+                                <p style="font-size: 13px; color: var(--muted); margin-bottom: 12px;">אפשר להריץ עדכון (בדוק סכום, סנכרון תרומות, טען מגליון) בסיום מחזור גלילה – או תוך כדי גלילה בלי לעצור ובלי קפיצות.</p>
+                                <div class="liveview-setting-row">
+                                    <label>מתי להריץ עדכון אוטומטי:</label>
+                                    <select id="liveviewUpdateWhen" onchange="updateLiveViewSettings()">
+                                        <option value="end">בסיום מחזור גלילה (עוצר, מציג overlay, מעדכן, ממשיך)</option>
+                                        <option value="during">תוך כדי גלילה (בלי לעצור, בלי קפיצות)</option>
+                                    </select>
+                                </div>
+                                <div class="liveview-setting-row" id="liveviewUpdateDuringIntervalRow" style="display: none;">
+                                    <label>כל כמה דקות (תוך כדי גלילה):</label>
+                                    <input type="number" id="liveviewUpdateDuringMinutes" min="1" max="60" value="5" onchange="updateLiveViewSettings()" style="width: 60px;">
+                                    <span style="font-size: 12px; color: var(--muted);">דקות</span>
+                                </div>
+                                <div class="liveview-setting-row" id="liveviewUpdateEndOptionsRow">
+                                    <label>מה להציג על המסך בזמן העדכון (רק במצב "בסיום מחזור"):</label>
+                                    <select id="liveviewUpdateShow" onchange="updateLiveViewSettings()">
+                                        <option value="loading">סימן טעינה בלבד</option>
+                                        <option value="grants">כללים למתרימים (מענקים)</option>
+                                    </select>
+                                </div>
+                                <div class="liveview-setting-row" id="liveviewUpdateTypeRow">
+                                    <label>סוג העדכון להרצה (בסיום מחזור) / תוך כדי גלילה תמיד: בדוק סכום + סנכרון + טען מגליון:</label>
+                                    <select id="liveviewUpdateType" onchange="updateLiveViewSettings()">
+                                        <option value="all">כל העדכונים (נדרים + גליון)</option>
+                                        <option value="check">בדוק סכום כולל מ-API</option>
+                                        <option value="loadSheet">טען מהגליון</option>
+                                        <option value="sync">סנכרון תרומות לנדרים פלוס</option>
+                                        <option value="loadMatrim">טען מתרימים מנדרים פלוס</option>
+                                    </select>
+                                </div>
+                            </div>
 
                             <div class="liveview-setting-group">
                                 <h4>מהירות גלילה</h4>
@@ -6769,6 +6715,40 @@
                             <p id="updateByApiResult" style="margin-top: 10px; font-size: 12px; min-height: 20px;"></p>
                         </div>
 
+                        <div class="auto-sync-control" style="margin-top: 15px; padding: 15px; background: rgba(255, 255, 255, 0.6); border-radius: 10px; border: 1px solid var(--border);">
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 500;">
+                                <input type="checkbox" id="autoSyncNedarimCheckbox" onchange="saveAutoSyncNedarimSetting()" style="width: 20px; height: 20px; cursor: pointer;">
+                                <span>🔄 הפעל עדכון אוטומטי – הפעולה הנבחרת למטה תרוץ אוטומטית כל התדירות שתגדיר (למשל "בדוק סכום כולל מ-API" כל X דקות)</span>
+                            </label>
+                            <div style="margin-top: 12px; padding-right: 30px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text);">בחר איזה כפתור להפעיל אוטומטית:</label>
+                                <select id="autoSyncActionSelect" onchange="saveAutoSyncNedarimSetting()" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: white; cursor: pointer; margin-bottom: 12px;">
+                                    <option value="sync">🔄 סנכרון תרומות</option>
+                                    <option value="load">📥 טען מתרימים מנדרים פלוס</option>
+                                    <option value="check">🔍 בדוק סכום כולל מ-API</option>
+                                    <option value="all">⚡ כל הכפתורים בו-זמנית</option>
+                                </select>
+                                <div style="margin-top: 12px;">
+                                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text);">תדירות עדכון אוטומטי:</label>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <input type="number" id="autoSyncIntervalInput" min="1" step="1" value="5" onchange="updateAutoSyncIntervalDisplay(); saveAutoSyncNedarimSetting();" oninput="updateAutoSyncIntervalDisplay();" style="width: 80px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: white;">
+                                        <select id="autoSyncIntervalUnit" onchange="updateAutoSyncIntervalDisplay(); saveAutoSyncNedarimSetting();" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: white; cursor: pointer;">
+                                            <option value="minutes">דקות</option>
+                                            <option value="hours">שעות</option>
+                                        </select>
+                                    </div>
+                                    <div style="margin-top: 8px; font-size: 12px; color: var(--muted);">
+                                        💡 העדכון יתבצע כל <span id="autoSyncIntervalDisplay">5 דקות</span>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 8px; font-size: 12px; color: var(--muted);" id="autoSyncWarningText">
+                                    💡 בחירת כפתור אחד בלבד עוזרת להימנע מהגבלת 500 קריאות לשעה
+                                </div>
+                            </div>
+                            <div style="margin-top: 8px; font-size: 14px; color: var(--muted); padding-right: 30px;">
+                                ההגדרה נשמרת ונשארת פעילה גם כשפותחים את התוכנה ממחשב אחר
+                            </div>
+                        </div>
 
                         <div class="default-goal-note" style="margin-top: 15px;">השינוי ישפיע על מתרימים חדשים ויעדכן מתרימים קיימים שמשתמשים ביעד ברירת המחדל.</div>
                         <div class="nedarim-sync-status" id="nedarimSyncStatus"></div>
@@ -7097,13 +7077,6 @@
                                     <p>רישום הכנסות והוצאות, מעקב אחר תקציב, ייצוא דוחות כספיים וניתוח כלכלי</p>
                                 </div>
                             </div>
-                            <div class="feature-item">
-                                <div class="feature-icon">🤖</div>
-                                <div class="feature-content">
-                                    <h4>רובוט אוטומטי</h4>
-                                    <p>ביצוע פעולות סנכרון אוטומטיות בפרקי זמן קבועים ללא התערבות ידנית</p>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
@@ -7147,7 +7120,6 @@
                                     <li>סנכרון אוטומטי עם נדרים פלוס (API)</li>
                                     <li>חיבור לגליונות Google Sheets</li>
                                     <li>טעינה ושמירה אוטומטית של נתונים</li>
-                                    <li>רובוט אוטומטי לביצוע פעולות בפרקי זמן קבועים</li>
                                 </ul>
                             </div>
 
@@ -7246,17 +7218,6 @@
                         </div>
 
                         <div class="instructions-card">
-                            <h3>שימוש ברובוט אוטומטי</h3>
-                            <ol>
-                                <li>עברו למדור "ניהול" → "רובוט אוטומטי"</li>
-                                <li>בחרו את הפעולות שברצונכם לבצע (סנכרון תרומות, בדיקת סכום מ-API, טעינה/שמירה לגליון)</li>
-                                <li>הגדירו את תדירות העדכון (בדקות או שניות)</li>
-                                <li>בחרו בין ביצוע רציף או מקבילי</li>
-                                <li>לחצו על "הפעל רובוט" - המערכת תבצע את הפעולות אוטומטית</li>
-                            </ol>
-                        </div>
-
-                        <div class="instructions-card">
                             <h3>סנכרון ידני</h3>
                             <ol>
                                 <li><strong>סנכרון עם נדרים פלוס:</strong> עברו ל"ניהול" → "עדכונים" ולחצו על "סנכרון תרומות לנדרים פלוס"</li>
@@ -7282,7 +7243,6 @@
                             <li>בצעו גיבוי שבועי של הנתונים באמצעות ייצוא ל-Excel</li>
                             <li>ודאו שהיעדים מעודכנים לפני אירועים גדולים</li>
                             <li>עדכנו את תצוגת הלייב לאחר כל שינוי משמעותי בנתונים</li>
-                            <li>השתמשו ברובוט האוטומטי לחיסכון בזמן, אך הקפידו על תדירות סבירה (לפחות 10 דקות בין פעולות)</li>
                             <li>בדקו את חיבור ה-API לפני שימוש בתכונות הסנכרון</li>
                         </ul>
                     </div>
@@ -7292,7 +7252,7 @@
                         <ul style="margin-top: 10px; padding-right: 20px;">
                             <li><strong>שגיאת ייבוא:</strong> ודאו שהעמודות ממוספרות נכון, שאין תווים מיותרים בכותרות, ושמרו את הקובץ בפורמט .xlsx</li>
                             <li><strong>בעיית סנכרון:</strong> בדקו את חיבור ה-API והגדרות Google Sheets במדור "עדכונים"</li>
-                            <li><strong>תצוגת לייב לא מתעדכנת:</strong> ודאו שהרובוט האוטומטי פעיל או עדכנו ידנית</li>
+                            <li><strong>תצוגת לייב לא מתעדכנת:</strong> עדכנו ידנית במדור &quot;עדכונים&quot; או ודאו שהעדכון האוטומטי בתצוגת לייב פעיל</li>
                             <li><strong>בעיית הרשאות:</strong> בדקו את הגדרות הסיסמה והרשאות במדור "הגדרת סיסמה"</li>
                         </ul>
                     </div>
@@ -7312,15 +7272,6 @@
     <div class="notification" id="notification"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
-        // Stubs לרובוט - נטענים מיד כדי למנוע ReferenceError אם המשתמש לוחץ לפני loadData
-        if (typeof window !== 'undefined') {
-            window.saveRobotSettings = window.saveRobotSettings || function(){};
-            window.updateRobotUI = window.updateRobotUI || function(){};
-            window.toggleContinuousMode = window.toggleContinuousMode || function(){};
-            window.updateRobotIntervalDisplay = window.updateRobotIntervalDisplay || function(){};
-            window.startRobot = window.startRobot || function(){ console.warn('הרובוט נטען...'); };
-            window.stopRobot = window.stopRobot || function(){};
-        }
         // Wrapper functions ל-Apps Script - החלפת localStorage
         // פונקציה לבדיקה אם אנחנו ב-Apps Script (בדיקה דינמית)
         function isAppsScript() {
@@ -7416,7 +7367,7 @@
                 }
                 
                 // אם אין ב-localStorage, נסה לטעון מ-Google Sheets
-                // שימוש ב-DEFAULT_GOOGLE_SHEETS_URL כ-fallback - כך שהרובוט יוצג זהה בכל חשבון/מכשיר
+                // שימוש ב-DEFAULT_GOOGLE_SHEETS_URL כ-fallback - כך שהגדרות יוצגו זהה בכל חשבון/מכשיר
                 const googleSheetsUrl = (googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || (typeof DEFAULT_GOOGLE_SHEETS_URL !== 'undefined' ? DEFAULT_GOOGLE_SHEETS_URL : '') || '').trim();
                 if (googleSheetsUrl && googleSheetsUrl.trim() !== '') {
                     try {
@@ -7614,9 +7565,9 @@
         };
         let nedarimSyncTimer = null;
         let syncWithNedarimPlusInProgress = false; // 🛡️ מנע סנכרונים מקבילים – כל סנכרון שולח דלתות; אם רץ פעמיים = כפילות!
-        let lastSyncEndTime = 0; // 🛡️ מונע סנכרונים תכופים מרובוט – מרווח מינימלי 5 דקות
+        let lastSyncEndTime = 0; // 🛡️ מונע סנכרונים תכופים – מרווח מינימלי 5 דקות
         
-        // 🛡️ תור פעולות גלובלי – כפתורים ורובוט רצים רק אחד אחרי השני (מונע דריסת נתונים)
+        // 🛡️ תור פעולות גלובלי – כפתורים רצים רק אחד אחרי השני (מונע דריסת נתונים)
         let nedarimOpsQueue = [];
         let nedarimOpsInProgress = false;
         async function runSequentialOp(fn, name) {
@@ -8722,7 +8673,6 @@
             if (typeof loadGoogleSheetsSettings === 'function') loadGoogleSheetsSettings();
             if (typeof loadData !== 'function') return;
             loadData().then(async () => {
-                initRobot();
                 updateHomeStats();
                 updateGroupsDisplay();
                 updateDonorsList();
@@ -8973,6 +8923,43 @@
             }
         }
         
+        // פונקציה לעדכון אוטומטי של כל הנתונים מנדרים פלוס
+        async function performAutoRefresh() {
+            if (!autoSyncNedarimEnabled) {
+                console.log('ℹ️ [עדכון אוטומטי] עדכון אוטומטי נדרים פלוס מושבת - מדלג על עדכון');
+                return;
+            }
+            const actionNames = {
+                'sync': 'סנכרון תרומות',
+                'load': 'טען מתרימים מנדרים פלוס',
+                'check': 'בדוק סכום כולל מ-API',
+                'all': 'כל הכפתורים בו-זמנית'
+            };
+            console.log(`🔄 [עדכון אוטומטי] מתחיל עדכון מנדרים פלוס (מאחורי הקלעים) - ${actionNames[autoSyncSelectedAction]}...`);
+            try {
+                if (autoSyncSelectedAction === 'all') {
+                    console.log('⚡ [עדכון אוטומטי] מפעיל את כל הכפתורים בו-זמנית...');
+                    await Promise.all([
+                        checkTotalAmountFromAPI(true).catch(err => console.warn('⚠️ [עדכון אוטומטי] שגיאה בבדיקת סכום:', err)),
+                        loadMatrimFromNedarim(true).catch(err => console.warn('⚠️ [עדכון אוטומטי] שגיאה בטעינת מתרימים:', err)),
+                        syncWithNedarimPlus(true).catch(err => console.warn('⚠️ [עדכון אוטומטי] שגיאה בסנכרון:', err))
+                    ]);
+                    console.log('✅ [עדכון אוטומטי] כל הכפתורים הושלמו');
+                } else {
+                    switch (autoSyncSelectedAction) {
+                        case 'check': await checkTotalAmountFromAPI(true); break;
+                        case 'load': await loadMatrimFromNedarim(true); break;
+                        case 'sync':
+                        default: await syncWithNedarimPlus(true); break;
+                    }
+                    console.log(`✅ [עדכון אוטומטי] ${actionNames[autoSyncSelectedAction]} הושלם`);
+                }
+                if (typeof syncAllDataToDatabase === 'function') await syncAllDataToDatabase();
+            } catch (error) {
+                console.warn(`⚠️ [עדכון אוטומטי] שגיאה:`, error);
+            }
+        }
+        
         // פונקציות לשמירה וטעינה של הגדרת עדכון אוטומטי נדרים פלוס
         function loadAutoSyncNedarimSetting() {
             try {
@@ -9057,11 +9044,23 @@
         }
         
         function updateAutoSyncIntervalDisplay() {
-            // בוטל - השתמש ברובוט אוטומטי
+            const intervalInput = document.getElementById('autoSyncIntervalInput');
+            const unitSelect = document.getElementById('autoSyncIntervalUnit');
+            const display = document.getElementById('autoSyncIntervalDisplay');
+            
+            if (intervalInput && unitSelect && display) {
+                const value = parseInt(intervalInput.value) || 1;
+                const unit = unitSelect.value;
+                
+                if (unit === 'hours') {
+                    display.textContent = value === 1 ? 'שעה אחת' : `${value} שעות`;
+                } else {
+                    display.textContent = value === 1 ? 'דקה אחת' : `${value} דקות`;
+                }
+            }
         }
         
         function saveAutoSyncNedarimSetting() {
-            // בוטל - השתמש ברובוט אוטומטי
             const checkbox = document.getElementById('autoSyncNedarimCheckbox');
             const select = document.getElementById('autoSyncActionSelect');
             const intervalInput = document.getElementById('autoSyncIntervalInput');
@@ -10700,6 +10699,10 @@
             donorsFilter: 'all',
             maxDonorsPerGroup: 0,
             showNotificationsOnLiveView: false,
+            liveViewUpdateShow: 'loading',
+            liveViewUpdateType: 'all',
+            liveViewUpdateWhen: 'end',
+            liveViewUpdateDuringMinutes: 5,
         };
 
         function loadLiveViewSettings(skipStorage) {
@@ -10761,6 +10764,19 @@
             if (enableAutoScroll) enableAutoScroll.checked = liveViewSettings.enableAutoScroll;
             const showNotificationsOnLiveView = document.getElementById('liveviewShowNotificationsOnLiveView');
             if (showNotificationsOnLiveView) showNotificationsOnLiveView.checked = !!liveViewSettings.showNotificationsOnLiveView;
+            
+            const liveviewUpdateShow = document.getElementById('liveviewUpdateShow');
+            const liveviewUpdateType = document.getElementById('liveviewUpdateType');
+            const liveviewUpdateWhen = document.getElementById('liveviewUpdateWhen');
+            const liveviewUpdateDuringMinutes = document.getElementById('liveviewUpdateDuringMinutes');
+            const duringRow = document.getElementById('liveviewUpdateDuringIntervalRow');
+            const endOptionsRow = document.getElementById('liveviewUpdateEndOptionsRow');
+            if (liveviewUpdateShow) liveviewUpdateShow.value = liveViewSettings.liveViewUpdateShow || 'loading';
+            if (liveviewUpdateType) liveviewUpdateType.value = liveViewSettings.liveViewUpdateType || 'all';
+            if (liveviewUpdateWhen) liveviewUpdateWhen.value = liveViewSettings.liveViewUpdateWhen || 'end';
+            if (liveviewUpdateDuringMinutes) liveviewUpdateDuringMinutes.value = liveViewSettings.liveViewUpdateDuringMinutes || 5;
+            if (duringRow) duringRow.style.display = (liveViewSettings.liveViewUpdateWhen === 'during') ? '' : 'none';
+            if (endOptionsRow) endOptionsRow.style.display = (liveViewSettings.liveViewUpdateWhen === 'end') ? '' : 'none';
             
             // המרת #ffffff ל-rgba עבור groupHeaderBg אם צריך
             if (liveViewSettings.groupHeaderBg === '#ffffff' || liveViewSettings.groupHeaderBg === '#FFFFFF') {
@@ -11147,6 +11163,10 @@
                 donorsFilter: donorsFilter ? donorsFilter.value : liveViewSettings.donorsFilter,
                 maxDonorsPerGroup: maxDonorsPerGroup ? parseInt(maxDonorsPerGroup.value) || 0 : liveViewSettings.maxDonorsPerGroup,
                 showNotificationsOnLiveView: document.getElementById('liveviewShowNotificationsOnLiveView') ? document.getElementById('liveviewShowNotificationsOnLiveView').checked : (liveViewSettings.showNotificationsOnLiveView === true),
+                liveViewUpdateShow: document.getElementById('liveviewUpdateShow') ? document.getElementById('liveviewUpdateShow').value : (liveViewSettings.liveViewUpdateShow || 'loading'),
+                liveViewUpdateType: document.getElementById('liveviewUpdateType') ? document.getElementById('liveviewUpdateType').value : (liveViewSettings.liveViewUpdateType || 'all'),
+                liveViewUpdateWhen: document.getElementById('liveviewUpdateWhen') ? document.getElementById('liveviewUpdateWhen').value : (liveViewSettings.liveViewUpdateWhen || 'end'),
+                liveViewUpdateDuringMinutes: document.getElementById('liveviewUpdateDuringMinutes') ? parseInt(document.getElementById('liveviewUpdateDuringMinutes').value) || 5 : (liveViewSettings.liveViewUpdateDuringMinutes || 5),
             };
 
             // שמירת ההגדרות
@@ -11240,6 +11260,10 @@
                 donorsFilter: 'all',
                 maxDonorsPerGroup: 0,
                 showNotificationsOnLiveView: false,
+                liveViewUpdateShow: 'loading',
+                liveViewUpdateType: 'all',
+                liveViewUpdateWhen: 'end',
+                liveViewUpdateDuringMinutes: 5,
             };
             liveViewSettings = defaults;
             try { localStorage.setItem('liveViewSettings', JSON.stringify(defaults)); } catch (e) {}
@@ -11807,7 +11831,7 @@
                 renderGroomGrantList();
                 
                 // טעינת הגדרת עדכון אוטומטי נדרים פלוס (אחרי טעינת הנתונים)
-                // loadAutoSyncNedarimSetting(); // בוטל - השתמש ברובוט אוטומטי
+                loadAutoSyncNedarimSetting();
                 
                 // טעינת הגדרות תצוגת לייב
                 if (savedLiveViewSettings) {
@@ -12315,7 +12339,7 @@
                 last = timestamp;
                 donorsScrollLastTime = timestamp;
                 
-                // קריאת גובה עדכנית כל פריים – מונע קפיצות כשעדכונים (רובוט וכו') משנים סכומים/תוכן
+                // קריאת גובה עדכנית כל פריים – מונע קפיצות כשעדכונים אוטומטיים משנים סכומים/תוכן
                 const currentHalf = container.scrollHeight > 0 ? container.scrollHeight / 2 : halfHeight;
                 const h = (currentHalf && isFinite(currentHalf) && currentHalf >= 50) ? currentHalf : halfHeight;
                 
@@ -12328,6 +12352,7 @@
                 if (offset >= h) {
                     offset -= h;
                     state.cycleCompleteFired = false;
+                    if ((liveViewSettings.liveViewUpdateWhen || 'end') === 'end' && typeof onDonorsScrollCycleComplete === 'function') onDonorsScrollCycleComplete().catch(() => {});
                 }
                 if (offset < 10) state.cycleCompleteFired = false;
                 state.offset = offset;
@@ -12339,11 +12364,12 @@
             state.handle = requestAnimationFrame(step);
         }
         
-        /** עדכון תוך כדי גלילה – בלי לעצור, בלי overlay. כמו בוט שלוחץ: בדוק סכום, סנכרון תרומות, טען מגליון. */
+        /** עדכון תוך כדי גלילה – בלי לעצור, בלי overlay. */
         var isLiveViewUpdateDuringRunning = false;
-        // פונקציה זו הוסרה - עדכון אוטומטי בתצוגת לייב בוטל
         async function runLiveViewUpdateDuring() {
-            return; // בוטל
+            if (typeof isLiveViewActive !== 'function' || !isLiveViewActive() || !liveViewSettings.enableAutoScroll) return;
+            if (isLiveViewUpdateDuringRunning) return;
+            isLiveViewUpdateDuringRunning = true;
             lastLiveViewUpdateAt = Date.now();
             console.log('🔄 [תצוגת לייב] עדכון תוך כדי גלילה (בלי לעצור)...');
             try {
@@ -12352,7 +12378,7 @@
                 var url = (googleSheetsWebAppUrl || (typeof localStorage !== 'undefined' && localStorage.getItem('googleSheetsWebAppUrl')) || '').trim();
                 if (url && typeof loadFromGoogleSheets === 'function') {
                     var r = await loadFromGoogleSheets(true);
-                    if (r && r.success && typeof notifyDataChanged === 'function') notifyDataChanged(true);
+                    if (r && r.success && typeof notifyDataChanged === 'function') notifyDataChanged();
                 }
                 if (typeof syncAllDataToDatabase === 'function') await syncAllDataToDatabase();
                 if (typeof updateLiveView === 'function') updateLiveView();
@@ -12365,18 +12391,79 @@
             isLiveViewUpdateDuringRunning = false;
         }
 
-        // פונקציות אלו הוסרו - עדכון אוטומטי בתצוגת לייב בוטל
         function triggerLiveViewUpdateDuring() {
-            return; // בוטל
+            if (typeof isLiveViewActive !== 'function' || !isLiveViewActive() || !liveViewSettings.enableAutoScroll) return;
+            if (liveViewSettings.liveViewUpdateWhen !== 'during') return;
+            if (!donorsScrollIsRunning) return;
+            var mins = Math.max(1, Math.min(60, parseInt(liveViewSettings.liveViewUpdateDuringMinutes, 10) || 5));
+            var nowMs = Date.now();
+            if (lastLiveViewUpdateAt > 0 && (nowMs - lastLiveViewUpdateAt) < mins * 60 * 1000) return;
+            runLiveViewUpdateDuring().catch(function() {});
         }
 
+        /** אחרי סיום גלילה מלאה – עוצר גלילה, מציג overlay, מריץ עדכון לפי ההגדרה, ואז ממשיך גלילה (רק כשההגדרה "בסיום מחזור") */
         async function onDonorsScrollCycleComplete() {
-            return; // בוטל - השתמש ברובוט אוטומטי במדור ניהול
+            if (typeof isLiveViewActive !== 'function' || !isLiveViewActive()) return;
+            if (!liveViewSettings.enableAutoScroll) return;
+            if ((liveViewSettings.liveViewUpdateWhen || 'end') === 'during') return;
+            if (!donorsScrollIsRunning) return;
+            console.log('🔄 [תצוגת לייב] סיום מחזור גלילה – מציג overlay ומריץ עדכון...');
+            lastLiveViewUpdateAt = Date.now();
+            const overlay = document.getElementById('liveViewUpdateOverlay');
+            const showMode = liveViewSettings.liveViewUpdateShow || 'loading';
+            const updateType = liveViewSettings.liveViewUpdateType || 'all';
+
+            stopAutoScroll('donors');
+            stopAutoScroll('leaders');
+            donorsScrollIsRunning = false;
+            leadersScrollIsRunning = false;
+
+            if (overlay) {
+                overlay.classList.remove('loading-only', 'grants-only');
+                overlay.classList.add(showMode === 'grants' ? 'grants-only' : 'loading-only');
+                overlay.classList.add('show');
+            }
+
+            try {
+                await checkTotalAmountFromAPI(true);
+                await syncWithNedarimPlus(true);
+                if (updateType === 'all') {
+                    if (autoSyncNedarimEnabled && typeof performAutoRefresh === 'function') await performAutoRefresh();
+                    var url = (googleSheetsWebAppUrl || (typeof localStorage !== 'undefined' && localStorage.getItem('googleSheetsWebAppUrl')) || '').trim();
+                    if (url && googleSheetsSyncEnabled) {
+                        if (sheetSyncLoadEnabled && typeof loadFromGoogleSheets === 'function') {
+                            var r = await loadFromGoogleSheets(true);
+                            if (r && r.success && typeof notifyDataChanged === 'function') notifyDataChanged();
+                        }
+                        if (sheetSyncSaveEnabled && typeof saveToGoogleSheets === 'function') await saveToGoogleSheets();
+                    }
+                } else if (updateType === 'loadSheet' && typeof loadFromGoogleSheets === 'function') {
+                    var r = await loadFromGoogleSheets(true);
+                    if (r && r.success && typeof notifyDataChanged === 'function') notifyDataChanged();
+                } else if (updateType === 'loadMatrim' && typeof loadMatrimFromNedarim === 'function') {
+                    await loadMatrimFromNedarim(true);
+                }
+                if (typeof syncAllDataToDatabase === 'function') await syncAllDataToDatabase();
+                if (typeof updateLiveView === 'function') updateLiveView();
+                if (typeof updateLeadersList === 'function') updateLeadersList();
+                if (typeof notifyDataChanged === 'function') notifyDataChanged();
+                console.log('✅ [תצוגת לייב] עדכון הושלם');
+            } catch (err) {
+                console.warn('⚠️ [תצוגת לייב] שגיאה בעדכון:', err);
+            }
+
+            if (overlay) overlay.classList.remove('show');
+            if (typeof restartDonorsAutoScroll === 'function') restartDonorsAutoScroll();
+            if (typeof restartLeadersAutoScroll === 'function' && isLiveViewActive()) setTimeout(() => restartLeadersAutoScroll({ immediate: true }), 50);
         }
         
-        // פונקציה זו הוסרה - עדכון אוטומטי בתצוגת לייב בוטל, השתמש ברובוט אוטומטי במדור ניהול
         function triggerLiveViewUpdateByTimer() {
-            return; // בוטל
+            if (typeof isLiveViewActive !== 'function' || !isLiveViewActive() || !liveViewSettings.enableAutoScroll) return;
+            if (!donorsScrollIsRunning) return;
+            var nowMs = Date.now();
+            if (lastLiveViewUpdateAt > 0 && (nowMs - lastLiveViewUpdateAt) < 10 * 60 * 1000) return;
+            console.log('🔄 [תצוגת לייב] גיבוי לפי זמן (10 דקות) – מריץ עדכון');
+            onDonorsScrollCycleComplete().catch(function() {});
         }
         
         // דגל למניעת קפיצות בזמן עדכון
@@ -12499,7 +12586,7 @@
                 last = timestamp;
                 leadersScrollLastTime = timestamp;
                 
-                // קריאת גובה עדכנית כל פריים – מונע קפיצות כשעדכונים (רובוט וכו') משנים את התוכן
+                // קריאת גובה עדכנית כל פריים – מונע קפיצות כשעדכונים אוטומטיים משנים את התוכן
                 const currentHeight = primary ? primary.offsetHeight : contentHeight;
                 const h = (currentHeight && isFinite(currentHeight) && currentHeight >= 50) ? currentHeight : contentHeight;
                 
@@ -12528,7 +12615,11 @@
             const now = performance.now();
             
             // עדכון אוטומטי: לפי ההגדרה – תוך כדי גלילה (כל X דקות) או גיבוי 10 דקות (בסיום מחזור)
-            // עדכון אוטומטי בתצוגת לייב בוטל - השתמש ברובוט אוטומטי במדור ניהול
+            if ((liveViewSettings.liveViewUpdateWhen || 'end') === 'during') {
+                if (typeof triggerLiveViewUpdateDuring === 'function') triggerLiveViewUpdateDuring();
+            } else {
+                if (typeof triggerLiveViewUpdateByTimer === 'function') triggerLiveViewUpdateByTimer();
+            }
             
             // בדיקת גלילת תורמים
             if (donorsScrollIsRunning) {
@@ -12996,9 +13087,6 @@
                     updateManualDonorsList();
                 } else if (tabName === 'liveview') {
                     loadLiveViewSettings();
-                } else if (tabName === 'robot') {
-                    // רק מעדכן את ה-UI עם הערכים הנוכחיים, לא טוען מחדש מ-localStorage
-                    if (typeof window.updateRobotUI === 'function') window.updateRobotUI();
                 } else if (tabName === 'sync') {
                     if (typeof syncNedarimBlockPushCheckbox === 'function') syncNedarimBlockPushCheckbox();
                     if (typeof updateNedarimFixCurrentSumLabel === 'function') updateNedarimFixCurrentSumLabel();
@@ -16273,43 +16361,6 @@
         }
 
 
-            function initRobot() {
-            if (window.__robotInited) return;
-            window.__robotInited = true;
-            const ROBOT_ACTION_IDS = ['sync', 'loadMatrim', 'checkTotal', 'loadSheet', 'saveSheet', 'pushToNedarim', 'syncGoogleSheets'];
-            const robotActionsConfig = {
-                sync: { id: 'sync', name: 'משיכת נתונים מנדרים פלוס (ללא דחיפה – לתצוגת לייב)', func: () => runSequentialOp(() => syncWithNedarimPlus(true, true), 'משיכה מנדרים פלוס') },
-                pushToNedarim: { id: 'pushToNedarim', name: 'דחיפה לנדרים פלוס (שליחת סכומים – מונע כפילות)', func: () => runSequentialOp(() => syncWithNedarimPlus(true, false), 'דחיפה לנדרים פלוס') },
-                loadMatrim: { id: 'loadMatrim', name: 'טען מתרימים מנדרים פלוס', func: () => runSequentialOp(() => loadMatrimFromNedarim(true), 'טען מתרימים מנדרים פלוס') },
-                checkTotal: { id: 'checkTotal', name: 'בדוק סכום כולל מ-API', func: () => runSequentialOp(() => checkTotalAmountFromAPI(true), 'בדוק סכום כולל') },
-                loadSheet: { id: 'loadSheet', name: 'טען מהגליון', func: () => runSequentialOp(() => loadFromGoogleSheets(true), 'טען מהגליון') },
-                saveSheet: { id: 'saveSheet', name: 'שמור לגליון', func: () => runSequentialOp(() => saveToGoogleSheets(), 'שמור לגליון') },
-                syncGoogleSheets: { id: 'syncGoogleSheets', name: 'סנכרון דו-כיווני גליון', func: () => runSequentialOp(() => syncWithGoogleSheets(true), 'סנכרון דו-כיווני') }
-            };
-            const defaultActionEnabled = { sync: false, pushToNedarim: false, loadMatrim: false, checkTotal: false, loadSheet: false, saveSheet: false, syncGoogleSheets: false };
-            let robotEnabled = false, robotTimer = null, robotContinuousRunning = false, robotNextRunTime = null, robotHistory = [];
-            let robotSettings = { actionOrder: [...ROBOT_ACTION_IDS], actionEnabled: { ...defaultActionEnabled }, interval: 10, unit: 'minutes', executionMode: 'sequential', continuous: false, continuousIntervalSeconds: 60 };
-            function migrateRobotSettingsFromLegacy(saved) { if (saved.sync !== undefined || saved.checkTotal !== undefined) { const ae = robotSettings.actionEnabled || {}; ae.sync = saved.sync === true; ae.checkTotal = saved.checkTotal === true; ae.loadSheet = saved.loadSheet === true; ae.saveSheet = saved.saveSheet === true; ae.loadMatrim = ae.loadMatrim || false; ae.pushToNedarim = ae.pushToNedarim || false; ae.syncGoogleSheets = ae.syncGoogleSheets || false; robotSettings.actionEnabled = ae; if (!saved.actionOrder) robotSettings.actionOrder = [...ROBOT_ACTION_IDS]; } }
-            function loadRobotSettings() { storageGetItem('robotSettings', (saved) => { if (saved) { robotSettings = { actionOrder: [...ROBOT_ACTION_IDS], actionEnabled: { ...defaultActionEnabled }, interval: 10, unit: 'minutes', executionMode: 'sequential', continuous: false, continuousIntervalSeconds: 60, ...saved }; migrateRobotSettingsFromLegacy(saved); robotSettings.continuous = robotSettings.continuous === true; robotSettings.interval = parseFloat(robotSettings.interval) || 10; robotSettings.unit = robotSettings.unit || 'minutes'; robotSettings.executionMode = robotSettings.executionMode || 'sequential'; robotSettings.continuousIntervalSeconds = Math.max(15, Math.min(300, parseInt(robotSettings.continuousIntervalSeconds, 10) || 60)); robotEnabled = robotSettings.enabled === true; if (!robotSettings.actionOrder || !Array.isArray(robotSettings.actionOrder)) robotSettings.actionOrder = [...ROBOT_ACTION_IDS]; if (!robotSettings.actionEnabled || typeof robotSettings.actionEnabled !== 'object') robotSettings.actionEnabled = { ...defaultActionEnabled }; ROBOT_ACTION_IDS.forEach(id => { if (robotSettings.actionEnabled[id] === undefined) robotSettings.actionEnabled[id] = false; }); if (robotEnabled) setTimeout(() => startRobot(), 500); } else { robotSettings.actionOrder = [...ROBOT_ACTION_IDS]; robotSettings.actionEnabled = { ...defaultActionEnabled }; robotEnabled = false; } renderRobotActionsList(); updateRobotUI(); }); }
-            function renderRobotActionsList() { const listEl = document.getElementById('robotActionsList'); if (!listEl) return; const order = robotSettings.actionOrder || [...ROBOT_ACTION_IDS]; const enabled = robotSettings.actionEnabled || {}; listEl.innerHTML = order.map((id) => { const cfg = robotActionsConfig[id]; if (!cfg) return ''; const checked = enabled[id] === true; return `<div class="robot-action-row" data-action-id="${id}" draggable="true" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #f8f9fa; border-radius: 8px; cursor: grab; border: 1px solid #e9ecef;"><span class="robot-drag-handle" style="cursor: grab; color: #999; font-size: 18px;">⋮⋮</span><input type="checkbox" id="robotAction_${id}" ${checked ? 'checked' : ''} onchange="toggleRobotAction('${id}'); saveRobotSettings();" style="width: 18px; height: 18px; cursor: pointer;"><label for="robotAction_${id}" style="flex: 1; cursor: pointer; margin: 0;">${cfg.name}</label></div>`; }).join(''); attachRobotListDragListeners(); }
-            function attachRobotListDragListeners() { const listEl = document.getElementById('robotActionsList'); if (!listEl) return; let draggedEl = null; listEl.querySelectorAll('.robot-action-row').forEach(row => { row.addEventListener('dragstart', (e) => { draggedEl = row; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', row.dataset.actionId); row.style.opacity = '0.5'; }); row.addEventListener('dragend', (e) => { row.style.opacity = '1'; draggedEl = null; }); row.addEventListener('dragover', (e) => { e.preventDefault(); if (draggedEl && draggedEl !== row) row.style.borderTop = '2px solid #1976d2'; }); row.addEventListener('dragleave', (e) => { row.style.borderTop = '1px solid #e9ecef'; }); row.addEventListener('drop', (e) => { e.preventDefault(); row.style.borderTop = '1px solid #e9ecef'; if (!draggedEl || draggedEl === row) return; const order = [...(robotSettings.actionOrder || ROBOT_ACTION_IDS)]; const fromId = draggedEl.dataset.actionId; const toId = row.dataset.actionId; const fromIdx = order.indexOf(fromId); const toIdx = order.indexOf(toId); if (fromIdx >= 0 && toIdx >= 0) { order.splice(fromIdx, 1); order.splice(toIdx, 0, fromId); robotSettings.actionOrder = order; storageSetItem('robotSettings', robotSettings); renderRobotActionsList(); } draggedEl = null; }); }); }
-            window.toggleRobotAction = function(id) { if (!robotSettings.actionEnabled) robotSettings.actionEnabled = {}; robotSettings.actionEnabled[id] = document.getElementById('robotAction_' + id)?.checked === true; };
-            function toggleContinuousMode() { const cb = document.getElementById('robotContinuousMode'); const ic = document.getElementById('robotIntervalContainer'); const cic = document.getElementById('robotContinuousIntervalContainer'); if (cb && ic) { if (cb.checked) { ic.style.opacity = '0.5'; ic.style.pointerEvents = 'none'; if (cic) cic.style.display = 'block'; } else { ic.style.opacity = '1'; ic.style.pointerEvents = 'auto'; if (cic) cic.style.display = 'none'; } } }
-            function saveRobotSettings(skipRestart) { const checkbox = document.getElementById('robotEnabledCheckbox'); if (checkbox) robotEnabled = checkbox.checked; ROBOT_ACTION_IDS.forEach(id => { const cb = document.getElementById('robotAction_' + id); if (cb && robotSettings.actionEnabled) robotSettings.actionEnabled[id] = cb.checked === true; }); const intervalInput = document.getElementById('robotIntervalInput'); const unitSelect = document.getElementById('robotIntervalUnit'); const continuousCheckbox = document.getElementById('robotContinuousMode'); const continuousIntervalInput = document.getElementById('robotContinuousIntervalInput'); const seqRadio = document.getElementById('robotSequentialMode'); const parRadio = document.getElementById('robotParallelMode'); if (intervalInput) robotSettings.interval = parseFloat(intervalInput.value) || 10; if (unitSelect) robotSettings.unit = unitSelect.value; if (continuousCheckbox) robotSettings.continuous = continuousCheckbox.checked === true; if (continuousIntervalInput) robotSettings.continuousIntervalSeconds = Math.max(15, Math.min(300, parseInt(continuousIntervalInput.value, 10) || 60)); if (seqRadio && seqRadio.checked) robotSettings.executionMode = 'sequential'; if (parRadio && parRadio.checked) robotSettings.executionMode = 'parallel'; robotSettings.enabled = robotEnabled; storageSetItem('robotSettings', robotSettings); updateRobotUI(); if (!skipRestart) { if (robotEnabled) startRobot(); else stopRobot(); } }
-            function updateRobotIntervalDisplay() { const intervalInput = document.getElementById('robotIntervalInput'); const unitSelect = document.getElementById('robotIntervalUnit'); const display = document.getElementById('robotIntervalDisplay'); const continuousCheckbox = document.getElementById('robotContinuousMode'); if (!display) return; if (continuousCheckbox && continuousCheckbox.checked) { display.textContent = 'הרובוט יפעיל את הכפתורים הנבחרים ברצף עדכונים שוטפים'; return; } if (!intervalInput || !unitSelect) return; const value = parseFloat(intervalInput.value) || 10; const unit = unitSelect.value; display.textContent = unit === 'hours' ? `הרובוט יפעיל כל ${value} שעות` : `הרובוט יפעיל כל ${value} דקות`; }
-            function addRobotHistory(msg, type) { robotHistory.unshift({ t: new Date().toLocaleTimeString('he-IL'), msg, type: type || 'info' }); const el = document.getElementById('robotHistory'); if (!el) return; const inner = el.querySelector('.robot-history-inner') || (function(){ const d = document.createElement('div'); d.className = 'robot-history-inner'; el.innerHTML = ''; el.appendChild(d); return d; })(); inner.innerHTML = robotHistory.slice(0, 80).map(h => { const c = { success: '#22c55e', error: '#ef4444', warning: '#f59e0b', info: '#6b7280' }[h.type] || '#6b7280'; return `<div style="margin:4px 0;color:${c}">[${h.t}] ${h.msg}</div>`; }).join(''); }
-            function updateRobotUI() { const checkbox = document.getElementById('robotEnabledCheckbox'); const panel = document.getElementById('robotSettingsPanel'); if (checkbox) checkbox.checked = robotEnabled; if (panel) panel.style.display = 'block'; const intervalInput = document.getElementById('robotIntervalInput'); const unitSelect = document.getElementById('robotIntervalUnit'); const continuousCheckbox = document.getElementById('robotContinuousMode'); const continuousIntervalInput = document.getElementById('robotContinuousIntervalInput'); const seqRadio = document.getElementById('robotSequentialMode'); const parRadio = document.getElementById('robotParallelMode'); if (intervalInput) intervalInput.value = robotSettings.interval || 10; if (unitSelect) unitSelect.value = robotSettings.unit || 'minutes'; if (continuousCheckbox) continuousCheckbox.checked = robotSettings.continuous === true; if (continuousIntervalInput) continuousIntervalInput.value = robotSettings.continuousIntervalSeconds || 60; if (seqRadio) seqRadio.checked = (robotSettings.executionMode || 'sequential') === 'sequential'; if (parRadio) parRadio.checked = (robotSettings.executionMode || 'sequential') === 'parallel'; ROBOT_ACTION_IDS.forEach(id => { const cb = document.getElementById('robotAction_' + id); if (cb && robotSettings.actionEnabled) cb.checked = robotSettings.actionEnabled[id] === true; }); toggleContinuousMode(); updateRobotIntervalDisplay(); const startBtn = document.getElementById('robotStartBtn'); const stopBtn = document.getElementById('robotStopBtn'); const statusEl = document.getElementById('robotStatus'); if (startBtn) startBtn.style.display = !robotEnabled ? 'block' : 'none'; if (stopBtn) stopBtn.style.display = robotEnabled ? 'block' : 'none'; if (statusEl) statusEl.textContent = robotEnabled ? 'הרובוט פעיל' : 'הרובוט כבוי'; const nextRunEl = document.getElementById('robotNextRun'); const nextRunTimeEl = document.getElementById('robotNextRunTime'); if (nextRunEl && nextRunTimeEl) { if (robotEnabled && !robotSettings.continuous && robotNextRunTime) { nextRunEl.style.display = 'block'; const diff = Math.max(0, robotNextRunTime - Date.now()); const mins = Math.floor(diff / 60000); const secs = Math.floor((diff % 60000) / 1000); nextRunTimeEl.textContent = mins > 0 ? mins + ' דק\' ' + secs + ' שנ\'' : secs + ' שניות'; } else { nextRunEl.style.display = 'none'; } } }
-            function updateRobotNextRun() { if (robotSettings.continuous) return; const iv = robotSettings.interval || 10; const ms = robotSettings.unit === 'hours' ? iv * 60 * 60 * 1000 : iv * 60 * 1000; robotNextRunTime = Date.now() + ms; }
-            function runRobotActions() { if (!robotEnabled) return; const order = robotSettings.actionOrder || [...ROBOT_ACTION_IDS]; const enabled = robotSettings.actionEnabled || {}; const items = []; for (const id of order) { if (enabled[id] === true && robotActionsConfig[id]) items.push(robotActionsConfig[id]); } if (items.length === 0) { addRobotHistory('סמן לפחות פעולה אחת', 'warning'); return; } addRobotHistory('מתחיל ' + items.length + ' פעולות...', 'info'); const exec = robotSettings.executionMode === 'parallel' ? async () => { const results = await Promise.all(items.map(async (cfg) => { addRobotHistory('▶ ' + cfg.name, 'info'); try { await cfg.func(); addRobotHistory('✓ ' + cfg.name, 'success'); return true; } catch (e) { addRobotHistory('✗ ' + cfg.name + ': ' + (e.message || e), 'error'); return false; } })); const ok = results.filter(Boolean).length; addRobotHistory('הושלם: ' + ok + '/' + items.length + ' הצליחו', ok === items.length ? 'success' : 'warning'); } : async () => { let ok = 0; for (const cfg of items) { addRobotHistory('▶ ' + cfg.name, 'info'); try { await cfg.func(); addRobotHistory('✓ ' + cfg.name, 'success'); ok++; } catch (e) { addRobotHistory('✗ ' + cfg.name + ': ' + (e.message || e), 'error'); } } addRobotHistory('הושלם: ' + ok + '/' + items.length + ' הצליחו', ok === items.length ? 'success' : 'warning'); }; exec().catch(() => {}); }
-            function startRobot() { saveRobotSettings(true); if (robotTimer) { clearInterval(robotTimer); robotTimer = null; } robotContinuousRunning = false; robotEnabled = true; robotSettings.enabled = true; storageSetItem('robotSettings', robotSettings); const isContinuous = robotSettings.continuous === true; if (isContinuous) { robotContinuousRunning = true; const intervalSec = Math.max(15, robotSettings.continuousIntervalSeconds || 60); const runC = async () => { if (!robotEnabled || !robotSettings.continuous || !robotContinuousRunning) return; await runRobotActions(); setTimeout(runC, intervalSec * 1000); }; runC(); addRobotHistory('הרובוט הופעל - עדכונים שוטפים', 'success'); } else { runRobotActions(); const iv = robotSettings.interval || 10; const ms = robotSettings.unit === 'hours' ? iv * 60 * 60 * 1000 : iv * 60 * 1000; updateRobotNextRun(); robotNextRunTime = Date.now() + ms; robotTimer = setInterval(() => { if (!robotEnabled) { clearInterval(robotTimer); robotTimer = null; return; } runRobotActions(); updateRobotNextRun(); robotNextRunTime = Date.now() + ms; }, ms); addRobotHistory('הרובוט הופעל - כל ' + iv + (robotSettings.unit === 'hours' ? ' שעות' : ' דקות'), 'success'); } updateRobotUI(); }
-            function stopRobot() { if (robotTimer) { clearInterval(robotTimer); robotTimer = null; } robotEnabled = false; robotSettings.enabled = false; robotContinuousRunning = false; robotNextRunTime = null; storageSetItem('robotSettings', robotSettings); addRobotHistory('הרובוט הופסק', 'info'); updateRobotUI(); }
-            window.startRobot = startRobot; window.stopRobot = stopRobot; window.saveRobotSettings = saveRobotSettings; window.updateRobotUI = updateRobotUI; window.toggleContinuousMode = toggleContinuousMode; window.updateRobotIntervalDisplay = updateRobotIntervalDisplay;
-            setInterval(() => { if (robotEnabled) updateRobotUI(); }, 1000);
-            loadRobotSettings();
-            console.log('🤖 [רובוט] אותחל');
-            }
-            window.initRobot = initRobot;
-
             // טעינה ראשונית – מסך קוד כניסה, אחרי אימות מול השרת מתבצע האתחול
         initEntryCodeGate();
         // initLogoParticleAnimation(); // הושבת - הפונקציה הוסרה
@@ -17775,9 +17826,9 @@
 
         // פונקציה לטעינת כל המתרימים מנדרים פלוס (משתמש ב-MatchPlus API)
         async function loadMatrimFromNedarim(silent = false) {
-            // 🛡️ כשהרובוט מריץ – לא טוענים מתרים מנדרים! עלול לדרוס נתונים תקינים. הפעל ידנית בלבד.
+            // 🛡️ כאשר silent=true – מדלגים על טעינה מלאה (עלול לדרוס נתונים). הפעל ידנית אם נדרש.
             if (silent) {
-                console.warn('🤖 [רובוט] טעינת מתרים מנדרים מדולגת – עלולה לדרוס נתונים. הפעל ידנית אם נדרש.');
+                console.warn('⚠️ טעינת מתרים מנדרים מדולגת במצב silent – הפעל ידנית אם נדרש.');
                 return;
             }
 
@@ -17839,7 +17890,7 @@
                 console.log(`✅ נמצאו ${matrimList.length} מתרימים בנדרים פלוס`);
                 console.log('דוגמה למתרים ראשון:', matrimList[0]);
 
-                // מניעת סכומים אסטרונומיים מהרובוט: הסרת כפילויות לפי מספר מתרים + בדיקת תקינות סכום
+                // מניעת סכומים אסטרונומיים: הסרת כפילויות לפי מספר מתרים + בדיקת תקינות סכום
                 const MAX_REASONABLE_AMOUNT_LOAD = 5000000;
                 const origCount = matrimList.length;
                 const byMatrimIdLoad = new Map();
@@ -18836,7 +18887,7 @@
                 console.warn('⚠️ [סנכרון] סנכרון כבר רץ – דילוג (מונע כפילות דלתות בנדרים פלוס)');
                 return;
             }
-            // מונע סנכרונים תכופים מרובוט – מרווח מינימלי 5 דקות. forceSync=true (בדיקה ידנית) מתעלם
+            // מונע סנכרונים תכופים – מרווח מינימלי 5 דקות. forceSync=true (בדיקה ידנית) מתעלם
             const SYNC_COOLDOWN_MS = 5 * 60 * 1000;
             if (!forceSync && silent && lastSyncEndTime > 0 && (Date.now() - lastSyncEndTime) < SYNC_COOLDOWN_MS) {
                 const waitSec = Math.ceil((SYNC_COOLDOWN_MS - (Date.now() - lastSyncEndTime)) / 1000);
@@ -19171,9 +19222,9 @@
                 } // סוף if (!pullOnly) - סנכרון אוטומטי לא דוחף לנדרים!
 
                 // ========== שלב 2: משיכת נתונים מנדרים פלוס ==========
-                // 🛡️ כשהרובוט מריץ בלי pullOnly (דחיפה) – לא מושכים מנדרים. כשהרובוט מריץ pullOnly – כן מושכים (רענון בלבד, בלי דחיפה).
+                // 🛡️ כשעובדים ב-silent ללא pullOnly – מדלגים על משיכה מלאה (הגליון והתוכנה מקור האמת).
                 if (silent && !pullOnly) {
-                    console.log('🤖 [רובוט] מדלג על משיכת מתרים מנדרים – הגליון והתוכנה מקור האמת');
+                    console.log('ℹ️ מדלג על משיכת מתרים מנדרים – הגליון והתוכנה מקור האמת');
                     const totalData = await fetchTotalFromMatchPlus();
                     if (totalData && totalData.Donated > 0) {
                         updateHomeStats();
@@ -19223,7 +19274,7 @@
 
                 console.log(`✅ קיבלנו ${matrimList.length} מתרימים מנדרים פלוס`);
 
-                // מניעת סכומים אסטרונומיים מהרובוט: הסרת כפילויות לפי מספר מתרים + בדיקת תקינות סכום
+                // מניעת סכומים אסטרונומיים: הסרת כפילויות לפי מספר מתרים + בדיקת תקינות סכום
                 const MAX_REASONABLE_AMOUNT = 5000000; // 5 מיליון – סכום מקסימלי סביר למתרים בודד
                 const originalCount = matrimList.length;
                 const byMatrimId = new Map();
@@ -19492,7 +19543,7 @@
                 // סנכרון לבסיס הנתונים אחרי העדכון
                 await syncAllDataToDatabase();
 
-                } // סוף else – כשהרובוט רץ (silent) מדלגים על משיכת מתרים מנדרים
+                } // סוף else – במצב silent מדלגים על משיכת מתרים מנדרים
             } catch (error) {
                 console.error('שגיאה בסנכרון:', error);
                 if (!silent) {
@@ -20577,38 +20628,6 @@
                         Object.assign(financeState, s.financeState);
                         try { localStorage.setItem('financeState', JSON.stringify(financeState)); storageSetItem('financeState', financeState); } catch (e) {}
                     }
-                    if (s.robotSettings && typeof robotSettings !== 'undefined') {
-                        const rs = s.robotSettings;
-                        const ae = rs.actionEnabled && typeof rs.actionEnabled === 'object' ? { ...rs.actionEnabled } : {};
-                        if (rs.sync !== undefined) ae.sync = rs.sync === true;
-                        if (rs.checkTotal !== undefined) ae.checkTotal = rs.checkTotal === true;
-                        if (rs.loadSheet !== undefined) ae.loadSheet = rs.loadSheet === true;
-                        if (rs.saveSheet !== undefined) ae.saveSheet = rs.saveSheet === true;
-                        if (rs.pushToNedarim !== undefined) ae.pushToNedarim = rs.pushToNedarim === true;
-                        robotSettings = {
-                            actionOrder: Array.isArray(rs.actionOrder) ? rs.actionOrder : [...ROBOT_ACTION_IDS],
-                            actionEnabled: ae,
-                            interval: parseFloat(rs.interval) || 10,
-                            unit: rs.unit || 'minutes',
-                            executionMode: (rs.executionMode === 'parallel' ? 'parallel' : 'sequential'),
-                            continuous: rs.continuous === true,
-                            continuousIntervalSeconds: Math.max(15, Math.min(300, parseInt(rs.continuousIntervalSeconds, 10) || 60)),
-                            enabled: rs.enabled === true,
-                            requireAppUnlock: rs.requireAppUnlock === true
-                        };
-                        robotEnabled = robotSettings.enabled;
-                        try {
-                            localStorage.setItem('robotSettings', JSON.stringify(robotSettings));
-                            storageSetItem('robotSettings', robotSettings);
-                        } catch (e) { console.warn('שגיאה בשמירת הגדרות רובוט:', e); }
-                        if (typeof renderRobotActionsList === 'function') renderRobotActionsList();
-                        if (typeof updateRobotUI === 'function') updateRobotUI();
-                        if (robotEnabled && typeof startRobot === 'function') {
-                            setTimeout(() => startRobot(), 500);
-                        } else if (!robotEnabled && typeof stopRobot === 'function') {
-                            stopRobot();
-                        }
-                    }
                 }
                 
                 // שמירה מקומית ועדכון תצוגה - immediate=true לעדכון מיידי בתצוגת לייב
@@ -20877,7 +20896,7 @@
             }
         }
         
-        // סנכרון דו-כיווני עם Google Sheets. saveOnly=true כשהרובוט – רק שומר, לא דורס מהגליון.
+        // סנכרון דו-כיווני עם Google Sheets. saveOnly=true – רק שומר, לא דורס מהגליון.
         async function syncWithGoogleSheets(saveOnly = false) {
             if (saveOnly) {
                 try {
@@ -21939,7 +21958,6 @@
         window.addEventListener('load', async () => {
             console.log('🚀 [אתחול] טוען הגדרות סנכרון...');
             loadGoogleSheetsSettings();
-            try { if (typeof initRobot === 'function') initRobot(); } catch(e) { console.warn('[רובוט] אתחול:', e); }
             loadComputerSettings();
             
             // מחכה שהאפליקציה תסיים לאתחל (כולל loadData) – מונע באגים במחשב חדש
@@ -21993,3 +22011,5 @@
         window.contactDeveloper = contactDeveloper;
 
     </script>
+</body>
+</html>
