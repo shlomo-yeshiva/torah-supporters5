@@ -5427,6 +5427,16 @@
             font-weight: 700;
             color: #007d8a;
         }
+        .finance-summary-card.income-card {
+            background: linear-gradient(135deg, rgba(22, 163, 74, 0.25), rgba(255,255,255,0.95));
+            border: 2px solid #16a34a;
+        }
+        .finance-summary-card.income-card span { color: #15803d; font-weight: 800; }
+        .finance-summary-card.expense-card {
+            background: linear-gradient(135deg, rgba(220, 38, 38, 0.2), rgba(255,255,255,0.95));
+            border: 2px solid #dc2626;
+        }
+        .finance-summary-card.expense-card span { color: #b91c1c; font-weight: 800; }
 
         .finance-entries-list {
             border: 1px solid var(--border);
@@ -5448,9 +5458,25 @@
         .finance-entry-item:last-child {
             border-bottom: none;
         }
+        .finance-entry-type.income {
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            color: #fff !important;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-weight: 700;
+            display: inline-block;
+            min-width: 80px;
+            text-align: center;
+        }
         .finance-entry-type.expense {
-            color: #d62828;
-            font-weight: 600;
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: #fff !important;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-weight: 700;
+            display: inline-block;
+            min-width: 80px;
+            text-align: center;
         }
 
         .finance-entry-empty {
@@ -5588,6 +5614,36 @@
 
         .finance-table tbody tr:last-child td {
             border-bottom: none;
+        }
+
+        /* מדור הלוואות */
+        .loans-panel { max-width: 900px; }
+        .loans-list { display: flex; flex-direction: column; gap: 12px; }
+        .loan-item {
+            display: grid;
+            grid-template-columns: 1fr auto auto 1fr auto;
+            gap: 12px;
+            align-items: center;
+            padding: 14px 18px;
+            background: rgba(255,255,255,0.95);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 14px;
+        }
+        .loan-item.fully-repaid {
+            background: rgba(34, 197, 94, 0.12);
+            border-color: #16a34a;
+        }
+        .loan-item .loan-borrower { font-weight: 600; color: var(--brown-dark); }
+        .loan-item .loan-amount { color: #dc2626; font-weight: 700; }
+        .loan-item .loan-repaid { color: #16a34a; font-weight: 600; }
+        .loan-item .loan-remaining { color: #b91c1c; font-weight: 700; }
+        .loan-item.fully-repaid .loan-remaining { color: #16a34a; }
+        .loan-repaid-input { width: 90px; padding: 6px 10px; border: 2px solid var(--border); border-radius: 8px; }
+        .loan-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .loan-actions .btn-small { padding: 6px 12px; font-size: 12px; }
+        @media (max-width: 700px) {
+            .loan-item { grid-template-columns: 1fr; }
         }
 
         .donors-summary {
@@ -5807,6 +5863,7 @@
                 <button class="nav-item" data-section="scouts">ניהול סיירות</button>
                 <button class="nav-item" data-section="toolkit">ארגז כלים לתתני״ק הצעיר</button>
                 <button class="nav-item" data-section="finance">חישוב לכל השנה</button>
+                <button class="nav-item" data-section="loans">הלוואות</button>
                 <button class="nav-item" data-section="planning">תכנון קמפיין לשנים הבאות</button>
                 <button class="nav-item" data-section="groomGrant">מענק לחתנים</button>
                 <button class="nav-item" data-section="grants">קבלת מענקים למתרמים</button>
@@ -6115,6 +6172,7 @@
                             <option value="income">הכנסה</option>
                             <option value="expense">הוצאה</option>
                         </select>
+                        <input type="date" id="financeEntryDate" title="תאריך הרשומה">
                         <input type="text" id="financeEntryCategory" placeholder="סוג הוצאה / הכנסה">
                         <input type="number" id="financeEntryAmount" placeholder="סכום ₪" min="0" step="1">
                         <input type="text" id="financeEntryNote" placeholder="הערה (לא חובה)">
@@ -6135,7 +6193,10 @@
                                 <select id="financeFilterYear" onchange="onFinanceFilterChange()">
                                     <option value="all">כל השנים</option>
                                 </select>
+                                <input type="date" id="financeFilterDate" onchange="onFinanceFilterChange()" placeholder="תאריך" title="סינון לפי תאריך מסוים" style="padding: 8px 12px; border: 2px solid var(--border); border-radius: 10px; font-size: 13px;">
                                 <button onclick="exportFinanceToExcel()">ייצוא לאקסל</button>
+                                <button class="btn btn-secondary" onclick="runSequentialOp(()=>saveToGoogleSheets(), 'שמור לגליון')" title="שמירת חישוב לגליון">💾 שמור לגליון</button>
+                                <button class="btn btn-secondary" onclick="runSequentialOp(()=>loadFromGoogleSheets(), 'טען מהגליון')" title="טעינת חישוב מהגליון">📥 טען מהגליון</button>
                             </div>
                         </div>
                         <div class="finance-analytics-grid">
@@ -6152,6 +6213,40 @@
                     </div>
                     <div class="finance-controls-row">
                         <button class="btn btn-secondary" onclick="clearFinanceEntries()">אפס רשומות שנה</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- מדור הלוואות -->
+            <section class="content-section loans-section" id="loansSection">
+                <div class="home-finance-panel loans-panel">
+                    <h2>הלוואות – הת״ת מלווה</h2>
+                    <p class="loans-hint" style="color: var(--muted); margin-bottom: 16px;">ניהול הלוואות שהמוסד הלווה. הנתונים נשמרים לגליון.</p>
+                    <div class="loans-form" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-bottom: 20px;">
+                        <div>
+                            <label for="loanBorrower" style="display: block; font-size: 12px; margin-bottom: 4px;">לווה / תיאור</label>
+                            <input type="text" id="loanBorrower" placeholder="שם או תיאור" style="padding: 10px 14px; border: 2px solid var(--border); border-radius: 10px; min-width: 180px;">
+                        </div>
+                        <div>
+                            <label for="loanAmount" style="display: block; font-size: 12px; margin-bottom: 4px;">סכום הלוואה (₪)</label>
+                            <input type="number" id="loanAmount" placeholder="₪" min="1" step="1" style="padding: 10px 14px; border: 2px solid var(--border); border-radius: 10px; width: 120px;">
+                        </div>
+                        <div>
+                            <label for="loanDate" style="display: block; font-size: 12px; margin-bottom: 4px;">תאריך</label>
+                            <input type="date" id="loanDate" style="padding: 10px 14px; border: 2px solid var(--border); border-radius: 10px;">
+                        </div>
+                        <div>
+                            <label for="loanNote" style="display: block; font-size: 12px; margin-bottom: 4px;">הערה</label>
+                            <input type="text" id="loanNote" placeholder="הערה (לא חובה)" style="padding: 10px 14px; border: 2px solid var(--border); border-radius: 10px; min-width: 140px;">
+                        </div>
+                        <button class="btn" onclick="addLoan()">הוסף הלוואה</button>
+                    </div>
+                    <div style="margin-bottom: 12px; display: flex; gap: 8px;">
+                        <button class="btn btn-secondary" onclick="runSequentialOp(()=>saveToGoogleSheets(), 'שמור לגליון')">💾 שמור לגליון</button>
+                        <button class="btn btn-secondary" onclick="runSequentialOp(()=>loadFromGoogleSheets(), 'טען מהגליון')">📥 טען מהגליון</button>
+                    </div>
+                    <div class="loans-list" id="loansList">
+                        <!-- יוטען דינמית -->
                     </div>
                 </div>
             </section>
@@ -7496,9 +7591,18 @@
                                 <h3>חישוב לכל השנה</h3>
                                 <ul>
                                     <li>רישום הכנסות והוצאות</li>
-                                    <li>סינון לפי סוג או שנה</li>
-                                    <li>תצוגות גרפיות וניתוח כלכלי</li>
+                                    <li>סינון: רק הכנסות, רק הוצאות, תאריך מסוים, שנה</li>
+                                    <li>שמירה וטעינה מהגליון</li>
                                     <li>ייצוא דוחות לאקסל</li>
+                                </ul>
+                            </div>
+
+                            <div class="instructions-card">
+                                <h3>הלוואות</h3>
+                                <ul>
+                                    <li>ניהול הלוואות שהת״ת הלווה</li>
+                                    <li>סימון סכום שהוחזר, או "הכל חזר"</li>
+                                    <li>שמירה וטעינה מהגליון</li>
                                 </ul>
                             </div>
 
@@ -7912,9 +8016,11 @@
             entries: []
         };
         let groomGrants = [];
+        let loansState = []; // הלוואות שהת״ת הלווה: { id, borrower, amount, repaid, dateLent, note, fullyRepaid }
         let financeFilters = {
             type: 'all',
-            year: 'all'
+            year: 'all',
+            date: ''
         };
         let editingDonorId = null;
         let editingShouldFocus = false;
@@ -8097,6 +8203,7 @@
             { id: 'scouts', label: 'ניהול סיירות' },
             { id: 'toolkit', label: 'ארגז כלים לתתני״ק הצעיר' },
             { id: 'finance', label: 'חישוב לכל השנה' },
+            { id: 'loans', label: 'הלוואות' },
             { id: 'planning', label: 'תכנון קמפיין לשנים הבאות' },
             { id: 'groomGrant', label: 'מענק לחתנים' },
             { id: 'grants', label: 'קבלת מענקים למתרמים' },
@@ -12408,11 +12515,12 @@
                     }
                     
                     // טעינה אסינכרונית של כל הנתונים
-                    const [savedDonors, savedGroups, savedDefaultGoal, savedFinance, savedToolkitTips, savedScouts, savedGroomGrants, savedAddresses, savedLiveViewSettings] = await Promise.all([
+                    const [savedDonors, savedGroups, savedDefaultGoal, savedFinance, savedLoans, savedToolkitTips, savedScouts, savedGroomGrants, savedAddresses, savedLiveViewSettings] = await Promise.all([
                         storageGetItemSync('donors'),
                         storageGetItemSync('groups'),
                         storageGetItemSync('defaultDonorGoal'),
                         storageGetItemSync('financeState'),
+                        storageGetItemSync('loansState'),
                         storageGetItemSync('toolkitTips'),
                         storageGetItemSync('scoutsSchedule'),
                         storageGetItemSync('groomGrants'),
@@ -12467,6 +12575,16 @@
                         console.warn('שגיאה בטעינת חישובי שנה:', err);
                     }
                 }
+                if (savedLoans) {
+                    try {
+                        loansState = Array.isArray(savedLoans) ? savedLoans : [];
+                    } catch (err) {
+                        console.warn('שגיאה בטעינת הלוואות:', err);
+                        loansState = [];
+                    }
+                } else {
+                    loansState = [];
+                }
                 if (savedToolkitTips) {
                     try {
                             toolkitTips = normalizeToolkitTips(savedToolkitTips);
@@ -12515,6 +12633,7 @@
                 loadCampaignPlanning();
                 if (typeof loadSemifinalSettings === 'function') loadSemifinalSettings();
                 renderToolkitTips();
+                if (typeof renderLoans === 'function') renderLoans();
                 updateScoutsStats();
                 renderGroomGrantList();
                 
@@ -12542,6 +12661,7 @@
                     storageSetItem('groups', groups);
                     storageSetItem('defaultDonorGoal', defaultDonorGoal);
                     storageSetItem('financeState', financeState);
+                    storageSetItem('loansState', loansState);
                     storageSetItem('scoutsSchedule', scoutsSchedule);
                     storageSetItem('groomGrants', groomGrants);
                     storageSetItem('addresses', addresses);
@@ -13767,6 +13887,11 @@
                     }, 100);
                 } else if (section === 'finance') {
                     updateFinanceUI();
+                    setTimeout(() => {
+                        initLandingCards();
+                    }, 100);
+                } else if (section === 'loans') {
+                    if (typeof renderLoans === 'function') renderLoans();
                     setTimeout(() => {
                         initLandingCards();
                     }, 100);
@@ -15355,7 +15480,7 @@
         });
         window.addEventListener('storage', async (event) => {
             if (!event || event.storageArea !== localStorage) return;
-            if (!['donors', 'groups', 'defaultDonorGoal', 'financeState', 'toolkitTips', 'scoutsSchedule', 'groomGrants'].includes(event.key)) return;
+            if (!['donors', 'groups', 'defaultDonorGoal', 'financeState', 'loansState', 'toolkitTips', 'scoutsSchedule', 'groomGrants'].includes(event.key)) return;
             console.log('🔄 שינוי ב-localStorage (' + event.key + ') – מרענן מ-localStorage בלבד');
             try { reloadFromLocalStorageOnly(); } catch (err) { console.warn('שגיאה ברענון:', err); }
         });
@@ -17291,6 +17416,10 @@
                     const year = getEntryYear(entry);
                     if (year !== financeFilters.year) return false;
                 }
+                if (financeFilters.date) {
+                    const entryDate = entry.date ? new Date(entry.date).toISOString().split('T')[0] : '';
+                    if (entryDate !== financeFilters.date) return false;
+                }
                 return true;
             });
         }
@@ -17433,12 +17562,12 @@
                         <h4>סכום נוכחי בקופה</h4>
                         <span>${formatCurrency(financeState.currentBalance)}</span>
                     </div>
-                    <div class="finance-summary-card">
-                        <h4>סה"כ הכנסות השנה</h4>
+                    <div class="finance-summary-card income-card">
+                        <h4>סה"כ הכנסות</h4>
                         <span>${formatCurrency(totalIncome)}</span>
                     </div>
-                    <div class="finance-summary-card">
-                        <h4>סה"כ הוצאות השנה</h4>
+                    <div class="finance-summary-card expense-card">
+                        <h4>סה"כ הוצאות</h4>
                         <span>${formatCurrency(totalExpenses)}</span>
                     </div>
                     <div class="finance-summary-card">
@@ -17460,6 +17589,11 @@
                     .filter(Boolean)))
                     .sort((a, b) => parseInt(b, 10) - parseInt(a, 10));
                 populateFinanceFilterYearOptions(yearSelect, years);
+            }
+
+            const dateFilterInput = document.getElementById('financeFilterDate');
+            if (dateFilterInput) {
+                dateFilterInput.value = financeFilters.date || '';
             }
 
             const filteredEntries = applyFinanceFilters(financeState.entries);
@@ -17519,6 +17653,7 @@
             }
             financeState.currentBalance = Math.round(value);
             saveData();
+            if (typeof saveToGoogleSheets === 'function') saveToGoogleSheets().catch(e => console.warn('שמירה לגליון:', e));
             updateFinanceUI();
             showNotification('סכום הקופה עודכן');
         }
@@ -17528,6 +17663,7 @@
             const categoryInput = document.getElementById('financeEntryCategory');
             const amountInput = document.getElementById('financeEntryAmount');
             const noteInput = document.getElementById('financeEntryNote');
+            const dateInput = document.getElementById('financeEntryDate');
             if (!typeSelect || !categoryInput || !amountInput) return;
 
             const amount = Math.abs(parseFloat(amountInput.value));
@@ -17535,6 +17671,7 @@
                 showNotification('אנא הזן סכום חיובי לרשומה');
                 return;
             }
+            const dateVal = (dateInput && dateInput.value) ? dateInput.value + 'T12:00:00.000Z' : new Date().toISOString();
 
             const entry = {
                 id: Date.now(),
@@ -17542,22 +17679,25 @@
                 category: categoryInput.value.trim() || 'ללא קטגוריה',
                 amount: Math.round(amount),
                 note: noteInput.value.trim(),
-                date: new Date().toISOString()
+                date: dateVal
             };
 
             financeState.entries.unshift(entry);
             categoryInput.value = '';
             amountInput.value = '';
             noteInput.value = '';
+            if (dateInput) dateInput.value = '';
             saveData();
+            if (typeof saveToGoogleSheets === 'function') saveToGoogleSheets().catch(e => console.warn('שמירה לגליון:', e));
             updateFinanceUI();
-            showNotification('רשומה נוספה');
+            showNotification('רשומה נוספה ונשמרה לגליון');
         }
 
         function removeFinanceEntry(entryId) {
             ensureFinanceDefaults();
             financeState.entries = financeState.entries.filter(entry => entry.id !== entryId);
             saveData();
+            if (typeof saveToGoogleSheets === 'function') saveToGoogleSheets().catch(e => console.warn('שמירה לגליון:', e));
             updateFinanceUI();
             showNotification('רשומה נמחקה');
         }
@@ -17571,6 +17711,7 @@
             if (confirm('האם למחוק את כל רשומות השנה?')) {
                 financeState.entries = [];
                 saveData();
+                if (typeof saveToGoogleSheets === 'function') saveToGoogleSheets().catch(e => console.warn('שמירה לגליון:', e));
                 updateFinanceUI();
                 showNotification('כל רשומות השנה נמחקו');
             }
@@ -17579,12 +17720,10 @@
         function onFinanceFilterChange() {
             const typeSelect = document.getElementById('financeFilterType');
             const yearSelect = document.getElementById('financeFilterYear');
-            if (typeSelect) {
-                financeFilters.type = typeSelect.value;
-            }
-            if (yearSelect) {
-                financeFilters.year = yearSelect.value;
-            }
+            const dateInput = document.getElementById('financeFilterDate');
+            if (typeSelect) financeFilters.type = typeSelect.value;
+            if (yearSelect) financeFilters.year = yearSelect.value;
+            if (dateInput) financeFilters.date = (dateInput.value || '').trim();
             updateFinanceUI();
         }
         function exportFinanceToExcel() {
@@ -17616,6 +17755,104 @@
             XLSX.writeFile(workbook, 'finance_export.xlsx');
             showNotification('קובץ אקסל נוצר בהצלחה');
         }
+
+        function addLoan() {
+            const borrowerInput = document.getElementById('loanBorrower');
+            const amountInput = document.getElementById('loanAmount');
+            const dateInput = document.getElementById('loanDate');
+            const noteInput = document.getElementById('loanNote');
+            if (!borrowerInput || !amountInput) return;
+            const borrower = (borrowerInput.value || '').trim();
+            const amount = Math.abs(parseFloat(amountInput.value) || 0);
+            if (!borrower) {
+                showNotification('אנא הזן שם לווה או תיאור');
+                return;
+            }
+            if (amount <= 0) {
+                showNotification('אנא הזן סכום הלוואה חיובי');
+                return;
+            }
+            const loan = {
+                id: Date.now(),
+                borrower,
+                amount: Math.round(amount),
+                repaid: 0,
+                dateLent: (dateInput && dateInput.value) ? dateInput.value : new Date().toISOString().split('T')[0],
+                note: (noteInput && noteInput.value) ? noteInput.value.trim() : '',
+                fullyRepaid: false
+            };
+            loansState.push(loan);
+            borrowerInput.value = '';
+            amountInput.value = '';
+            if (dateInput) dateInput.value = '';
+            if (noteInput) noteInput.value = '';
+            saveData();
+            if (typeof saveToGoogleSheets === 'function') saveToGoogleSheets().catch(e => console.warn('שמירה לגליון:', e));
+            renderLoans();
+            showNotification('ההלוואה נוספה ונשמרה לגליון');
+        }
+
+        function updateLoanRepaid(loanId, repaidAmount) {
+            const loan = loansState.find(l => l.id === loanId);
+            if (!loan) return;
+            const val = Math.max(0, Math.round(parseFloat(repaidAmount) || 0));
+            loan.repaid = Math.min(val, loan.amount || 0);
+            loan.fullyRepaid = loan.repaid >= (loan.amount || 0);
+            saveData();
+            if (typeof saveToGoogleSheets === 'function') saveToGoogleSheets().catch(e => console.warn('שמירה לגליון:', e));
+            renderLoans();
+        }
+
+        function markLoanFullyRepaid(loanId) {
+            const loan = loansState.find(l => l.id === loanId);
+            if (!loan) return;
+            loan.repaid = loan.amount || 0;
+            loan.fullyRepaid = true;
+            saveData();
+            if (typeof saveToGoogleSheets === 'function') saveToGoogleSheets().catch(e => console.warn('שמירה לגליון:', e));
+            renderLoans();
+            showNotification('ההלוואה סומנה כמוחזרת במלואה');
+        }
+
+        function removeLoan(loanId) {
+            loansState = loansState.filter(l => l.id !== loanId);
+            saveData();
+            if (typeof saveToGoogleSheets === 'function') saveToGoogleSheets().catch(e => console.warn('שמירה לגליון:', e));
+            renderLoans();
+            showNotification('ההלוואה נמחקה');
+        }
+
+        function renderLoans() {
+            const list = document.getElementById('loansList');
+            if (!list) return;
+            if (!loansState || loansState.length === 0) {
+                list.innerHTML = '<div style="text-align: center; padding: 24px; color: var(--muted);">אין הלוואות להצגה. הוסף הלוואה חדשה.</div>';
+                return;
+            }
+            list.innerHTML = loansState.map(loan => {
+                const amount = loan.amount || 0;
+                const repaid = loan.repaid || 0;
+                const remaining = Math.max(0, amount - repaid);
+                const isFullyRepaid = loan.fullyRepaid || repaid >= amount;
+                const dateStr = loan.dateLent ? new Date(loan.dateLent + 'T12:00:00').toLocaleDateString('he-IL') : '';
+                return `
+                    <div class="loan-item ${isFullyRepaid ? 'fully-repaid' : ''}">
+                        <div class="loan-borrower">${escapeHtml(loan.borrower)}${loan.note ? ` – ${escapeHtml(loan.note)}` : ''}</div>
+                        <div>סכום: <span class="loan-amount">₪${(amount || 0).toLocaleString()}</span> ${dateStr ? ` | ${dateStr}` : ''}</div>
+                        <div>החזירו: <span class="loan-repaid">₪${repaid.toLocaleString()}</span>
+                            <input type="number" class="loan-repaid-input" value="${repaid}" min="0" max="${amount}" step="1"
+                                onchange="updateLoanRepaid(${loan.id}, this.value)" placeholder="סכום"> ₪
+                        </div>
+                        <div>נותר: <span class="loan-remaining">₪${remaining.toLocaleString()}</span></div>
+                        <div class="loan-actions">
+                            ${!isFullyRepaid ? `<button class="btn btn-small btn-primary" onclick="markLoanFullyRepaid(${loan.id})">✓ הכל חזר</button>` : '<span style="color:#16a34a;font-weight:700;">✓ הוחזר במלואו</span>'}
+                            <button class="btn btn-small btn-secondary" onclick="if(confirm('למחוק הלוואה?')) removeLoan(${loan.id})">מחק</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
         async function addDonorPayment(donorId) {
             ensureDonorsNormalized();
             const donor = donors.find(d => d.id === donorId);
@@ -21409,6 +21646,11 @@
                         Object.assign(financeState, s.financeState);
                         try { localStorage.setItem('financeState', JSON.stringify(financeState)); storageSetItem('financeState', financeState); } catch (e) {}
                     }
+                    if (s.loansState != null && typeof loansState !== 'undefined') {
+                        loansState = Array.isArray(s.loansState) ? s.loansState : [];
+                        try { localStorage.setItem('loansState', JSON.stringify(loansState)); storageSetItem('loansState', loansState); } catch (e) {}
+                        if (typeof renderLoans === 'function') renderLoans();
+                    }
                 }
                 
                 // שמירה מקומית ועדכון תצוגה - immediate=true לעדכון מיידי בתצוגת לייב
@@ -21638,6 +21880,7 @@
                         matchingGoal: typeof matchingGoal !== 'undefined' ? matchingGoal : null,
                         appSettings: { matchingGoal: typeof matchingGoal !== 'undefined' ? matchingGoal : null, defaultGroupGoal: typeof defaultGroupGoal !== 'undefined' ? defaultGroupGoal : null, defaultDonorGoal: typeof defaultDonorGoal !== 'undefined' ? defaultDonorGoal : null, totalRecruiters: typeof totalRecruiters !== 'undefined' ? totalRecruiters : null },
                         toolkitTips: typeof toolkitTips !== 'undefined' ? toolkitTips : null,
+                        loansState: typeof loansState !== 'undefined' ? loansState : null,
                         scoutsSchedule: typeof scoutsSchedule !== 'undefined' ? scoutsSchedule : null,
                         groomGrants: typeof groomGrants !== 'undefined' ? groomGrants : null,
                         financeState: typeof financeState !== 'undefined' ? financeState : null
@@ -21718,6 +21961,7 @@
                         matchingGoal: typeof matchingGoal !== 'undefined' ? matchingGoal : null,
                         appSettings: { matchingGoal: typeof matchingGoal !== 'undefined' ? matchingGoal : null, defaultGroupGoal: typeof defaultGroupGoal !== 'undefined' ? defaultGroupGoal : null, defaultDonorGoal: typeof defaultDonorGoal !== 'undefined' ? defaultDonorGoal : null, totalRecruiters: typeof totalRecruiters !== 'undefined' ? totalRecruiters : null },
                         toolkitTips: typeof toolkitTips !== 'undefined' ? toolkitTips : null,
+                        loansState: typeof loansState !== 'undefined' ? loansState : null,
                         scoutsSchedule: typeof scoutsSchedule !== 'undefined' ? scoutsSchedule : null,
                         groomGrants: typeof groomGrants !== 'undefined' ? groomGrants : null,
                         financeState: typeof financeState !== 'undefined' ? financeState : null
