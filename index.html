@@ -15715,8 +15715,8 @@
             if (!skipLiveView) {
                 if (typeof updateLiveView === 'function') updateLiveView(true);
                 if (typeof updateLeadersList === 'function') updateLeadersList();
+                if (typeof updateLiveTargets === 'function') updateLiveTargets();
             }
-            if (typeof updateLiveTargets === 'function') updateLiveTargets();
             if (typeof renderScoutsTeams === 'function') renderScoutsTeams();
             if (typeof updateScoutsStats === 'function') updateScoutsStats();
             if (typeof renderToolkitTips === 'function') renderToolkitTips();
@@ -16263,13 +16263,19 @@
                 return;
             }
             // בתצוגת לייב – דילוג על עדכוני רקע תכופים (מניעת רעידות במסך)
+            // במצב עדכון מתוזמן בלבד – לא מתזמנים עדכון מושהֶה (מונע קפיצות)
             if (typeof isLiveViewActive === 'function' && isLiveViewActive() && !immediate) {
+                if (typeof isLiveViewScheduledUpdatesOnly === 'function' && isLiveViewScheduledUpdatesOnly()) {
+                    isUpdatingLiveView = false;
+                    return; // עדכון רק בעדכון המתוזמן – לא לפני ולא אחרי
+                }
                 const now = Date.now();
                 if (lastLiveViewUpdateWhenActive && (now - lastLiveViewUpdateWhenActive) < LIVE_VIEW_BACKGROUND_UPDATE_INTERVAL_MS) {
                     if (!updateLiveViewScheduledWhenActive) {
                         const delay = LIVE_VIEW_BACKGROUND_UPDATE_INTERVAL_MS - (now - lastLiveViewUpdateWhenActive);
                         updateLiveViewScheduledWhenActive = setTimeout(() => {
                             updateLiveViewScheduledWhenActive = null;
+                            if (typeof isLiveViewScheduledUpdatesOnly === 'function' && isLiveViewScheduledUpdatesOnly()) return; // עדכון מתוזמן בלבד
                             updateLiveView(false);
                             if (typeof updateLeadersList === 'function') updateLeadersList();
                         }, delay);
