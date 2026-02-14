@@ -1725,7 +1725,7 @@
             flex-wrap: wrap;
         }
 
-        /* וילון ניווט גלילה – מדור ניהול */
+        /* וילון ניווט גלילה – מדור ניהול (ממוקם בזרימה, לא צף) */
         .management-nav-curtain {
             flex-shrink: 0;
             min-height: 52px;
@@ -1733,16 +1733,13 @@
             border-radius: 16px;
             background: linear-gradient(135deg, rgba(255,251,240,0.98) 0%, rgba(255,248,230,0.95) 50%, rgba(255,250,235,0.98) 100%);
             border: 2px solid rgba(212,175,55,0.45);
-            box-shadow: 0 4px 20px rgba(212,175,55,0.15), inset 0 1px 0 rgba(255,255,255,0.9);
+            box-shadow: 0 2px 8px rgba(212,175,55,0.1);
             overflow-x: auto;
             overflow-y: hidden;
             padding: 10px 8px;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: thin;
             scrollbar-color: rgba(212,175,55,0.5) transparent;
-            position: sticky;
-            top: 0;
-            z-index: 100;
         }
         .management-nav-curtain::-webkit-scrollbar {
             height: 6px;
@@ -6411,6 +6408,7 @@
                     <div class="management-nav-curtain-inner">
                         <button class="management-tab active" data-tab="donors">ניהול מתרימים</button>
                         <button class="management-tab" data-tab="manualDonation">הוספת תרומה ידנית מהחפ״ק</button>
+                        <button class="management-tab" data-tab="pairs">ניהול זוגות</button>
                         <button class="management-tab" data-tab="groups">ניהול קבוצות</button>
                         <button class="management-tab" data-tab="liveview">הגדרות תצוגת לייב</button>
                         <button class="management-tab" data-tab="calculator">מחשבון</button>
@@ -6448,6 +6446,43 @@
                                 <button class="operator" onclick="managementCalcCalculate()">=</button>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- ניהול זוגות – הוספת תרומה לזוג מתרימים (מחצית לכל אחד) -->
+                <div class="management-content" id="pairsContent">
+                    <div class="donors-management">
+                        <p style="font-size: 14px; color: var(--muted); margin-bottom: 20px;">בשבוע שלפני פורים מתרימים יוצאים בזוגות לאסוף בכתובות. הזן את הזוג ואת סה״כ הסכום שנאסף – התוכנה תחלק אוטומטית מחצית לכל מתרים.</p>
+                        <div class="pairs-form" style="background: linear-gradient(135deg, #fffbf0 0%, #fff8e6 100%); border: 2px solid var(--primary-gold); border-radius: 14px; padding: 24px; margin-bottom: 24px;">
+                            <div style="display: grid; gap: 16px;">
+                                <div>
+                                    <label class="manual-search-label">מתרים ראשון – חיפוש חכם</label>
+                                    <div class="donors-search-input-wrapper manual-donor-search-with-autocomplete" style="position: relative;">
+                                        <input type="text" id="pairsDonor1Input" class="donors-search-input manual-donor-search-input" placeholder="הקלד חלק משם..." autocomplete="off">
+                                        <div id="pairsDonor1Autocomplete" class="manual-donor-autocomplete-list" style="display: none;"></div>
+                                    </div>
+                                    <div id="pairsDonor1Selected" style="margin-top: 8px; font-weight: 600; color: var(--primary-gold); min-height: 20px;"></div>
+                                </div>
+                                <div>
+                                    <label class="manual-search-label">מתרים שני – חיפוש חכם</label>
+                                    <div class="donors-search-input-wrapper manual-donor-search-with-autocomplete" style="position: relative;">
+                                        <input type="text" id="pairsDonor2Input" class="donors-search-input manual-donor-search-input" placeholder="הקלד חלק משם..." autocomplete="off">
+                                        <div id="pairsDonor2Autocomplete" class="manual-donor-autocomplete-list" style="display: none;"></div>
+                                    </div>
+                                    <div id="pairsDonor2Selected" style="margin-top: 8px; font-weight: 600; color: var(--primary-gold); min-height: 20px;"></div>
+                                </div>
+                                <div>
+                                    <label for="pairsAmountInput" class="manual-search-label">סה״כ סכום שנאסף (₪)</label>
+                                    <input type="number" id="pairsAmountInput" placeholder="למשל: 1800" min="1" step="1" style="padding: 14px 18px; font-size: 18px; border: 2px solid var(--border); border-radius: 10px; width: 100%; max-width: 200px;">
+                                    <p id="pairsSplitPreview" style="margin-top: 8px; font-size: 13px; color: var(--muted);"></p>
+                                </div>
+                                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                                    <button type="button" class="btn btn-primary" id="pairsConfirmBtn" onclick="confirmPairsDonation()" disabled>אשר והוסף תרומה לזוג</button>
+                                    <button type="button" class="btn btn-secondary" onclick="clearPairsSelection()">נקה בחירה</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="pairsRecentList" style="font-size: 13px; color: var(--muted);"></div>
                     </div>
                 </div>
 
@@ -6497,15 +6532,6 @@
                 <!-- הוספת תרומה באופן ידני מהחפ״ק -->
                 <div class="management-content" id="manualDonationContent">
                     <div class="donors-management">
-                        <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <label for="manualDonationYearSelect" style="font-weight: 600; color: var(--brown-dark);">שנה:</label>
-                                <select id="manualDonationYearSelect" onchange="updateManualDonorsList()" style="padding: 10px 16px; border: 2px solid var(--border); border-radius: 8px; font-size: 15px; min-width: 100px;">
-                                    <!-- יוטען דינמית -->
-                                </select>
-                            </div>
-                            <span style="font-size: 13px; color: var(--muted);">מדור זה מאפשר הוספת תרומות באופן ידני שנאספו מהחפ״ק, לפי שנה.</span>
-                        </div>
                         <div class="donors-search-bar">
                             <label for="manualDonorSearchInput" class="manual-search-label">🔍 חיפוש חכם – הקלד חלק משם והצעות יופיעו אוטומטית</label>
                             <div class="donors-search-input-wrapper manual-donor-search-with-autocomplete">
@@ -8135,6 +8161,7 @@
             { id: 'management-groups', label: 'ניהול → ניהול קבוצות' },
             { id: 'management-donors', label: 'ניהול → ניהול מתרימים' },
             { id: 'management-manualDonation', label: 'ניהול → הוספת תרומה באופן ידני מהחפ״ק' },
+            { id: 'management-pairs', label: 'ניהול → ניהול זוגות' },
             { id: 'management-liveview', label: 'ניהול → הגדרות תצוגת לייב' },
             { id: 'management-sync', label: 'ניהול → עדכונים' },
             { id: 'management-reset', label: 'ניהול → אפשרויות איפוס' },
@@ -8610,7 +8637,16 @@
                     renderGroomGrantList();
                     saveData();
                     notifyDataChanged();
-                    showNotification('החתן הוסר מרשימת המענקים');
+                    if (typeof saveToGoogleSheets === 'function') {
+                        saveToGoogleSheets().then(() => {
+                            showNotification('החתן נמחק – כולל מהגליון');
+                        }).catch(e => {
+                            console.warn('שמירה לגליון:', e);
+                            showNotification('החתן נמחק מקומית (שמירה לגליון נכשלה)');
+                        });
+                    } else {
+                        showNotification('החתן הוסר מרשימת המענקים');
+                    }
                 }
                 return;
             }
@@ -13651,19 +13687,6 @@
             if (wrapper && !wrapper.contains(e.target)) hideManualDonorAutocomplete();
         });
 
-        function initManualDonationYearSelect() {
-            const sel = document.getElementById('manualDonationYearSelect');
-            if (!sel || sel.options.length > 0) return;
-            const currentYear = new Date().getFullYear();
-            for (let y = currentYear + 2; y >= currentYear - 5; y--) {
-                const opt = document.createElement('option');
-                opt.value = y;
-                opt.textContent = String(y);
-                if (y === currentYear) opt.selected = true;
-                sel.appendChild(opt);
-            }
-        }
-
         function updateManualDonorsList() {
             const container = document.getElementById('manualDonorsListContainer');
             if (!container) return;
@@ -13723,6 +13746,213 @@
                     </div>
                 `;
             }).join('');
+        }
+
+        /* ========== ניהול זוגות ========== */
+        let pairsDonor1 = null;
+        let pairsDonor2 = null;
+        let pairsRecentDonations = [];
+
+        function initPairsSection() {
+            clearPairsSelection();
+            const amtInput = document.getElementById('pairsAmountInput');
+            if (amtInput) {
+                amtInput.addEventListener('input', updatePairsUI);
+                amtInput.addEventListener('change', updatePairsUI);
+            }
+            setupPairsAutocomplete('pairsDonor1Input', 'pairsDonor1Autocomplete', 'pairsDonor1Selected', 1);
+            setupPairsAutocomplete('pairsDonor2Input', 'pairsDonor2Autocomplete', 'pairsDonor2Selected', 2);
+            updatePairsUI();
+        }
+
+        function setupPairsAutocomplete(inputId, listId, selectedId, slot) {
+            const input = document.getElementById(inputId);
+            const list = document.getElementById(listId);
+            const selectedEl = document.getElementById(selectedId);
+            if (!input || !list) return;
+            input.addEventListener('input', () => {
+                const q = (input.value || '').trim();
+                if (!q || q.length < 2) {
+                    list.style.display = 'none';
+                    list.innerHTML = '';
+                    return;
+                }
+                const tokens = tokenizeSearchInput(q);
+                let matches = donors.filter(d => donorMatchesSearch(d, tokens));
+                matches = [...matches].sort((a, b) => {
+                    const na = (a.displayName || a.name || '').trim();
+                    const nb = (b.displayName || b.name || '').trim();
+                    return na.localeCompare(nb, 'he');
+                }).slice(0, 12);
+                if (matches.length === 0) {
+                    list.style.display = 'none';
+                    list.innerHTML = '';
+                    return;
+                }
+                list.innerHTML = matches.map(d => `<div class="manual-donor-autocomplete-item" data-donor-id="${d.id}">${escapeHtml(d.displayName || d.name || '')}</div>`);
+                list.style.display = 'block';
+                list.querySelectorAll('.manual-donor-autocomplete-item').forEach((el, idx) => {
+                    el.addEventListener('click', () => {
+                        selectPairsDonor(slot, matches[idx]);
+                        input.value = '';
+                        list.style.display = 'none';
+                        list.innerHTML = '';
+                    });
+                });
+            });
+            input.addEventListener('focus', () => {
+                if ((input.value || '').trim().length >= 2) input.dispatchEvent(new Event('input'));
+            });
+            document.addEventListener('click', (e) => {
+                const wrapper = input.closest('.manual-donor-search-with-autocomplete');
+                if (wrapper && !wrapper.contains(e.target)) {
+                    list.style.display = 'none';
+                }
+            });
+        }
+
+        function selectPairsDonor(slot, donor) {
+            if (slot === 1) {
+                pairsDonor1 = donor;
+                if (pairsDonor2 && pairsDonor2.id === donor.id) pairsDonor2 = null;
+                const el = document.getElementById('pairsDonor1Selected');
+                if (el) el.textContent = '✓ ' + (donor.displayName || donor.name || '');
+                const el2 = document.getElementById('pairsDonor2Selected');
+                if (el2 && pairsDonor2 === null) el2.textContent = '';
+            } else {
+                if (pairsDonor1 && pairsDonor1.id === donor.id) {
+                    showNotification('נבחר כבר כמתרים ראשון. בחר מתרים אחר.');
+                    return;
+                }
+                pairsDonor2 = donor;
+                const el = document.getElementById('pairsDonor2Selected');
+                if (el) el.textContent = '✓ ' + (donor.displayName || donor.name || '');
+            }
+            updatePairsUI();
+        }
+
+        function updatePairsSplitPreview() {
+            const amtInput = document.getElementById('pairsAmountInput');
+            const preview = document.getElementById('pairsSplitPreview');
+            if (!preview) return;
+            const val = parseFloat((amtInput && amtInput.value) || 0);
+            if (!Number.isFinite(val) || val <= 0) {
+                preview.textContent = '';
+                return;
+            }
+            const half = Math.floor(val / 2);
+            preview.textContent = `ייווסף ${half.toLocaleString()} ₪ לכל מתרים (סה״כ ${val.toLocaleString()} ₪)`;
+        }
+
+        function updatePairsUI() {
+            const btn = document.getElementById('pairsConfirmBtn');
+            const amtInput = document.getElementById('pairsAmountInput');
+            if (btn) {
+                const amt = parseFloat((amtInput && amtInput.value) || 0);
+                const hasPair = pairsDonor1 && pairsDonor2 && pairsDonor1.id !== pairsDonor2.id;
+                const validAmount = Number.isFinite(amt) && amt >= 1;
+                btn.disabled = !(hasPair && validAmount);
+            }
+            updatePairsSplitPreview();
+        }
+
+        function clearPairsSelection() {
+            pairsDonor1 = null;
+            pairsDonor2 = null;
+            const el1 = document.getElementById('pairsDonor1Selected');
+            const el2 = document.getElementById('pairsDonor2Selected');
+            const inp1 = document.getElementById('pairsDonor1Input');
+            const inp2 = document.getElementById('pairsDonor2Input');
+            const amt = document.getElementById('pairsAmountInput');
+            if (el1) el1.textContent = '';
+            if (el2) el2.textContent = '';
+            if (inp1) inp1.value = '';
+            if (inp2) inp2.value = '';
+            if (amt) amt.value = '';
+            updatePairsUI();
+        }
+
+        async function confirmPairsDonation() {
+            if (!pairsDonor1 || !pairsDonor2 || pairsDonor1.id === pairsDonor2.id) {
+                showNotification('בחר שני מתרימים שונים');
+                return;
+            }
+            const amtInput = document.getElementById('pairsAmountInput');
+            const total = parseFloat((amtInput && amtInput.value) || 0);
+            if (!Number.isFinite(total) || total < 1) {
+                showNotification('הזן סכום תקין');
+                return;
+            }
+            const half = Math.floor(total / 2);
+            const name1 = getDonorDisplayName(pairsDonor1);
+            const name2 = getDonorDisplayName(pairsDonor2);
+            const msg = `להוסיף ${half.toLocaleString()} ₪ לכל אחד מהמתרימים:\n• ${name1}\n• ${name2}\n\nסה״כ תרומה: ${total.toLocaleString()} ₪\n\nלאשר?`;
+            if (!confirm(msg)) return;
+
+            ensureDonorsNormalized();
+            const paymentDate = new Date();
+            const note = 'תרומה מזוג (ניהול זוגות)';
+
+            [pairsDonor1, pairsDonor2].forEach(donor => {
+                const oldAmount = donor.amount || 0;
+                const newAmount = Math.max(0, oldAmount + half);
+                donor.amount = newAmount;
+                addAmountToDailyBreakdown(donor, half, paymentDate);
+                recordDonorHistory(donor, half, donor.amount, 'pairs-donation', note, paymentDate);
+                recentlyUpdatedDonors.set(donor.id, Date.now() + 120000);
+            });
+
+            ensureDonorsNormalized();
+            saveData();
+
+            const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
+            if (url && typeof saveToGoogleSheets === 'function') {
+                try {
+                    await saveToGoogleSheets();
+                } catch (e) {
+                    console.warn('שמירה לגליון:', e);
+                }
+            }
+            [pairsDonor1.id, pairsDonor2.id].forEach(id => setTimeout(() => recentlyUpdatedDonors.delete(id), 120000));
+
+            NEDARIM_CONFIG.totalDonatedFromAPI = donors.reduce((s, d) => s + Math.max(0, d.amount || 0), 0);
+            NEDARIM_CONFIG.apiDataLoaded = true;
+            updateDonorsList();
+            updateGroupsDisplay();
+            updateHomeStats();
+            if (typeof updateLiveView === 'function') updateLiveView(true);
+            if (typeof updateLeadersList === 'function') updateLeadersList();
+            if (typeof updateLiveTargets === 'function') updateLiveTargets();
+
+            pairsRecentDonations.unshift({
+                names: [name1, name2],
+                amount: half,
+                total: total,
+                date: paymentDate
+            });
+            if (pairsRecentDonations.length > 5) pairsRecentDonations.pop();
+
+            const recentEl = document.getElementById('pairsRecentList');
+            if (recentEl) {
+                recentEl.innerHTML = pairsRecentDonations.length
+                    ? 'תרומות אחרונות: ' + pairsRecentDonations.map(r =>
+                        `${r.names.join(' + ')}: ${r.amount.toLocaleString()} ₪ לכל אחד (${r.date.toLocaleDateString('he-IL')})`
+                    ).join(' | ')
+                    : '';
+            }
+
+            logHistory({
+                actionType: 'payment',
+                entityType: 'donor',
+                entityId: pairsDonor1.id,
+                entityName: `${name1} + ${name2}`,
+                details: `תרומת זוג: ${half.toLocaleString()} ₪ לכל אחד`,
+                amount: total,
+                source: 'pairs'
+            });
+
+            clearPairsSelection();
+            showNotification(`נוספו ${half.toLocaleString()} ₪ ל-${name1} ו-${name2}`);
         }
 
         function syncDefaultDonorGoalInput() {
@@ -13977,7 +14207,7 @@
             if (!isSectionProtected(sectionId)) return;
             if (requestSectionAccess(sectionId)) return;
             // המשתמש ביטל – מעבר לטאב ראשון לא-מוגן
-            const tabOrder = ['groups', 'donors', 'manualDonation', 'liveview', 'calculator', 'sync', 'history', 'reset', 'password'];
+            const tabOrder = ['groups', 'donors', 'manualDonation', 'pairs', 'liveview', 'calculator', 'sync', 'history', 'reset', 'password'];
             for (const t of tabOrder) {
                 const sid = 'management-' + t;
                 if (!isSectionProtected(sid)) {
@@ -14066,8 +14296,9 @@
                     updateDonorsList();
                     updateGroupSelect();
                 } else if (tabName === 'manualDonation') {
-                    initManualDonationYearSelect();
                     updateManualDonorsList();
+                } else if (tabName === 'pairs') {
+                    initPairsSection();
                 } else if (tabName === 'liveview') {
                     loadLiveViewSettings();
                 } else if (tabName === 'sync') {
@@ -14696,7 +14927,16 @@
                 const message = groupDonors.length > 0 
                     ? `הקבוצה "${groupName}" ו-${groupDonors.length} מתרימים נמחקו`
                     : `הקבוצה "${groupName}" נמחקה`;
-                showNotification(message);
+                if (typeof saveToGoogleSheets === 'function') {
+                    saveToGoogleSheets().then(() => {
+                        showNotification(message + ' – כולל מהגליון');
+                    }).catch(e => {
+                        console.warn('שמירה לגליון:', e);
+                        showNotification(message + ' (שמירה לגליון נכשלה)');
+                    });
+                } else {
+                    showNotification(message);
+                }
             }
         }
         // הוספת קבוצה חדשה
@@ -15448,10 +15688,22 @@
                 updateLeadersList();
                 updateLiveTargets();
                 
-                const message = isFromNedarimPlus
-                    ? `מתרים "${donorName}" נמחק מהמערכת המקומית. להחזרה, לחץ על "טען מתרימים מנדרים פלוס".`
-                    : `מתרים "${donorName}" נמחק`;
-                showNotification(message);
+                if (typeof saveToGoogleSheets === 'function') {
+                    saveToGoogleSheets().then(() => {
+                        showNotification(isFromNedarimPlus
+                            ? `מתרים "${donorName}" נמחק – כולל מהגליון`
+                            : `מתרים "${donorName}" נמחק – כולל מהגליון`);
+                    }).catch(e => {
+                        console.warn('שמירה לגליון:', e);
+                        showNotification(isFromNedarimPlus
+                            ? `מתרים "${donorName}" נמחק מקומית (שמירה לגליון נכשלה)`
+                            : `מתרים "${donorName}" נמחק מקומית (שמירה לגליון נכשלה)`);
+                    });
+                } else {
+                    showNotification(isFromNedarimPlus
+                        ? `מתרים "${donorName}" נמחק מהמערכת המקומית. להחזרה, לחץ על "טען מתרימים מנדרים פלוס".`
+                        : `מתרים "${donorName}" נמחק`);
+                }
             }
         }
 
