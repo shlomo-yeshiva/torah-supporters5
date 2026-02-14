@@ -1727,17 +1727,22 @@
 
         /* וילון ניווט גלילה – מדור ניהול */
         .management-nav-curtain {
-            margin-bottom: 28px;
+            flex-shrink: 0;
+            min-height: 52px;
+            margin-bottom: 24px;
             border-radius: 16px;
             background: linear-gradient(135deg, rgba(255,251,240,0.98) 0%, rgba(255,248,230,0.95) 50%, rgba(255,250,235,0.98) 100%);
-            border: 1px solid rgba(212,175,55,0.35);
-            box-shadow: 0 4px 20px rgba(212,175,55,0.12), inset 0 1px 0 rgba(255,255,255,0.8);
+            border: 2px solid rgba(212,175,55,0.45);
+            box-shadow: 0 4px 20px rgba(212,175,55,0.15), inset 0 1px 0 rgba(255,255,255,0.9);
             overflow-x: auto;
             overflow-y: hidden;
-            padding: 6px;
+            padding: 10px 8px;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: thin;
-            scrollbar-color: rgba(212,175,55,0.4) transparent;
+            scrollbar-color: rgba(212,175,55,0.5) transparent;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         .management-nav-curtain::-webkit-scrollbar {
             height: 6px;
@@ -13871,7 +13876,10 @@
                 document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
                 const targetSection = document.getElementById(section + 'Section');
                 if (targetSection) {
-                    requestAnimationFrame(() => targetSection.classList.add('active'));
+                    requestAnimationFrame(() => {
+                        targetSection.classList.add('active');
+                        targetSection.scrollTop = 0;
+                    });
                 }
 
                 const appContainer = document.querySelector('.app-container');
