@@ -1724,6 +1724,62 @@
             margin-bottom: 30px;
             flex-wrap: wrap;
         }
+
+        /* וילון ניווט גלילה – מדור ניהול */
+        .management-nav-curtain {
+            margin-bottom: 28px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(255,251,240,0.98) 0%, rgba(255,248,230,0.95) 50%, rgba(255,250,235,0.98) 100%);
+            border: 1px solid rgba(212,175,55,0.35);
+            box-shadow: 0 4px 20px rgba(212,175,55,0.12), inset 0 1px 0 rgba(255,255,255,0.8);
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 6px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(212,175,55,0.4) transparent;
+        }
+        .management-nav-curtain::-webkit-scrollbar {
+            height: 6px;
+        }
+        .management-nav-curtain::-webkit-scrollbar-track {
+            background: rgba(212,175,55,0.08);
+            border-radius: 3px;
+        }
+        .management-nav-curtain::-webkit-scrollbar-thumb {
+            background: rgba(212,175,55,0.4);
+            border-radius: 3px;
+        }
+        .management-nav-curtain-inner {
+            display: flex;
+            gap: 10px;
+            padding: 6px 4px;
+            min-width: min-content;
+        }
+        .management-nav-curtain .management-tab {
+            flex-shrink: 0;
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.7);
+            border: 2px solid rgba(212,175,55,0.2);
+            border-radius: 12px;
+            color: var(--brown-dark);
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+        }
+        .management-nav-curtain .management-tab:hover {
+            border-color: var(--primary-gold);
+            background: rgba(255,255,255,0.95);
+            box-shadow: 0 4px 12px rgba(212,175,55,0.2);
+        }
+        .management-nav-curtain .management-tab.active {
+            background: linear-gradient(135deg, var(--primary-gold) 0%, var(--primary-gold-dark) 100%);
+            color: white;
+            border-color: var(--primary-gold-dark);
+            box-shadow: 0 4px 16px rgba(212,175,55,0.35);
+        }
         /* וילון ניווט למדור המנהל */
         .admin-curtain {
             margin-bottom: 20px;
@@ -6122,6 +6178,7 @@
                                 <option value="amountDesc">סכום – גבוה לנמוך</option>
                                 <option value="amountAsc">סכום – נמוך לגבוה</option>
                                 <option value="name">שם (א־ת)</option>
+                                <option value="nedarim">כסדר בנדרים פלוס</option>
                             </select>
                         </div>
                         <div class="home-donor-toggle" id="homeDonorSortToggleWrapper">
@@ -6345,27 +6402,18 @@
 
             <!-- מדור ניהול -->
             <section class="content-section management-section" id="managementSection">
-                <h2 class="section-header">ניהול מתרימים וקבוצות</h2>
-                
-                <div class="default-goal-panel">
-                    <label for="defaultDonorGoalInput">יעד ברירת מחדל לכל מתרים</label>
-                    <div class="default-goal-controls">
-                        <input type="number" id="defaultDonorGoalInput" min="1" step="1" placeholder="לדוגמה: 2100">
-                        <button class="btn" onclick="updateDefaultDonorGoal()">עדכן יעד כללי</button>
+                <div class="management-nav-curtain">
+                    <div class="management-nav-curtain-inner">
+                        <button class="management-tab active" data-tab="donors">ניהול מתרימים</button>
+                        <button class="management-tab" data-tab="manualDonation">הוספת תרומה ידנית מהחפ״ק</button>
+                        <button class="management-tab" data-tab="groups">ניהול קבוצות</button>
+                        <button class="management-tab" data-tab="liveview">הגדרות תצוגת לייב</button>
+                        <button class="management-tab" data-tab="calculator">מחשבון</button>
+                        <button class="management-tab" data-tab="sync">עדכונים</button>
+                        <button class="management-tab" data-tab="history">היסטוריה</button>
+                        <button class="management-tab" data-tab="reset">אפשרויות איפוס</button>
+                        <button class="management-tab" data-tab="password">הגדרת סיסמה</button>
                     </div>
-                    <div class="default-goal-note">השינוי ישפיע על מתרימים חדשים ויעדכן מתרימים קיימים שמשתמשים ביעד ברירת המחדל.</div>
-                </div>
-                
-                <div class="management-tabs">
-                    <button class="management-tab active" data-tab="donors">ניהול מתרימים</button>
-                    <button class="management-tab" data-tab="manualDonation">הוספת תרומה באופן ידני מהחפ״ק</button>
-                    <button class="management-tab" data-tab="groups">ניהול קבוצות</button>
-                    <button class="management-tab" data-tab="liveview">הגדרות תצוגת לייב</button>
-                    <button class="management-tab" data-tab="calculator">מחשבון</button>
-                    <button class="management-tab" data-tab="sync">עדכונים</button>
-                    <button class="management-tab" data-tab="history"> היסטוריה</button>
-                    <button class="management-tab" data-tab="reset">אפשרויות איפוס</button>
-                    <button class="management-tab" data-tab="password">הגדרת סיסמה</button>
                 </div>
 
                 <!-- מחשבון -->
@@ -9921,6 +9969,12 @@
                     return a.isHighlighted ? -1 : 1;
                 }
                 const order = homeDonorBreakdownSortOrder || 'amountDesc';
+                if (order === 'nedarim') {
+                    const ordA = a.donor.nedarimOrder ?? 999999;
+                    const ordB = b.donor.nedarimOrder ?? 999999;
+                    if (ordA !== ordB) return ordA - ordB;
+                    return collator.compare((a.donor.name || '').toString(), (b.donor.name || '').toString());
+                }
                 if (order === 'amountDesc' || order === 'amountAsc') {
                     const amtA = a.donor.amount || 0;
                     const amtB = b.donor.amount || 0;
@@ -10082,7 +10136,7 @@
         }
 
         function setHomeDonorBreakdownSortOrder(value) {
-            if (['amountDesc', 'amountAsc', 'name'].includes(value)) {
+            if (['amountDesc', 'amountAsc', 'name', 'nedarim'].includes(value)) {
                 homeDonorBreakdownSortOrder = value;
                 localStorage.setItem('homeDonorBreakdownSortOrder', value);
             }
@@ -18992,7 +19046,7 @@
                     console.log('ℹ️ [טעינת מתרימים] אין קבוצת נדרים פלוס – מתרימים חדשים/ללא קבוצה יוקצו ל:', targetGroup ? targetGroup.name : 'ללא קבוצה');
                 }
 
-                matrimList.forEach(matrim => {
+                matrimList.forEach((matrim, nedarimIndex) => {
                     // מבנה של matrim מ-MatchPlus: {Name: "שם מתרים", Goal: 2500, Cumule: 228, Id: 123, MatrimId: 123, ...}
                     const matrimName = matrim.Name || matrim.name;
                     const matrimGoal = parseInt(matrim.Goal) || 0;
@@ -19039,6 +19093,7 @@
                         existingDonor.amount = matrimAmount;
                         if (matrimGoal > 0) existingDonor.personalGoal = matrimGoal;
                         existingDonor.fromNedarimPlus = true;
+                        existingDonor.nedarimOrder = nedarimIndex;
                         updatedMatrim++;
                     } else {
                         if (matrimAmount > MAX_REASONABLE_AMOUNT_LOAD) {
@@ -19056,6 +19111,7 @@
                             source: 'nedarim_plus',
                             nedarimMatrimId: matrimIdStr,
                             fromNedarimPlus: true,
+                            nedarimOrder: nedarimIndex,
                             history: [],
                             createdAt: new Date().toISOString(),
                             updatedAt: new Date().toISOString()
