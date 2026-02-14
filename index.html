@@ -13889,41 +13889,11 @@
             const msg = `להוסיף ${half.toLocaleString()} ₪ לכל אחד מהמתרימים:\n• ${name1}\n• ${name2}\n\nסה״כ תרומה: ${total.toLocaleString()} ₪\n\nלאשר?`;
             if (!confirm(msg)) return;
 
-            ensureDonorsNormalized();
-            const paymentDate = new Date();
             const note = 'תרומה מזוג (ניהול זוגות)';
+            await addDonorPayment(pairsDonor1.id, half, note, true);
+            await addDonorPayment(pairsDonor2.id, half, note, true);
 
-            [pairsDonor1, pairsDonor2].forEach(donor => {
-                const oldAmount = donor.amount || 0;
-                const newAmount = Math.max(0, oldAmount + half);
-                donor.amount = newAmount;
-                addAmountToDailyBreakdown(donor, half, paymentDate);
-                recordDonorHistory(donor, half, donor.amount, 'pairs-donation', note, paymentDate);
-                recentlyUpdatedDonors.set(donor.id, Date.now() + 120000);
-            });
-
-            ensureDonorsNormalized();
-            saveData();
-
-            const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
-            if (url && typeof saveToGoogleSheets === 'function') {
-                try {
-                    await saveToGoogleSheets();
-                } catch (e) {
-                    console.warn('שמירה לגליון:', e);
-                }
-            }
-            [pairsDonor1.id, pairsDonor2.id].forEach(id => setTimeout(() => recentlyUpdatedDonors.delete(id), 120000));
-
-            NEDARIM_CONFIG.totalDonatedFromAPI = donors.reduce((s, d) => s + Math.max(0, d.amount || 0), 0);
-            NEDARIM_CONFIG.apiDataLoaded = true;
-            updateDonorsList();
-            updateGroupsDisplay();
-            updateHomeStats();
-            if (typeof updateLiveView === 'function') updateLiveView(true);
-            if (typeof updateLeadersList === 'function') updateLeadersList();
-            if (typeof updateLiveTargets === 'function') updateLiveTargets();
-
+            const paymentDate = new Date();
             pairsRecentDonations.unshift({
                 names: [name1, name2],
                 amount: half,
@@ -18167,7 +18137,7 @@
             }).join('');
         }
 
-        async function addDonorPayment(donorId) {
+        async function addDonorPayment(donorId, overrideAmount, overrideNote, silent) {
             ensureDonorsNormalized();
             const donor = donors.find(d => d.id === donorId);
             if (!donor) {
@@ -18175,40 +18145,49 @@
                 return;
             }
 
-            const amountInput = prompt('הזן סכום תשלום חדש (₪, אפשר להקיש ערך שלילי להפחתה):');
-            if (amountInput === null) {
-                return;
-            }
-
-            const sanitizedAmount = amountInput.toString().replace(/[^\d.,-]/g, '').replace(',', '.').trim();
-            const isNegative = sanitizedAmount.includes('-');
-            const normalizedNumeric = sanitizedAmount.replace(/-/g, '');
-            const parsedValue = parseFloat(normalizedNumeric);
-            if (!Number.isFinite(parsedValue)) {
-                showNotification('סכום לא תקין, אנא נסה שוב');
-                return;
-            }
-
-            const signedValue = isNegative ? -parsedValue : parsedValue;
-            const roundedDelta = Math.round(signedValue);
-            if (!roundedDelta) {
-                showNotification('סכום לא תקין, אנא נסה שוב');
-                return;
+            let roundedDelta;
+            if (typeof overrideAmount === 'number' && Number.isFinite(overrideAmount)) {
+                roundedDelta = Math.round(overrideAmount);
+                if (!roundedDelta) {
+                    if (!silent) showNotification('סכום לא תקין, אנא נסה שוב');
+                    return;
+                }
+            } else {
+                const amountInput = prompt('הזן סכום תשלום חדש (₪, אפשר להקיש ערך שלילי להפחתה):');
+                if (amountInput === null) return;
+                const sanitizedAmount = amountInput.toString().replace(/[^\d.,-]/g, '').replace(',', '.').trim();
+                const isNegative = sanitizedAmount.includes('-');
+                const normalizedNumeric = sanitizedAmount.replace(/-/g, '');
+                const parsedValue = parseFloat(normalizedNumeric);
+                if (!Number.isFinite(parsedValue)) {
+                    showNotification('סכום לא תקין, אנא נסה שוב');
+                    return;
+                }
+                const signedValue = isNegative ? -parsedValue : parsedValue;
+                roundedDelta = Math.round(signedValue);
+                if (!roundedDelta) {
+                    showNotification('סכום לא תקין, אנא נסה שוב');
+                    return;
+                }
             }
 
             const oldAmount = donor.amount || 0;
             const newAmount = Math.max(0, oldAmount + roundedDelta);
             const actualDelta = newAmount - oldAmount;
             if (!actualDelta) {
-                showNotification('לא בוצע שינוי בסכום');
+                if (!silent) showNotification('לא בוצע שינוי בסכום');
                 return;
             }
             
-            // מסמן את המתרים כשונה לאחרונה - מונע עדכון מהגליון למשך 2 דקות
             recentlyUpdatedDonors.set(donorId, Date.now() + 120000);
 
-            const noteInput = prompt('הזן הערה לעדכון (לא חובה):');
-            const note = noteInput && noteInput.trim() ? noteInput.trim() : '';
+            let note;
+            if (typeof overrideNote === 'string') {
+                note = overrideNote;
+            } else {
+                const noteInput = prompt('הזן הערה לעדכון (לא חובה):');
+                note = noteInput && noteInput.trim() ? noteInput.trim() : '';
+            }
             
             const donorDisplayName = getDonorDisplayName(donor);
             const paymentDate = new Date();
@@ -18274,10 +18253,12 @@
             if (typeof updateLiveView === 'function') updateLiveView(true);
             if (typeof updateLeadersList === 'function') updateLeadersList();
             if (typeof updateLiveTargets === 'function') updateLiveTargets();
-            const message = actualDelta > 0
-                ? `תשלום של ${Math.abs(actualDelta).toLocaleString()} ₪ נוסף ל-${donorDisplayName} (${paymentDate.toLocaleDateString('he-IL')})`
-                : `הופחת סכום של ${Math.abs(actualDelta).toLocaleString()} ₪ מהמתרים ${donorDisplayName} (${paymentDate.toLocaleDateString('he-IL')})`;
-            showNotification(message);
+            if (!silent) {
+                const message = actualDelta > 0
+                    ? `תשלום של ${Math.abs(actualDelta).toLocaleString()} ₪ נוסף ל-${donorDisplayName} (${paymentDate.toLocaleDateString('he-IL')})`
+                    : `הופחת סכום של ${Math.abs(actualDelta).toLocaleString()} ₪ מהמתרים ${donorDisplayName} (${paymentDate.toLocaleDateString('he-IL')})`;
+                showNotification(message);
+            }
             
             // רישום בהיסטוריה המרכזית
             logHistory({
