@@ -7905,7 +7905,7 @@
         let donorSearchTerm = '';
         let manualDonorSearchTerm = '';
         let addresses = [];
-        let semiFinalSettings = { durationMinutes: 30, videoUrl: 'https://drive.google.com/file/d/1sConNr3wigMOyjm2CCT94ssNIzGJ84mb/view?usp=drive_link' };
+        let semiFinalSettings = { durationMinutes: 30, videoUrl: 'https://drive.google.com/file/d/1sConNr3wigMOyjm2CCT94ssNIzGJ84mb/view' };
         let groups = [
             { id: 'group1', name: 'קבוצה 1', goal: defaultGroupGoal, orderNumber: 1 },
             { id: 'group2', name: 'קבוצה 2', goal: defaultGroupGoal, orderNumber: 2 },
@@ -10894,18 +10894,24 @@
             try { localStorage.setItem('semiFinalSettings', JSON.stringify(semiFinalSettings)); } catch (e) {}
             if (typeof showNotification === 'function') showNotification('הגדרות חגיגת הניצחון נשמרו');
         }
+        const SEMIFINAL_VIDEO_URL = 'https://drive.google.com/file/d/1sConNr3wigMOyjm2CCT94ssNIzGJ84mb/view';
         function loadSemifinalSettings() {
             try {
                 const saved = localStorage.getItem('semiFinalSettings');
                 if (saved) {
                     const parsed = JSON.parse(saved);
                     semiFinalSettings = { ...semiFinalSettings, ...parsed };
+                    // עדכון אוטומטי: קישור ישן → קישור חגיגת הניצחון החדש
+                    if (semiFinalSettings.videoUrl && !semiFinalSettings.videoUrl.includes('1sConNr3wigMOyjm2CCT94ssNIzGJ84mb')) {
+                        semiFinalSettings.videoUrl = SEMIFINAL_VIDEO_URL;
+                        try { localStorage.setItem('semiFinalSettings', JSON.stringify(semiFinalSettings)); } catch (e) {}
+                    }
                 }
             } catch (e) {}
             const elDuration = document.getElementById('semifinalDuration');
             const elUrl = document.getElementById('semifinalVideoUrl');
             if (elDuration) elDuration.value = semiFinalSettings.durationMinutes || 30;
-            if (elUrl) elUrl.value = semiFinalSettings.videoUrl || 'https://drive.google.com/file/d/1sConNr3wigMOyjm2CCT94ssNIzGJ84mb/view?usp=drive_link';
+            if (elUrl) elUrl.value = semiFinalSettings.videoUrl || SEMIFINAL_VIDEO_URL;
         }
         function playSemifinalVideo() {
             const embedUrl = getEmbedUrlFromDriveUrl(semiFinalSettings.videoUrl);
