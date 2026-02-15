@@ -1577,42 +1577,68 @@
             gap: 30px;
         }
         
+        .addresses-two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+            align-items: start;
+        }
+        
+        @media (max-width: 1100px) {
+            .addresses-two-column {
+                grid-template-columns: 1fr;
+            }
+        }
+        
         .addresses-form {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 16px;
             padding: 24px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 20px rgba(139, 111, 71, 0.12);
+            border: 1px solid rgba(212, 175, 55, 0.25);
         }
         
         .addresses-form h3 {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
             color: var(--brown-dark);
-            font-size: 24px;
+            font-size: 22px;
+            font-weight: 700;
+        }
+        
+        .address-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px 20px;
         }
         
         .address-form-row {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            margin-bottom: 16px;
+            gap: 6px;
+        }
+        
+        .address-form-row-full {
+            grid-column: 1 / -1;
         }
         
         .address-form-row label {
             font-weight: 600;
             color: var(--brown-dark);
-            font-size: 14px;
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
         .address-form-row input,
         .address-form-row select,
         .address-form-row textarea {
-            padding: 10px 14px;
+            padding: 10px 12px;
             border: 2px solid var(--border);
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 15px;
             background: white;
             width: 100%;
-            max-width: 400px;
             box-sizing: border-box;
         }
         
@@ -1622,7 +1648,7 @@
         
         .address-form-row textarea {
             resize: vertical;
-            min-height: 60px;
+            min-height: 56px;
         }
         
         .address-form-row input:focus,
@@ -1636,67 +1662,88 @@
             display: flex;
             gap: 12px;
             margin-top: 20px;
+            flex-wrap: wrap;
         }
         
         .addresses-list-container {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 16px;
             padding: 24px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 20px rgba(139, 111, 71, 0.12);
+            border: 1px solid rgba(212, 175, 55, 0.25);
         }
         
         .addresses-list-container h3 {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
             color: var(--brown-dark);
-            font-size: 24px;
+            font-size: 22px;
+            font-weight: 700;
         }
         
         .addresses-list {
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
             gap: 12px;
+        }
+        
+        @media (max-width: 900px) {
+            .addresses-list {
+                grid-template-columns: 1fr;
+            }
+            .address-form-grid {
+                grid-template-columns: 1fr;
+            }
         }
         
         .address-item {
             background: white;
             border: 2px solid var(--border);
             border-radius: 12px;
-            padding: 16px;
+            padding: 14px 16px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s;
+            flex-direction: column;
+            gap: 10px;
+            transition: all 0.25s ease;
         }
         
         .address-item:hover {
             border-color: var(--primary-gold);
-            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+            box-shadow: 0 4px 16px rgba(212, 175, 55, 0.18);
         }
         
         .address-item-info {
             flex: 1;
+            min-width: 0;
         }
         
         .address-item-info div {
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             color: var(--brown-dark);
+            font-size: 14px;
+            word-wrap: break-word;
+        }
+        
+        .address-item-info div:last-child {
+            margin-bottom: 0;
         }
         
         .address-item-info strong {
             color: var(--primary-gold);
+            font-size: 12px;
         }
         
         .address-item-actions {
             display: flex;
             gap: 8px;
+            flex-wrap: wrap;
         }
         
         .address-item-actions button {
-            padding: 8px 16px;
+            padding: 8px 14px;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
         }
         
@@ -1706,7 +1753,7 @@
         }
         
         .address-item-actions .btn-delete {
-            background: #ff4444;
+            background: #ef4444;
             color: white;
         }
         .section-header {
@@ -7335,70 +7382,72 @@
             <!-- מדור כתובות -->
             <section class="content-section addresses-section" id="addressesSection">
                 <h2 class="section-header">ניהול כתובות</h2>
-                <div class="addresses-panel">
+                <div class="addresses-panel addresses-two-column">
                     <div class="addresses-form">
                         <h3>הוספת כתובת חדשה</h3>
-                        <div class="address-form-row">
-                            <label for="addressCity">עיר:</label>
-                            <input type="text" id="addressCity" placeholder="הזן שם עיר">
-                        </div>
-                        <div class="address-form-row">
-                            <label for="addressStreet">רחוב:</label>
-                            <input type="text" id="addressStreet" placeholder="הזן שם רחוב ומספר בית">
-                        </div>
-                        <div class="address-form-row">
-                            <label for="addressDate">תאריך:</label>
-                            <input type="date" id="addressDate">
-                        </div>
-                        <div class="address-form-row">
-                            <label for="addressAmount">סכום תרומה (₪):</label>
-                            <input type="number" id="addressAmount" min="0" step="1" placeholder="0">
-                        </div>
-                        <div class="address-form-row">
-                            <label for="addressWhoBrought">מי הביא את הכסף:</label>
-                            <input type="text" id="addressWhoBrought" placeholder="שם מי שהביא את הכסף">
-                        </div>
-                        <div class="address-form-row">
-                            <label>דיסקרטי:</label>
-                            <select id="addressDiscrete">
-                                <option value="לא משנה לי">לא משנה לי</option>
-                                <option value="כן">כן</option>
-                                <option value="לא">לא</option>
-                            </select>
-                        </div>
-                        <div class="address-form-row">
-                            <label for="addressFamily">איזה משפחה:</label>
-                            <input type="text" id="addressFamily" placeholder="שם המשפחה">
-                        </div>
-                        <div class="address-form-row">
-                            <label for="addressRecruiter">מי המתרים שהביא את הכתובת:</label>
-                            <input type="text" id="addressRecruiter" placeholder="שם המתרים" list="addressRecruiterSuggestions">
-                            <datalist id="addressRecruiterSuggestions"></datalist>
-                        </div>
-                        <div class="address-form-row">
-                            <label>באיזה תאריך:</label>
-                            <select id="addressDateType">
-                                <option value="">בחר</option>
-                                <option value="בי״ד">בי״ד</option>
-                                <option value="בט״ו">בט״ו</option>
-                                <option value="אחר">אחר</option>
-                            </select>
-                        </div>
-                        <div class="address-form-row">
-                            <label>שעת ביקור:</label>
-                            <select id="addressTimeOfDay">
-                                <option value="">בחר</option>
-                                <option value="בוקר">בוקר</option>
-                                <option value="צהריים">צהריים</option>
-                            </select>
-                        </div>
-                        <div class="address-form-row">
-                            <label for="addressNotes">הערות:</label>
-                            <textarea id="addressNotes" rows="2" placeholder="הערות נוספות"></textarea>
+                        <div class="address-form-grid">
+                            <div class="address-form-row">
+                                <label for="addressCity">עיר</label>
+                                <input type="text" id="addressCity" placeholder="הזן שם עיר">
+                            </div>
+                            <div class="address-form-row">
+                                <label for="addressStreet">רחוב</label>
+                                <input type="text" id="addressStreet" placeholder="רחוב ומספר בית">
+                            </div>
+                            <div class="address-form-row">
+                                <label for="addressDate">תאריך</label>
+                                <input type="date" id="addressDate">
+                            </div>
+                            <div class="address-form-row">
+                                <label for="addressAmount">סכום (₪)</label>
+                                <input type="number" id="addressAmount" min="0" step="1" placeholder="0">
+                            </div>
+                            <div class="address-form-row">
+                                <label for="addressWhoBrought">מי הביא את הכסף</label>
+                                <input type="text" id="addressWhoBrought" placeholder="שם">
+                            </div>
+                            <div class="address-form-row">
+                                <label for="addressDiscrete">דיסקרטי</label>
+                                <select id="addressDiscrete">
+                                    <option value="לא משנה לי">לא משנה לי</option>
+                                    <option value="כן">כן</option>
+                                    <option value="לא">לא</option>
+                                </select>
+                            </div>
+                            <div class="address-form-row">
+                                <label for="addressFamily">איזה משפחה</label>
+                                <input type="text" id="addressFamily" placeholder="שם המשפחה">
+                            </div>
+                            <div class="address-form-row">
+                                <label for="addressRecruiter">המתרים שהביא</label>
+                                <input type="text" id="addressRecruiter" placeholder="שם המתרים" list="addressRecruiterSuggestions">
+                                <datalist id="addressRecruiterSuggestions"></datalist>
+                            </div>
+                            <div class="address-form-row">
+                                <label for="addressDateType">תאריך ביקור</label>
+                                <select id="addressDateType">
+                                    <option value="">בחר</option>
+                                    <option value="בי״ד">בי״ד</option>
+                                    <option value="בט״ו">בט״ו</option>
+                                    <option value="אחר">אחר</option>
+                                </select>
+                            </div>
+                            <div class="address-form-row">
+                                <label for="addressTimeOfDay">שעת ביקור</label>
+                                <select id="addressTimeOfDay">
+                                    <option value="">בחר</option>
+                                    <option value="בוקר">בוקר</option>
+                                    <option value="צהריים">צהריים</option>
+                                </select>
+                            </div>
+                            <div class="address-form-row address-form-row-full">
+                                <label for="addressNotes">הערות</label>
+                                <textarea id="addressNotes" rows="2" placeholder="הערות נוספות"></textarea>
+                            </div>
                         </div>
                         <div class="address-form-actions">
                             <button class="btn" onclick="addAddress()">הוסף כתובת</button>
-                            <button class="btn btn-secondary" onclick="exportAllAddressesToExcel()">ייצוא כל הכתובות לאקסל</button>
+                            <button class="btn btn-secondary" onclick="exportAllAddressesToExcel()">ייצוא לאקסל</button>
                         </div>
                     </div>
                     <div class="addresses-list-container">
