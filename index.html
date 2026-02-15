@@ -4666,6 +4666,21 @@
             font-size: 14px;
         }
         .semifinal-close-btn:hover { background: rgba(255,255,255,0.3); }
+        .semifinal-fullscreen-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.5);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .semifinal-fullscreen-btn:hover { background: rgba(255,255,255,0.3); }
+        .semifinal-fullscreen-btn.active { background: var(--primary-gold, #D4AF37); color: #1a1a1a; }
         #semifinalVideoIframe {
             flex: 1;
             width: 100%;
@@ -5985,7 +6000,13 @@
     <div class="semifinal-video-overlay" id="semifinalVideoOverlay">
         <div class="semifinal-video-header">
             <span>חגיגת ניצחון</span>
-            <button class="semifinal-close-btn" onclick="closeSemifinalVideo()">✕ סגור</button>
+            <div>
+                <button class="semifinal-fullscreen-btn" onclick="toggleSemifinalVideoFullscreen()" id="semifinalFullscreenBtn" aria-label="מסך מלא אמיתי">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" id="semifinalFullscreenIcon"><path d="M8 3H5C3.89543 3 3 3.89543 3 5V8M21 8V5C21 3.89543 20.1046 3 19 3H16M16 21H19C20.1046 21 21 20.1046 21 19V16M3 16V19C3 20.1046 3.89543 21 5 21H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    מסך מלא אמיתי
+                </button>
+                <button class="semifinal-close-btn" onclick="closeSemifinalVideo()">✕ סגור</button>
+            </div>
         </div>
         <iframe id="semifinalVideoIframe" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>
@@ -10925,6 +10946,7 @@
             iframe.src = embedUrl;
             overlay.classList.add('show');
             document.body.style.overflow = 'hidden';
+            updateSemifinalFullscreenButton(false);
             const ms = (semiFinalSettings.durationMinutes || 30) * 60 * 1000;
             if (window._semifinalCloseTimer) clearTimeout(window._semifinalCloseTimer);
             window._semifinalCloseTimer = setTimeout(() => { closeSemifinalVideo(); }, ms);
@@ -10936,7 +10958,50 @@
             if (iframe) iframe.src = '';
             document.body.style.overflow = '';
             if (window._semifinalCloseTimer) { clearTimeout(window._semifinalCloseTimer); window._semifinalCloseTimer = null; }
+            if (document.fullscreenElement === overlay || document.webkitFullscreenElement === overlay || document.mozFullScreenElement === overlay || document.msFullscreenElement === overlay) {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+                else if (document.msExitFullscreen) document.msExitFullscreen();
+            }
+            updateSemifinalFullscreenButton(false);
         }
+        function toggleSemifinalVideoFullscreen() {
+            const overlay = document.getElementById('semifinalVideoOverlay');
+            if (!overlay || !overlay.classList.contains('show')) return;
+            const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+            if (!isFs) {
+                if (overlay.requestFullscreen) overlay.requestFullscreen();
+                else if (overlay.webkitRequestFullscreen) overlay.webkitRequestFullscreen();
+                else if (overlay.mozRequestFullScreen) overlay.mozRequestFullScreen();
+                else if (overlay.msRequestFullscreen) overlay.msRequestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+                else if (document.msExitFullscreen) document.msExitFullscreen();
+            }
+        }
+        function updateSemifinalFullscreenButton(isFullscreen) {
+            const btn = document.getElementById('semifinalFullscreenBtn');
+            if (!btn) return;
+            if (isFullscreen) {
+                btn.classList.add('active');
+                btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M8 3V5M16 3V5M3 8H5M19 8H21M3 16H5M19 16H21M8 21V19M16 21V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> יציאה ממסך מלא';
+            } else {
+                btn.classList.remove('active');
+                btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M8 3H5C3.89543 3 3 3.89543 3 5V8M21 8V5C21 3.89543 20.1046 3 19 3H16M16 21H19C20.1046 21 21 20.1046 21 19V16M3 16V19C3 20.1046 3.89543 21 5 21H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> מסך מלא אמיתי';
+            }
+        }
+        function onSemifinalFullscreenChange() {
+            const overlay = document.getElementById('semifinalVideoOverlay');
+            const el = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+            if (overlay && overlay.classList.contains('show')) updateSemifinalFullscreenButton(!!el && el === overlay);
+        }
+        document.addEventListener('fullscreenchange', onSemifinalFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', onSemifinalFullscreenChange);
+        document.addEventListener('mozfullscreenchange', onSemifinalFullscreenChange);
+        document.addEventListener('MSFullscreenChange', onSemifinalFullscreenChange);
         function exportAllAddressesToExcel() {
             if (addresses.length === 0) {
                 showNotification('אין כתובות לייצוא');
