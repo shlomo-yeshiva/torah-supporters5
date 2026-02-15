@@ -14186,7 +14186,29 @@
                 if (section === 'liveview') {
                     appContainer.classList.add('live-mode');
                     applyLiveViewSettings(); // יישום הגדרות תצוגת לייב
-                    updateLiveView(true, true); // forceFromScheduled – עדכון ראשוני בכניסה
+                    (async function refreshGroupsFromSheetForLiveView() {
+                        var url = (googleSheetsWebAppUrl || (typeof localStorage !== 'undefined' && localStorage.getItem('googleSheetsWebAppUrl')) || '').toString().trim();
+                        if (url && typeof fetchAppsScript === 'function') {
+                            try {
+                                var r = await fetchAppsScript(url, { action: 'getAllNoDonors', _: Date.now() }, { retries: 1, timeout: 8000 });
+                                if (r && r.success && r.groups && Array.isArray(r.groups) && r.groups.length > 0) {
+                                    var now = Date.now();
+                                    var cur = groups;
+                                    groups = r.groups.map(function(sg) {
+                                        var local = cur.find(function(g) { return groupIdsMatch(g.id, sg.id); });
+                                        var lastUp = local ? recentlyUpdatedGroups.get(local.id) : null;
+                                        if (local && lastUp != null && (now - lastUp < 35000)) {
+                                            return Object.assign({}, sg, { name: local.name, goal: local.goal, orderNumber: local.orderNumber, showInLiveView: local.showInLiveView, updatedAt: local.updatedAt });
+                                        }
+                                        return Object.assign({}, sg);
+                                    });
+                                    if (typeof saveData === 'function') saveData();
+                                }
+                            } catch (e) { console.warn('רענון שמות קבוצות מהגליון:', e); }
+                        }
+                        if (typeof updateLiveView === 'function') updateLiveView(true, true);
+                    })().catch(function() {});
+                    updateLiveView(true, true); // forceFromScheduled – עדכון ראשוני בכניסה (בינתיים עם הנתונים הקיימים)
                     updateLeadersList(true);
                     updateLiveTargets(true);
                     attachLiveViewInteractionHandlers();
