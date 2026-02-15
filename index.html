@@ -13302,7 +13302,8 @@
                             groups = gr.groups.map(function(sg) {
                                 var local = curGroups.find(function(g) { return groupIdsMatch(g.id, sg.id); });
                                 var lastUp = local ? recentlyUpdatedGroups.get(local.id) : null;
-                                if (local && lastUp != null && (now - lastUp < 35000)) {
+                                var localNameOk = local && local.name && String(local.name).trim();
+                                if (local && lastUp != null && (now - lastUp < 35000) && localNameOk) {
                                     return Object.assign({}, sg, { name: local.name, goal: local.goal, orderNumber: local.orderNumber, showInLiveView: local.showInLiveView, updatedAt: local.updatedAt });
                                 }
                                 return Object.assign({}, sg);
@@ -13419,7 +13420,8 @@
                             groups = groupsResult.groups.map(function(sg) {
                                 var local = currentGroups.find(function(g) { return groupIdsMatch(g.id, sg.id); });
                                 var lastUp = local ? recentlyUpdatedGroups.get(local.id) : null;
-                                if (local && lastUp != null && (now - lastUp < 35000)) {
+                                var localNameOk = local && local.name && String(local.name).trim();
+                                if (local && lastUp != null && (now - lastUp < 35000) && localNameOk) {
                                     return Object.assign({}, sg, { name: local.name, goal: local.goal, orderNumber: local.orderNumber, showInLiveView: local.showInLiveView, updatedAt: local.updatedAt });
                                 }
                                 return Object.assign({}, sg);
@@ -14197,7 +14199,8 @@
                                     groups = r.groups.map(function(sg) {
                                         var local = cur.find(function(g) { return groupIdsMatch(g.id, sg.id); });
                                         var lastUp = local ? recentlyUpdatedGroups.get(local.id) : null;
-                                        if (local && lastUp != null && (now - lastUp < 35000)) {
+                                        var localNameOk = local && local.name && String(local.name).trim();
+                                        if (local && lastUp != null && (now - lastUp < 35000) && localNameOk) {
                                             return Object.assign({}, sg, { name: local.name, goal: local.goal, orderNumber: local.orderNumber, showInLiveView: local.showInLiveView, updatedAt: local.updatedAt });
                                         }
                                         return Object.assign({}, sg);
@@ -21711,8 +21714,9 @@
                     const now = Date.now();
                     const mergedGroups = result.groups.map(sheetGroup => {
                         const localGroup = groups.find(g => groupIdsMatch(g.id, sheetGroup.id));
-                        const lastUpdate = localGroup ? recentlyUpdatedGroups.get(sheetGroup.id) : null;
-                        if (localGroup && lastUpdate != null && (now - lastUpdate < 35000)) {
+                        const lastUpdate = localGroup ? recentlyUpdatedGroups.get(localGroup.id) : null;
+                        const localNameValid = localGroup && localGroup.name && String(localGroup.name).trim();
+                        if (localGroup && lastUpdate != null && (now - lastUpdate < 35000) && localNameValid) {
                             return { ...sheetGroup, name: localGroup.name, goal: localGroup.goal, orderNumber: localGroup.orderNumber, showInLiveView: localGroup.showInLiveView, updatedAt: localGroup.updatedAt };
                         }
                         return { ...sheetGroup };
@@ -21866,10 +21870,10 @@
                     const now = Date.now();
                     const GROUP_PROTECTION_MS = 35000;
                     const mergedGroups = result.groups.map(sheetGroup => {
-                        const sheetId = sheetGroup.id;
-                        const localGroup = groups.find(g => String(g.id ?? '') === String(sheetId ?? ''));
-                        const lastUpdate = localGroup ? recentlyUpdatedGroups.get(sheetId) : null;
-                        if (localGroup && lastUpdate != null && (now - lastUpdate < GROUP_PROTECTION_MS)) {
+                        const localGroup = groups.find(g => groupIdsMatch(g.id, sheetGroup.id));
+                        const lastUpdate = localGroup ? recentlyUpdatedGroups.get(localGroup.id) : null;
+                        const localNameOk = localGroup && localGroup.name && String(localGroup.name).trim();
+                        if (localGroup && lastUpdate != null && (now - lastUpdate < GROUP_PROTECTION_MS) && localNameOk) {
                             return { ...sheetGroup, name: localGroup.name, goal: localGroup.goal, orderNumber: localGroup.orderNumber, showInLiveView: localGroup.showInLiveView, updatedAt: localGroup.updatedAt };
                         }
                         return { ...sheetGroup };
@@ -22439,8 +22443,9 @@
                     const now = Date.now();
                     groups = result.groups.map(sg => {
                         const local = groups.find(g => groupIdsMatch(g.id, sg.id));
-                        const lastUp = local ? recentlyUpdatedGroups.get(sg.id) : null;
-                        if (local && lastUp != null && (now - lastUp < PROTECTION_WINDOW_MS)) {
+                        const lastUp = local ? recentlyUpdatedGroups.get(local.id) : null;
+                        const localNameOk = local && local.name && String(local.name).trim();
+                        if (local && lastUp != null && (now - lastUp < PROTECTION_WINDOW_MS) && localNameOk) {
                             return { ...sg, name: local.name, goal: local.goal, orderNumber: local.orderNumber, showInLiveView: local.showInLiveView, updatedAt: local.updatedAt };
                         }
                         return { ...sg };
@@ -22519,8 +22524,9 @@
                     const now = Date.now();
                     const merged = result.groups.map(sg => {
                         const local = groups.find(g => groupIdsMatch(g.id, sg.id));
-                        const lastUp = local ? recentlyUpdatedGroups.get(sg.id) : null;
-                        if (local && lastUp != null && (now - lastUp < PROTECTION_WINDOW_MS)) {
+                        const lastUp = local ? recentlyUpdatedGroups.get(local.id) : null;
+                        const localNameOk = local && local.name && String(local.name).trim();
+                        if (local && lastUp != null && (now - lastUp < PROTECTION_WINDOW_MS) && localNameOk) {
                             return { ...sg, name: local.name, goal: local.goal, orderNumber: local.orderNumber, showInLiveView: local.showInLiveView, updatedAt: local.updatedAt };
                         }
                         return { ...sg };
