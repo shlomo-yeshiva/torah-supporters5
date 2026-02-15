@@ -14707,15 +14707,6 @@
                             </div>
                         `).join('') : '<div style="text-align: center; color: var(--muted); padding: 10px;">אין מתרימים</div>'}
                     </div>
-                        <div class="group-excel-upload">
-                            <input type="file" id="excelFileInput_${group.id}" class="group-excel-input" accept=".xlsx,.xls" style="display:none;">
-                            <button class="group-excel-button" onclick="triggerGroupExcelUpload('${group.id}')">טעינת רשימה מקובץ אקסל</button>
-                        </div>
-                    <div class="add-donor-form">
-                        <input type="text" id="donorName_${group.id}" placeholder="שם המתרים">
-                        <input type="number" id="donorAmount_${group.id}" placeholder="סכום תרומה" min="0" step="1">
-                        <button class="btn" onclick="addDonorToGroup('${group.id}')">הוסף מתרים</button>
-                        </div>
                     `;
                 card.dataset.groupId = group.id;
                 card.setAttribute('draggable', 'true');
