@@ -3435,8 +3435,6 @@
             transform: translate3d(0, 0, 0);
             backface-visibility: hidden;
             perspective: 1000px;
-            /* מניעת רעידות – גלילה חלקה גם בעדכוני רקע */
-            contain: layout style;
         }
         @keyframes scrollUp {
             0% {
@@ -3527,8 +3525,6 @@
             gap: 18px;
             min-width: 0;
             box-sizing: border-box;
-            transform: translate3d(0, 0, 0);
-            will-change: contents;
         }
 
         .live-donor-progress-circle-wrapper {
@@ -13272,9 +13268,12 @@
                 last = timestamp;
                 donorsScrollLastTime = timestamp;
                 
-                // קריאת גובה עדכנית כל פריים – מונע קפיצות כשעדכונים אוטומטיים משנים סכומים/תוכן
-                const currentHalf = container.scrollHeight > 0 ? container.scrollHeight / 2 : halfHeight;
-                const h = (currentHalf && isFinite(currentHalf) && currentHalf >= 50) ? currentHalf : halfHeight;
+                // שימוש בגובה שמור – קוראים scrollHeight רק במעבר מחזור (מונע רעידות מ-layout thrashing)
+                let h = halfHeight;
+                if (offset >= halfHeight - 5) {
+                    h = container.scrollHeight > 0 ? container.scrollHeight / 2 : halfHeight;
+                    h = (h && isFinite(h) && h >= 50) ? h : halfHeight;
+                }
                 
                 // מיפוי המהירות
                 const speedValue = liveViewSettings.donorsScrollSpeed || 50;
@@ -13289,7 +13288,8 @@
                 }
                 if (offset < 10) state.cycleCompleteFired = false;
                 state.offset = offset;
-                container.style.transform = `translate3d(0, ${-offset}px, 0)`;
+                // עיגול לפיקסלים שלמים – מונע רעידות מ-subpixel rendering
+                container.style.transform = `translate3d(0, ${Math.round(-offset)}px, 0)`;
                 state.handle = requestAnimationFrame(step);
             }
 
@@ -13674,9 +13674,12 @@
                 last = timestamp;
                 leadersScrollLastTime = timestamp;
                 
-                // קריאת גובה עדכנית כל פריים – מונע קפיצות כשעדכונים אוטומטיים משנים את התוכן
-                const currentHeight = primary ? primary.offsetHeight : contentHeight;
-                const h = (currentHeight && isFinite(currentHeight) && currentHeight >= 50) ? currentHeight : contentHeight;
+                // שימוש בגובה שמור – קוראים offsetHeight רק במעבר מחזור (מונע רעידות מ-layout thrashing)
+                let h = contentHeight;
+                if (offset >= contentHeight - 5) {
+                    const currentHeight = primary ? primary.offsetHeight : contentHeight;
+                    h = (currentHeight && isFinite(currentHeight) && currentHeight >= 50) ? currentHeight : contentHeight;
+                }
                 
                 // מהירות קבועה למובילים - 30 פיקסלים לשנייה
                 const speed = 30;
@@ -13688,7 +13691,8 @@
                 }
                 
                 state.offset = offset;
-                inner.style.transform = `translate3d(0, ${-offset}px, 0)`;
+                // עיגול לפיקסלים שלמים – מונע רעידות מ-subpixel rendering
+                inner.style.transform = `translate3d(0, ${Math.round(-offset)}px, 0)`;
                 state.handle = requestAnimationFrame(step);
             }
 
