@@ -4762,6 +4762,28 @@
             box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255,255,255,0.2) inset;
             animation: appLockFadeIn 0.35s ease;
         }
+        #entryCodeOverlay .app-lock-dialog {
+            width: min(94vw, 600px);
+            padding: 44px 48px;
+            border: 3px solid transparent;
+            background: linear-gradient(white, white) padding-box,
+                linear-gradient(135deg, var(--primary-gold) 0%, #c9a227 25%, var(--brown-dark) 50%, #c9a227 75%, var(--primary-gold) 100%) border-box;
+            box-shadow: 0 30px 80px rgba(139, 90, 43, 0.25), 0 0 0 1px rgba(255,255,255,0.3) inset;
+        }
+        .entry-sheet-url-btn {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 14px 28px; font-size: 15px; font-weight: 600;
+            background: linear-gradient(135deg, #f5e6d3 0%, #ede0c8 100%);
+            border: 2px solid var(--primary-gold); border-radius: 14px;
+            color: var(--brown-dark); cursor: pointer; transition: all 0.2s;
+            width: 100%; justify-content: center; margin-bottom: 4px;
+        }
+        .entry-sheet-url-btn:hover { background: linear-gradient(135deg, #ede0c8 0%, #e5d4b8 100%); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(139, 90, 43, 0.2); }
+        .entry-sheet-url-panel {
+            margin-top: 14px; padding: 20px; background: rgba(248, 249, 250, 0.9);
+            border-radius: 14px; border: 2px solid #e9ecef;
+        }
+        .entry-sheet-url-panel.hidden { display: none !important; }
 
         @keyframes appLockFadeIn {
             from { opacity: 0; transform: scale(0.95) translateY(10px); }
@@ -6019,15 +6041,24 @@
 </head>
 <body>
     <div class="app-lock-overlay" id="entryCodeOverlay" role="dialog" aria-modal="true" aria-labelledby="entryCodeTitle">
-        <div class="app-lock-dialog" style="max-width: 480px;">
+        <div class="app-lock-dialog">
             <div class="app-lock-logo"><img src="https://i.postimg.cc/ZRMCLxgW/wgw-t-t-dhws.png" alt="לוגו" style="height:64px;"></div>
             <h2 id="entryCodeTitle">כניסה לתוכנה</h2>
             <p>הזן את קוד הכניסה כדי להמשיך.</p>
-            <div style="margin-bottom: 16px; padding: 12px; background: #f8f9fa; border-radius: 8px; border: 1px solid var(--border);">
-                <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px;">קישור לשרת (אם החלפת גליון – הזן כאן את הקישור החדש):</label>
-                <input type="url" id="entryCodeSheetUrlInput" class="app-lock-password-input" placeholder="https://script.google.com/macros/s/xxxx/exec" style="width: 100%; margin-bottom: 6px; font-size: 13px;">
-                <button type="button" class="btn" onclick="saveEntryCodeSheetUrl()" style="font-size: 13px;">שמור קישור</button>
-                <span id="entryCodeUrlSavedMsg" style="display: none; margin-right: 8px; color: var(--success); font-size: 12px;">✓ נשמר</span>
+            <div style="margin-bottom: 20px;">
+                <button type="button" class="entry-sheet-url-btn" onclick="toggleEntrySheetUrlPanel()" id="entrySheetUrlToggleBtn">
+                    <span>🔗</span>
+                    <span id="entrySheetUrlBtnText">הגדר קישור לשרת (גליון)</span>
+                    <span id="entrySheetUrlBtnArrow" style="margin-right: auto; font-size: 12px;">▼</span>
+                </button>
+                <div id="entrySheetUrlPanel" class="entry-sheet-url-panel hidden">
+                    <label style="display: block; font-weight: 600; margin-bottom: 10px; font-size: 14px; color: var(--brown-dark);">קישור לשרת (אם החלפת גליון – הזן כאן את הקישור החדש):</label>
+                    <input type="url" id="entryCodeSheetUrlInput" class="app-lock-password-input" placeholder="https://script.google.com/macros/s/xxxx/exec" style="width: 100%; margin-bottom: 12px; font-size: 14px; padding: 14px 18px;">
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <button type="button" class="btn" onclick="saveEntryCodeSheetUrl()" style="font-size: 14px; padding: 12px 24px;">שמור קישור</button>
+                        <span id="entryCodeUrlSavedMsg" style="display: none; color: var(--success); font-size: 14px; font-weight: 600;">✓ נשמר</span>
+                    </div>
+                </div>
             </div>
             <div class="app-lock-password-wrapper" style="width: 100%; margin-bottom: 12px;">
                 <input type="password" id="entryCodeInput" class="app-lock-password-input" placeholder="הזן קוד כניסה" autocomplete="one-time-code" onkeydown="handleEntryCodeKeyDown(event)">
@@ -6040,7 +6071,7 @@
                 <button class="btn btn-primary" type="button" onclick="handleEntryCodeSubmit()">כניסה</button>
             </div>
             <p class="app-lock-error" id="entryCodeError"></p>
-            <p class="app-lock-contact-note">במקרה ונתקלת בנעילה ואתה לקוח של תוכנה זו – ניתן ליצור קשר עם <strong>S.C. פיתוח אתרים ותוכנות</strong> בדוא"ל <a href="mailto:s0534142893@gmail.com">s0534142893@gmail.com</a>. נשתדל לחזור אליכם בהקדם.</p>
+            <p class="app-lock-contact-note">במקרה שנתקלת בנעילה ואתה לקוח של תוכנה זו – ניתן ליצור קשר עם <strong>S.C. פיתוח אתרים ותוכנות</strong> בדוא״ל <a href="mailto:s0534142893@gmail.com">s0534142893@gmail.com</a>. נשתדל לחזור אליכם בהקדם.</p>
         </div>
     </div>
     <!-- overlay סרטון חגיגת הניצחון – מסך מלא -->
@@ -6073,7 +6104,7 @@
                 <button class="btn btn-primary" type="button" onclick="handleAppLockSubmit()">כניסה</button>
             </div>
             <p class="app-lock-error" id="appLockError"></p>
-            <p class="app-lock-contact-note">במקרה ונתקלת בנעילה ואתה לקוח של תוכנה זו – ניתן ליצור קשר עם <strong>S.C. פיתוח אתרים ותוכנות</strong> בדוא"ל <a href="mailto:s0534142893@gmail.com">s0534142893@gmail.com</a>. נשתדל לחזור אליכם בהקדם.</p>
+            <p class="app-lock-contact-note">במקרה שנתקלת בנעילה ואתה לקוח של תוכנה זו – ניתן ליצור קשר עם <strong>S.C. פיתוח אתרים ותוכנות</strong> בדוא״ל <a href="mailto:s0534142893@gmail.com">s0534142893@gmail.com</a>. נשתדל לחזור אליכם בהקדם.</p>
         </div>
     </div>
     <div class="app-container">
@@ -9281,6 +9312,12 @@
             if (urlInput && typeof localStorage !== 'undefined') {
                 urlInput.value = localStorage.getItem('googleSheetsWebAppUrl') || '';
             }
+            const urlBtnText = document.getElementById('entrySheetUrlBtnText');
+            if (urlBtnText) urlBtnText.textContent = (urlInput && urlInput.value.trim()) ? 'קישור לשרת (הוגדר) – לחץ לעריכה' : 'הגדר קישור לשרת (גליון)';
+            const panel = document.getElementById('entrySheetUrlPanel');
+            if (panel) panel.classList.add('hidden');
+            const arr = document.getElementById('entrySheetUrlBtnArrow');
+            if (arr) arr.textContent = '▼';
             setTimeout(() => input.focus(), 100);
         }
 
@@ -9304,9 +9341,21 @@
                 msg.style.display = 'inline';
                 setTimeout(() => { msg.style.display = 'none'; }, 3000);
             }
+            const urlBtnText = document.getElementById('entrySheetUrlBtnText');
+            if (urlBtnText) urlBtnText.textContent = 'קישור לשרת (הוגדר) – לחץ לעריכה';
         }
 
         window.saveEntryCodeSheetUrl = saveEntryCodeSheetUrl;
+
+        function toggleEntrySheetUrlPanel() {
+            const panel = document.getElementById('entrySheetUrlPanel');
+            const arrowSpan = document.getElementById('entrySheetUrlBtnArrow');
+            if (!panel) return;
+            const isHidden = panel.classList.contains('hidden');
+            panel.classList.toggle('hidden', !isHidden);
+            if (arrowSpan) arrowSpan.textContent = isHidden ? '▲' : '▼';
+        }
+        window.toggleEntrySheetUrlPanel = toggleEntrySheetUrlPanel;
 
         function runAppBootstrap() {
             entryCodeVerified = true;
