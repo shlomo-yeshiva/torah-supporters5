@@ -23360,21 +23360,21 @@
             showHistoryStatus('🔄 טוען היסטוריה...', 'info');
             
             try {
-                // שימוש ב-POST לחיפוש מתרים (תווים בעברית) – אמין יותר מ-GET
-                const payload = {
-                    action: 'getHistory',
-                    startDate: startDate,
-                    endDate: endDate,
-                    entityName: (document.getElementById('historyDonorFilter')?.value || '').trim(),
-                    source: document.getElementById('historySourceFilter')?.value || '',
-                    actionType: document.getElementById('historyActionFilter')?.value || ''
-                };
+                // שימוש ב-GET (לא POST) כדי למנוע CORS preflight כשהאפליקציה רצה מ-Netlify/דומיין חיצוני
+                const params = new URLSearchParams();
+                params.append('action', 'getHistory');
+                params.append('startDate', startDate);
+                params.append('endDate', endDate);
+                const entityName = (document.getElementById('historyDonorFilter')?.value || '').trim();
+                if (entityName) params.append('entityName', entityName);
+                const source = document.getElementById('historySourceFilter')?.value;
+                if (source) params.append('source', source);
+                const actionType = document.getElementById('historyActionFilter')?.value;
+                if (actionType) params.append('actionType', actionType);
                 
-                const response = await fetch(googleSheetsWebAppUrl, {
-                    method: 'POST',
-                    redirect: 'follow',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                const response = await fetch(googleSheetsWebAppUrl + '?' + params.toString(), {
+                    method: 'GET',
+                    redirect: 'follow'
                 });
                 
                 const result = await response.json();
