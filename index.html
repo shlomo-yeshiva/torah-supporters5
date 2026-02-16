@@ -8313,7 +8313,7 @@
             donors = donors.map(normalizeDonor).filter(Boolean);
         }
 
-        /** השוואה גמישה של groupId – מטפלת בהבדלי טיפוס (מספר/מחרוזת), scientific notation מהגליון */
+        /** השוואה גמישה של groupId – מטפלת בהבדלי טיפוס (מספר/מחרוזת), scientific notation מהגליון, "group1" מול 1 */
         function groupIdsMatch(donorGroupId, groupId) {
             const a = donorGroupId;
             const b = groupId;
@@ -8325,15 +8325,24 @@
             const na = parseFloat(sa);
             const nb = parseFloat(sb);
             if (!isNaN(na) && !isNaN(nb) && na === nb) return true;
+            const numFromGroupPref = (s) => { const m = /^group(\d+)$/i.exec(s); return m ? parseInt(m[1], 10) : NaN; };
+            const na2 = numFromGroupPref(sa);
+            const nb2 = numFromGroupPref(sb);
+            if (!isNaN(na2) && na2 === nb) return true;
+            if (!isNaN(nb2) && nb2 === na) return true;
+            if (!isNaN(na2) && !isNaN(nb2) && na2 === nb2) return true;
             return false;
         }
 
-        /** מפתח קנוני לקבוצה – לטבלת donorsByGroup (מטפל ב-scientific notation) */
+        /** מפתח קנוני לקבוצה – לטבלת donorsByGroup (מטפל ב-scientific notation, "group1"→"1") */
         function getCanonicalGroupKey(groupOrId) {
             const id = typeof groupOrId === 'object' && groupOrId !== null ? groupOrId.id : groupOrId;
             if (id == null || id === '') return '';
-            const n = parseFloat(String(id));
-            return !isNaN(n) && isFinite(n) ? String(Math.round(n)) : String(id).trim();
+            const s = String(id).trim();
+            const m = /^group(\d+)$/i.exec(s);
+            if (m) return String(parseInt(m[1], 10));
+            const n = parseFloat(s);
+            return !isNaN(n) && isFinite(n) ? String(Math.round(n)) : s;
         }
 
         /** מחזיר את הקבוצה שמתרים שייך אליה – groupId גמיש + fallback לפי groupName */
@@ -16963,9 +16972,11 @@
                         const gGoal = g.goal || 0;
                         const gPct = gGoal > 0 ? (collected / gGoal) * 100 : 0;
                         const gText = gGoal > 0 ? `₪${collected.toLocaleString()} מתוך ₪${gGoal.toLocaleString()} | ${Math.max(0, gPct).toFixed(1)}%` : `₪${collected.toLocaleString()} | ללא יעד מוגדר`;
+                        const titleEl = card.querySelector('.leader-target-title');
                         const fill = card.querySelector('.leader-target-progress-fill');
                         const textEl = card.querySelector('.leader-target-progress-text');
                         const meta = card.querySelector('.leader-target-meta');
+                        if (titleEl && titleEl.textContent !== (g.name || '')) titleEl.textContent = g.name || 'ללא קבוצה';
                         if (fill) fill.style.width = Math.min(gPct, 100) + '%';
                         if (textEl) textEl.textContent = gText;
                         if (meta) meta.textContent = 'מספר מתרימים: ' + groupDonors.length;
