@@ -6526,7 +6526,7 @@
                                 <div>
                                     <label class="manual-search-label">מתרים ראשון – חיפוש חכם</label>
                                     <div class="donors-search-input-wrapper manual-donor-search-with-autocomplete" style="position: relative;">
-                                        <input type="text" id="pairsDonor1Input" class="donors-search-input manual-donor-search-input" placeholder="הקלד חלק משם..." autocomplete="off">
+                                        <input type="text" id="pairsDonor1Input" class="donors-search-input manual-donor-search-input" placeholder="שם, מספר מתרים או קבוצה..." autocomplete="off">
                                         <div id="pairsDonor1Autocomplete" class="manual-donor-autocomplete-list" style="display: none;"></div>
                                     </div>
                                     <div id="pairsDonor1Selected" style="margin-top: 8px; font-weight: 600; color: var(--primary-gold); min-height: 20px;"></div>
@@ -6534,7 +6534,7 @@
                                 <div>
                                     <label class="manual-search-label">מתרים שני – חיפוש חכם</label>
                                     <div class="donors-search-input-wrapper manual-donor-search-with-autocomplete" style="position: relative;">
-                                        <input type="text" id="pairsDonor2Input" class="donors-search-input manual-donor-search-input" placeholder="הקלד חלק משם..." autocomplete="off">
+                                        <input type="text" id="pairsDonor2Input" class="donors-search-input manual-donor-search-input" placeholder="שם, מספר מתרים או קבוצה..." autocomplete="off">
                                         <div id="pairsDonor2Autocomplete" class="manual-donor-autocomplete-list" style="display: none;"></div>
                                     </div>
                                     <div id="pairsDonor2Selected" style="margin-top: 8px; font-weight: 600; color: var(--primary-gold); min-height: 20px;"></div>
@@ -6570,7 +6570,7 @@
                     <div class="donors-management">
                         <div class="donors-search-bar">
                             <div class="donors-search-input-wrapper">
-                                <input type="text" id="donorSearchInput" class="donors-search-input" placeholder="חיפוש מתרימים לפי שם">
+                                <input type="text" id="donorSearchInput" class="donors-search-input" placeholder="חיפוש: שם, מספר מתרים, קבוצה, סכום...">
                                 <button type="button" id="donorSearchClear" class="donor-search-clear" aria-label="נקה חיפוש">×</button>
                             </div>
                             <div class="donors-search-meta" id="donorsSearchMeta"></div>
@@ -6601,9 +6601,9 @@
                 <div class="management-content" id="manualDonationContent">
                     <div class="donors-management">
                         <div class="donors-search-bar">
-                            <label for="manualDonorSearchInput" class="manual-search-label">🔍 חיפוש חכם – הקלד חלק משם והצעות יופיעו אוטומטית</label>
+                            <label for="manualDonorSearchInput" class="manual-search-label">🔍 חיפוש חכם – שם, מספר מתרים, קבוצה, סכום</label>
                             <div class="donors-search-input-wrapper manual-donor-search-with-autocomplete">
-                                <input type="text" id="manualDonorSearchInput" class="donors-search-input manual-donor-search-input" placeholder="למשל: יעקב, לוי, כהן..." autocomplete="off">
+                                <input type="text" id="manualDonorSearchInput" class="donors-search-input manual-donor-search-input" placeholder="שם, מספר מתרים, קבוצה..." autocomplete="off">
                                 <div id="manualDonorAutocompleteList" class="manual-donor-autocomplete-list" style="display: none;"></div>
                             </div>
                             <div class="donors-search-meta" id="manualDonorsSearchMeta"></div>
@@ -6686,12 +6686,19 @@
                                 </select>
                             </div>
                             
-                            <!-- תאריך -->
+                            <!-- תאריך – יום ספציפי -->
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <span style="color: #666; font-size: 14px;">חודשי</span>
-                                <input type="month" id="historyMonthFilter" style="
+                                <label style="color: #666; font-size: 14px;">יום:</label>
+                                <input type="date" id="historyDateFilter" style="
                                     padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px;
                                     font-size: 14px; cursor: pointer;">
+                            </div>
+                            <!-- חיפוש מתרים -->
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <label style="color: #666; font-size: 14px;">חיפוש מתרים:</label>
+                                <input type="text" id="historyDonorFilter" placeholder="שם מתרים..." style="
+                                    padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px;
+                                    font-size: 14px; min-width: 140px;">
                             </div>
                             
                             <!-- כפתורי פעולה -->
@@ -6773,7 +6780,6 @@
                         <h3>כלי ניקוי מהירים</h3>
                         <div class="reset-actions">
                             <button class="btn" onclick="confirmResetDonationSums()">איפוס סכומי תרומות</button>
-                            <button class="btn btn-danger" onclick="confirmClearDonors()">מחק את כל המתרימים</button>
                             <button class="btn btn-secondary" onclick="confirmResetApp()">איפוס מלא של המערכת</button>
                         </div>
                         <p class="reset-hint">שימוש בזהירות: הפעולות אינן ניתנות לשחזור.</p>
@@ -12779,10 +12785,13 @@
             const group = groups.find(g => g.id === donor.groupId);
             const groupName = group ? group.name : '';
             const displayName = donor.displayName || donor.name || '';
+            const matrimId = donor.nedarimMatrimId ? String(donor.nedarimMatrimId).trim() : '';
             const fields = [
                 displayName,
                 donor.name || '',
                 groupName,
+                matrimId,
+                donor.id ? String(donor.id) : '',
                 donor.amount || 0,
                 donor.personalGoal || 0,
                 donor.amount ? donor.amount.toLocaleString() : '',
@@ -12790,7 +12799,7 @@
             ];
             const normalizedFields = fields.map(normalizeForSearch).filter(Boolean);
             const combined = normalizeForSearch(
-                `${displayName} ${donor.name || ''} ${groupName || ''} ${donor.amount || ''} ${donor.personalGoal || ''}`
+                `${displayName} ${donor.name || ''} ${groupName || ''} ${matrimId} ${donor.amount || ''} ${donor.personalGoal || ''}`
             );
             if (combined) {
                 normalizedFields.push(combined);
@@ -15402,11 +15411,7 @@
                         </div>
                         </div>
                         <div class="donor-actions">
-                            <button class="btn btn-primary btn-small" onclick="toggleDonorEditor(${donor.id})" title="ערוך פרטי מתרים (כולל מספר מתרים)">
-                                ✏️ ערוך
-                            </button>
                             <button class="btn btn-secondary btn-small" onclick="addDonorPayment(${donor.id})">הוסף תשלום</button>
-                            <button class="btn btn-secondary btn-small" onclick="toggleDonorHistory(${donor.id})">היסטוריה</button>
                             <button class="btn btn-danger btn-small" onclick="deleteDonor(${donor.id})">מחק</button>
                         </div>
                         <div class="donor-history" id="donorHistory_${donor.id}">
@@ -16036,8 +16041,7 @@
                 donor.updatedAt = new Date().toISOString();
                 console.log(`✅ עודכן מספר מתרים למתרים "${donor.name}": ${oldMatrimIdStr || 'ללא'} → ${newMatrimIdStr || 'ללא'}`);
                 changed = true;
-                // מסמן את המתרים כשונה כדי למנוע עדכון מהגליון
-                recentlyUpdatedDonors.set(donorId, Date.now() + 30000); // 30 שניות נוספות אחרי עדכון מספר מתרים
+                recentlyUpdatedDonors.set(donorId, Date.now() + 30000);
                 console.log(`🔒 [עריכה] מתרים ${donorId} עודכן מספר מתרים - מגן מפני עדכון מהגליון`);
             }
             
@@ -23261,17 +23265,13 @@
                 let params = new URLSearchParams();
                 params.append('action', 'getHistory');
                 
-                // סינון לפי חודש
-                const monthFilter = document.getElementById('historyMonthFilter')?.value;
-                if (monthFilter) {
-                    // המרה לתאריכי תחילה וסוף של החודש
-                    const [year, month] = monthFilter.split('-');
-                    const startDate = `${year}-${month}-01`;
-                    const lastDay = new Date(year, month, 0).getDate();
-                    const endDate = `${year}-${month}-${lastDay}`;
-                    params.append('startDate', startDate);
-                    params.append('endDate', endDate);
+                const dateFilter = document.getElementById('historyDateFilter')?.value;
+                if (dateFilter) {
+                    params.append('startDate', dateFilter);
+                    params.append('endDate', dateFilter);
                 }
+                const donorFilter = document.getElementById('historyDonorFilter')?.value?.trim();
+                if (donorFilter) params.append('entityName', donorFilter);
                 
                 const source = document.getElementById('historySourceFilter')?.value;
                 const actionType = document.getElementById('historyActionFilter')?.value;
@@ -23354,16 +23354,30 @@
                 return badges[action] || `<span style="background: #f5f5f5; color: #666; padding: 4px 10px; border-radius: 12px; font-size: 12px;">${action || '?'}</span>`;
             };
             
+            const formatHistoryDate = (d) => {
+                if (!d) return '';
+                if (typeof d === 'string' && /^\d{4}-\d{2}-\d{2}/.test(d)) {
+                    const p = d.split('T')[0].split('-');
+                    return p[2] + '/' + p[1] + '/' + p[0];
+                }
+                return String(d);
+            };
+            const formatHistoryAmount = (a) => {
+                if (a === undefined || a === null || a === '') return '';
+                const n = Number(a);
+                if (isNaN(n)) return String(a);
+                return '₪' + (Math.round(n * 100) / 100).toLocaleString('he-IL', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+            };
             tbody.innerHTML = historyData.map((entry, index) => `
                 <tr style="border-bottom: 1px solid #eee; ${index % 2 === 0 ? '' : 'background: #fafafa;'}">
-                    <td style="padding: 14px 12px; font-size: 14px; color: #333;">${entry.date || ''}</td>
+                    <td style="padding: 14px 12px; font-size: 14px; color: #333;">${formatHistoryDate(entry.date)}</td>
                     <td style="padding: 14px 12px; font-size: 13px; color: #666;">${entry.time || ''}</td>
                     <td style="padding: 14px 12px;">${getActionBadge(entry.actionType)}</td>
-                    <td style="padding: 14px 12px; font-weight: 500; color: #333;">${entry.entityName || ''}</td>
-                    <td style="padding: 14px 12px; font-size: 13px; color: #888; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${entry.details || ''}</td>
-                    <td style="padding: 14px 12px; font-weight: 600; color: ${Number(entry.amount) >= 0 ? '#28a745' : '#dc3545'};">${entry.amount ? '₪' + Number(entry.amount).toLocaleString() : ''}</td>
+                    <td style="padding: 14px 12px; font-weight: 500; color: #333;">${escapeHtml(entry.entityName || '')}</td>
+                    <td style="padding: 14px 12px; font-size: 13px; color: #888; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(entry.details || '')}</td>
+                    <td style="padding: 14px 12px; font-weight: 600; color: ${Number(entry.amount) >= 0 ? '#28a745' : '#dc3545'};">${formatHistoryAmount(entry.amount)}</td>
                     <td style="padding: 14px 12px;">${getSourceBadge(entry.source)}</td>
-                    <td style="padding: 14px 12px; font-size: 12px; color: #888;">${entry.computerName || ''}</td>
+                    <td style="padding: 14px 12px; font-size: 12px; color: #888;">${escapeHtml(entry.computerName || '')}</td>
                 </tr>
             `).join('');
             
@@ -23412,11 +23426,13 @@
         
         // ניקוי סינון
         function clearHistoryFilters() {
-            const monthFilter = document.getElementById('historyMonthFilter');
+            const dateFilter = document.getElementById('historyDateFilter');
+            const donorFilter = document.getElementById('historyDonorFilter');
             const source = document.getElementById('historySourceFilter');
             const action = document.getElementById('historyActionFilter');
             
-            if (monthFilter) monthFilter.value = '';
+            if (dateFilter) dateFilter.value = '';
+            if (donorFilter) donorFilter.value = '';
             if (source) source.value = '';
             if (action) action.value = '';
         }
