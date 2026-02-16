@@ -23250,7 +23250,7 @@
                 const source = document.getElementById('historySourceFilter')?.value;
                 const actionType = document.getElementById('historyActionFilter')?.value;
                 
-שׂ                if (source) params.appenׂd('source', source);
+                if (source) params.append('source', source);
                 if (actionType) params.append('actionType', actionType);
                 
                 const response = await fetch(googleSheetsWebAppUrl + '?' + params.toString(), {
