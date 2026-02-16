@@ -23311,67 +23311,70 @@
             }
         }
         
-        // טעינת היסטוריה מהגליון
+        // טעינת היסטוריה מהגליון – רק לפי התאריך הנבחר
         async function loadHistory() {
             if (!googleSheetsWebAppUrl) {
                 showHistoryStatus('❌ נא להגדיר את כתובת ה-Web App בלשונית "עדכונים"', 'error');
                 return;
             }
             
+            const viewMode = document.querySelector('.history-view-btn.active')?.dataset?.view || 'day';
+            let startDate = '', endDate = '';
+            
+            if (viewMode === 'day') {
+                let dateFilter = document.getElementById('historyDateFilter')?.value;
+                if (!dateFilter) {
+                    const today = new Date().toISOString().slice(0, 10);
+                    document.getElementById('historyDateFilter').value = today;
+                    dateFilter = today;
+                }
+                startDate = endDate = dateFilter;
+            } else if (viewMode === 'week') {
+                let dateFilter = document.getElementById('historyDateFilter')?.value;
+                if (!dateFilter) {
+                    const today = new Date().toISOString().slice(0, 10);
+                    document.getElementById('historyDateFilter').value = today;
+                    dateFilter = today;
+                }
+                const d = new Date(dateFilter + 'T12:00:00');
+                const day = d.getDay();
+                const diffToSun = day === 0 ? 0 : day;
+                const sun = new Date(d);
+                sun.setDate(sun.getDate() - diffToSun);
+                const sat = new Date(sun);
+                sat.setDate(sat.getDate() + 6);
+                startDate = sun.toISOString().slice(0, 10);
+                endDate = sat.toISOString().slice(0, 10);
+            } else if (viewMode === 'month') {
+                const monthFilter = document.getElementById('historyMonthFilter')?.value;
+                if (!monthFilter) {
+                    showHistoryStatus('❌ נא לבחור חודש לצפייה בהיסטוריה', 'error');
+                    return;
+                }
+                const [y, m] = monthFilter.split('-').map(Number);
+                startDate = `${y}-${String(m).padStart(2,'0')}-01`;
+                const lastDay = new Date(y, m, 0);
+                endDate = lastDay.toISOString().slice(0, 10);
+            }
+            
             showHistoryStatus('🔄 טוען היסטוריה...', 'info');
             
             try {
-                // בניית פרמטרים לסינון – חישוב טווח לפי תצוגה (יום/שבוע/חודש)
-                let params = new URLSearchParams();
-                params.append('action', 'getHistory');
+                // שימוש ב-POST לחיפוש מתרים (תווים בעברית) – אמין יותר מ-GET
+                const payload = {
+                    action: 'getHistory',
+                    startDate: startDate,
+                    endDate: endDate,
+                    entityName: (document.getElementById('historyDonorFilter')?.value || '').trim(),
+                    source: document.getElementById('historySourceFilter')?.value || '',
+                    actionType: document.getElementById('historyActionFilter')?.value || ''
+                };
                 
-                const viewMode = document.querySelector('.history-view-btn.active')?.dataset?.view || 'day';
-                let startDate = '', endDate = '';
-                
-                if (viewMode === 'day') {
-                    const dateFilter = document.getElementById('historyDateFilter')?.value;
-                    if (dateFilter) {
-                        startDate = endDate = dateFilter;
-                    }
-                } else if (viewMode === 'week') {
-                    const dateFilter = document.getElementById('historyDateFilter')?.value;
-                    if (dateFilter) {
-                        const d = new Date(dateFilter + 'T12:00:00');
-                        const day = d.getDay();
-                        const diffToSun = day === 0 ? 0 : day;
-                        const sun = new Date(d);
-                        sun.setDate(sun.getDate() - diffToSun);
-                        const sat = new Date(sun);
-                        sat.setDate(sat.getDate() + 6);
-                        startDate = sun.toISOString().slice(0, 10);
-                        endDate = sat.toISOString().slice(0, 10);
-                    }
-                } else if (viewMode === 'month') {
-                    const monthFilter = document.getElementById('historyMonthFilter')?.value;
-                    if (monthFilter) {
-                        const [y, m] = monthFilter.split('-').map(Number);
-                        startDate = `${y}-${String(m).padStart(2,'0')}-01`;
-                        const lastDay = new Date(y, m, 0);
-                        endDate = lastDay.toISOString().slice(0, 10);
-                    }
-                }
-                
-                if (startDate) {
-                    params.append('startDate', startDate);
-                    params.append('endDate', endDate);
-                }
-                const donorFilter = document.getElementById('historyDonorFilter')?.value?.trim();
-                if (donorFilter) params.append('entityName', donorFilter);
-                
-                const source = document.getElementById('historySourceFilter')?.value;
-                const actionType = document.getElementById('historyActionFilter')?.value;
-                
-                if (source) params.append('source', source);
-                if (actionType) params.append('actionType', actionType);
-                
-                const response = await fetch(googleSheetsWebAppUrl + '?' + params.toString(), {
-                    method: 'GET',
-                    redirect: 'follow'
+                const response = await fetch(googleSheetsWebAppUrl, {
+                    method: 'POST',
+                    redirect: 'follow',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
                 
                 const result = await response.json();
