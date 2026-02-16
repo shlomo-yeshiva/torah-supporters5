@@ -16864,7 +16864,6 @@
                 const summaryHtml = `
                     <div class="leader-target-card">
                         <div class="leader-target-title">סה"כ נאסף</div>
-                        <div class="leader-target-meta">מספר מתרימים: ${totalDonorsCount}</div>
                         <div class="leader-target-progress-bar">
                             <div class="${progressClass}" style="width: ${progressWidth}%;"></div>
                             <div class="leader-target-progress-text">${summaryText}</div>
@@ -16900,7 +16899,6 @@
             const summaryHtml = `
                 <div class="leader-target-card leader-summary-card" data-summary="1">
                     <div class="leader-target-title">סה"כ נאסף</div>
-                    <div class="leader-target-meta">מספר מתרימים: ${totalDonorsCount}</div>
                     <div class="leader-target-progress-bar">
                         <div class="${progressClass}" style="width: ${progressWidth}%;"></div>
                         <div class="leader-target-progress-text">${summaryText}</div>
@@ -16988,7 +16986,7 @@
                     const meta = existingSummary.querySelector('.leader-target-meta');
                     if (fill) fill.style.width = progressWidth + '%';
                     if (textEl) textEl.textContent = summaryText;
-                    if (meta) meta.textContent = 'מספר מתרימים: ' + totalDonorsCount;
+                    if (meta) meta.remove();
                 }
                 // סנכרון לקלון בלי innerHTML – רק עדכון טקסט/מבנה אלמנט-אלמנט (מונע קפיצות)
                 if (isLiveViewActive() && liveViewSettings.enableAutoScroll && leadersScrollIsRunning) {
