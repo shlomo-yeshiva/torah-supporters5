@@ -6319,13 +6319,13 @@
                     <div class="scouts-hero">
                         <div class="scouts-hero-card accent">
                             <div class="scouts-header-text">
-                                <h2>ניהול סירת פורים</h2>
-                                <p>מרכז שליטה אלגנטי לסירות השטח: תכננו צוותים, נטרו כפילויות, נהלו יעד עיר וחווו אינטראקציה חכמה ונוחה לכל מנהלי הקמפיין.</p>
+                                <h2>ניהול סיירות פורים</h2>
+                                <p>מרכז שליטה אלגנטי לסיירות השטח: תכננו צוותים, נטרו כפילויות, נהלו יעד עיר וחווו אינטראקציה חכמה ונוחה לכל מנהלי הקמפיין.</p>
                                 <span class="scouts-guideline">טיפ: הגדירו יעד אישי לכל מתרים ושמרו על שקיפות מלאה בימי הפורים.</span>
                             </div>
                         </div>
                         <div class="scouts-hero-card">
-                            <span class="scouts-stats-title">מדדי סירת השטח</span>
+                            <span class="scouts-stats-title">מדדי סיירות השטח</span>
                             <div class="scouts-stats" id="scoutsStats"></div>
                         </div>
                     </div>
@@ -6336,10 +6336,10 @@
                     </div>
                         <datalist id="scoutCityOptions"></datalist>
                     <div class="scouts-actions">
-                        <button class="btn btn-small" type="button" onclick="scoutsAddTeam()">הוסף סירת </button>
+                        <button class="btn btn-small" type="button" onclick="scoutsAddTeam()">הוסף סיירת</button>
                         <span style="margin: 0 8px; color: var(--muted);">|</span>
                         <span>ייצוא לאקסל:</span>
-                        <button class="btn btn-small btn-secondary" type="button" onclick="exportScoutsToExcel('all')" title="כל הסירות">כל הסירות</button>
+                        <button class="btn btn-small btn-secondary" type="button" onclick="exportScoutsToExcel('all')" title="כל הסיירות">כל הסיירות</button>
                         <button class="btn btn-small btn-secondary" type="button" onclick="exportScoutsToExcel('day14')" title="רק יום י״ד">י״ד בלבד</button>
                         <button class="btn btn-small btn-secondary" type="button" onclick="exportScoutsToExcel('day15')" title="רק יום ט״ו">ט״ו בלבד</button>
                         </div>
@@ -8309,7 +8309,7 @@
                         : [];
                     return {
                         id: teamId,
-                        name: (team?.name || 'סירת ').toString(),
+                        name: (team?.name || 'סיירת ').toString(),
                         city: (team?.city || '').toString().trim(),
                         members
                     };
@@ -10362,7 +10362,7 @@
             const uniqueMembers = new Set(allMembers.map(member => (member?.name || '').toLowerCase()).filter(Boolean));
             const stats = [
                 { label: 'מתרימים כולל ראשי סיירת', value: totalIncludingLeaders.toLocaleString('he-IL') },
-                { label: 'סירות פעילות', value: totalTeams.toLocaleString('he-IL') },
+                { label: 'סיירות פעילות', value: totalTeams.toLocaleString('he-IL') },
                 { label: 'מתרימים ייחודיים', value: uniqueMembers.size.toLocaleString('he-IL') }
             ];
             statsEl.innerHTML = stats.map(stat => `
@@ -10380,7 +10380,7 @@
             if (!teams.length) {
                 container.innerHTML = `
                     <div class="instructions-note">
-                        עדיין לא נוצרו סירות לשטח ביום ${SCOUT_DAY_LABELS[scoutsActiveDay]}. הוסיפו סירת  חדשה באמצעות הכפתור למעלה.
+                        עדיין לא נוצרו סיירות לשטח ביום ${SCOUT_DAY_LABELS[scoutsActiveDay]}. הוסיפו סיירת חדשה באמצעות הכפתור למעלה.
                     </div>
                 `;
                 updateScoutsStats();
@@ -10414,7 +10414,7 @@
                                 </tr>
                             `;
                         }).join('')
-                        : `<tr><td class="scout-team-empty scout-member-name-cell">עדיין לא נרשמו מתרימים לסירת השטח הזו.</td><td></td></tr>`;
+                        : `<tr><td class="scout-team-empty scout-member-name-cell">עדיין לא נרשמו מתרימים לסיירת השטח הזו.</td><td></td></tr>`;
                     const newMemberRow = `
                         <tr class="scout-member-new-row">
                             <td class="scout-member-name-cell">
@@ -10424,37 +10424,37 @@
                                     placeholder="שם מתרים חדש"
                                     list="scoutDonorSuggestions">
                             </td>
-                            <td class="scout-member-new-hint">הקישו אנטר להוספת שם חדש לרשימת סירת השטח</td>
+                            <td class="scout-member-new-hint">הקישו אנטר להוספת שם חדש לרשימת סיירת השטח</td>
                         </tr>
                     `;
                     return `
                         <div class="scout-team-card" data-team-id="${team.id}">
                             <div class="scout-team-header">
-                                <input type="text" value="${escapeHtml(team.name)}" placeholder="שם סירת "
+                                <input type="text" value="${escapeHtml(team.name)}" placeholder="שם סיירת "
                                     oninput="scoutsUpdateTeamName('${team.id}', this.value)">
                                 <input type="text" value="${escapeHtml(team.city || '')}" placeholder="עיר יעד" list="scoutCityOptions"
                                     oninput="scoutsUpdateTeamCity('${team.id}', this.value)">
-                                <button type="button" onclick="scoutsDeleteTeam('${team.id}')">מחק סירת </button>
+                                <button type="button" onclick="scoutsDeleteTeam('${team.id}')">מחק סיירת</button>
                             </div>
                             <div class="scout-team-meta">
                                 <label>
-                                    <span>ראש סירת</span>
+                                    <span>ראש סיירת</span>
                                     <input type="text"
                                         value="${escapeHtml(team.leader || '')}"
-                                        placeholder="שם ראש הסירת"
+                                        placeholder="שם ראש הסיירת"
                                         list="scoutDonorSuggestions"
                                         oninput="scoutsUpdateTeamLeader('${team.id}', this.value)">
                                 </label>
                             </div>
                             <div class="scout-team-summary">
                                 <div class="scout-summary-card">
-                                    <span class="scout-summary-label">מספר מתרימים${hasLeader ? ' (כולל ראש סירה)' : ''}</span>
+                                    <span class="scout-summary-label">מספר מתרימים${hasLeader ? ' (כולל ראש סיירת)' : ''}</span>
                                     <div class="scout-summary-value scout-summary-static">${totalParticipants.toLocaleString('he-IL')}</div>
                                 </div>
                                 <div class="scout-summary-card" style="grid-column: 1 / -1;">
                                     <button type="button" class="btn btn-small scout-add-member-btn" data-team-id="${team.id}" 
                                         style="width: 100%; background: linear-gradient(135deg, var(--primary-gold) 0%, var(--primary-gold-dark) 100%); color: white; border: none; padding: 10px 16px; border-radius: 10px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);">
-                                        הוסף שם חדש לרשימת הסירת
+                                        הוסף שם חדש לרשימת הסיירת
                                     </button>
                                 </div>
                             </div>
@@ -10551,13 +10551,13 @@
                 nameInput.value = '';
                 renderScoutsTeams();
                 if (!options?.silent) {
-                    showNotification(`המתרים ${result.member.name} נוסף לסירת ה בהצלחה`);
+                    showNotification(`המתרים ${result.member.name} נוסף לסיירת בהצלחה`);
                 }
             } else if (!options?.silent) {
                 if (result.status === 'duplicate-team') {
-                    showNotification('שם זה כבר קיים בסירת הנוכחית');
+                    showNotification('שם זה כבר קיים בסיירת הנוכחית');
                 } else if (result.status === 'duplicate-global') {
-                    showNotification('שם זה כבר משויך לסירת  אחרת ביום זה');
+                    showNotification('שם זה כבר משויך לסיירת אחרת ביום זה');
                 } else if (result.status === 'invalid') {
                     showNotification('אנא הזינו שם מתרים תקין');
                 }
@@ -10579,19 +10579,19 @@
                 saveScoutsScheduleToStorage();
                 notifyDataChanged();
                 renderScoutsTeams();
-                showNotification('המתרים הוסר מסירת השטח');
+                showNotification('המתרים הוסר מסיירת השטח');
                 return;
             }
             const normalized = trimmed.toLowerCase();
             const currentNormalized = (member.name || '').toString().trim().toLowerCase();
             if (currentNormalized === normalized) return;
             if (team.members.some((item, idx) => idx !== index && (item?.name || '').toLowerCase() === normalized)) {
-                showNotification('שם זה כבר קיים בסירת השטח הנוכחית');
+                showNotification('שם זה כבר קיים בסיירת השטח הנוכחית');
                 renderScoutsTeams();
                 return;
             }
             if (scoutsNameExists(trimmed, { day: scoutsActiveDay, teamId })) {
-                showNotification('שם זה כבר משויך לסירת שטח אחרת ביום זה');
+                showNotification('שם זה כבר משויך לסיירת שטח אחרת ביום זה');
                 renderScoutsTeams();
                 return;
             }
@@ -10599,14 +10599,14 @@
             saveScoutsScheduleToStorage();
             notifyDataChanged();
             renderScoutsTeams();
-            showNotification('שם המתרים עודכן בסירת השטח בהצלחה');
+            showNotification('שם המתרים עודכן בסיירת השטח בהצלחה');
         }
 
         function scoutsAddTeam() {
             const teams = getScoutsTeamsForActiveDay();
             const newTeam = {
                 id: generateScoutTeamId(),
-                name: `סירת ${teams.length + 1} (${SCOUT_DAY_LABELS[scoutsActiveDay]})`,
+                name: `סיירת ${teams.length + 1} (${SCOUT_DAY_LABELS[scoutsActiveDay]})`,
                 city: '',
                 leader: '',
                 members: []
@@ -10615,7 +10615,7 @@
             saveScoutsScheduleToStorage();
             renderScoutsTeams();
             notifyDataChanged();
-            showNotification('סירת שטח חדשה נוספה');
+            showNotification('סיירת שטח חדשה נוספה');
         }
 
         function scoutsDeleteTeam(teamId) {
@@ -10623,19 +10623,19 @@
             var idStr = String(teamId);
             const index = teams.findIndex(team => String(team.id) === idStr);
             if (index === -1) return;
-            if (!confirm('האם למחוק את סירת השטח הזו?')) return;
+            if (!confirm('האם למחוק את סיירת השטח הזו?')) return;
             teams.splice(index, 1);
             saveScoutsScheduleToStorage();
             renderScoutsTeams();
             if (typeof saveToGoogleSheets === 'function') saveToGoogleSheets().catch(e => console.warn('שמירה לגליון:', e));
-            showNotification('סירת השטח הוסרה מהרשימה');
+            showNotification('סיירת השטח הוסרה מהרשימה');
         }
 
         function scoutsUpdateTeamName(teamId, value) {
             const teams = getScoutsTeamsForActiveDay();
             const team = teams.find(item => item.id === teamId);
             if (!team) return;
-            team.name = value.trim() || 'סירת שטח';
+            team.name = value.trim() || 'סיירת שטח';
             saveScoutsScheduleToStorage();
             notifyDataChanged();
         }
@@ -10671,9 +10671,9 @@
             renderScoutsTeams();
             if (typeof saveToGoogleSheets === 'function') saveToGoogleSheets().catch(e => console.warn('שמירה לגליון:', e));
             if (removed?.name) {
-                showNotification(`המתרים ${removed.name} הוסר מסירת השטח`);
+                showNotification(`המתרים ${removed.name} הוסר מסיירת השטח`);
             } else {
-                showNotification('המתרים הוסר מסירת השטח');
+                showNotification('המתרים הוסר מסיירת השטח');
             }
         }
 
@@ -10695,18 +10695,18 @@
         function showScoutsSummary() {
             const teams = getScoutsTeamsForActiveDay();
             if (!teams.length) {
-                showNotification('אין סירות להצגה', 'error');
+                showNotification('אין סיירות להצגה', 'error');
                 return;
             }
 
             let summaryHTML = `
                 <div style="max-width: 900px; margin: 0 auto; padding: 20px;">
-                    <h2 style="text-align: center; margin-bottom: 30px; color: var(--brown-dark);">סיכום סירות - ${SCOUT_DAY_LABELS[scoutsActiveDay]}</h2>
+                    <h2 style="text-align: center; margin-bottom: 30px; color: var(--brown-dark);">סיכום סיירות - ${SCOUT_DAY_LABELS[scoutsActiveDay]}</h2>
                     <div style="overflow-x: auto;">
                         <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                             <thead>
                                 <tr style="background: linear-gradient(135deg, var(--primary-gold) 0%, var(--primary-gold-dark) 100%); color: white;">
-                                    <th style="padding: 15px; text-align: right; border-bottom: 2px solid rgba(255,255,255,0.2);">שם סירת</th>
+                                    <th style="padding: 15px; text-align: right; border-bottom: 2px solid rgba(255,255,255,0.2);">שם סיירת</th>
                                     <th style="padding: 15px; text-align: center; border-bottom: 2px solid rgba(255,255,255,0.2);">מספר מתרימים</th>
                                     <th style="padding: 15px; text-align: right; border-bottom: 2px solid rgba(255,255,255,0.2);">עיר</th>
                                 </tr>
@@ -10723,7 +10723,7 @@
                 const rowStyle = index % 2 === 0 ? 'background: rgba(245, 230, 211, 0.3);' : 'background: white;';
                 summaryHTML += `
                     <tr style="${rowStyle}">
-                        <td style="padding: 12px 15px; text-align: right; font-weight: 600; color: var(--brown-dark);">${escapeHtml(team.name || 'סירת שטח')}</td>
+                        <td style="padding: 12px 15px; text-align: right; font-weight: 600; color: var(--brown-dark);">${escapeHtml(team.name || 'סיירת שטח')}</td>
                         <td style="padding: 12px 15px; text-align: center;">${memberCount.toLocaleString('he-IL')}</td>
                         <td style="padding: 12px 15px; text-align: right; color: var(--muted);">${escapeHtml(team.city || '-')}</td>
                     </tr>
@@ -10815,7 +10815,7 @@
             });
             
             if (!hasAny) {
-                showNotification('אין סירות לייצוא', 'error');
+                showNotification('אין סיירות לייצוא', 'error');
                 return;
             }
 
@@ -10828,16 +10828,16 @@
                     if (teams.length === 0) return;
                     
                     const worksheetData = [];
-                    worksheetData.push(['סיכום סירות - ' + (SCOUT_DAY_LABELS[activeDay] || activeDay)]);
+                    worksheetData.push(['סיכום סיירות - ' + (SCOUT_DAY_LABELS[activeDay] || activeDay)]);
                     worksheetData.push([]);
-                    worksheetData.push(['שם סירת', 'מספר מתרימים', 'עיר']);
+                    worksheetData.push(['שם סיירת', 'מספר מתרימים', 'עיר']);
                     
                     let grandMemberCount = 0;
                     teams.forEach(team => {
                         const memberCount = (team.members || []).length;
                         grandMemberCount += memberCount;
                         worksheetData.push([
-                            team.name || 'סירת שטח',
+                            team.name || 'סיירת שטח',
                             memberCount,
                             team.city || '-'
                         ]);
@@ -10848,7 +10848,7 @@
                     const ws = XLSX.utils.aoa_to_sheet(worksheetData);
                     ws['!cols'] = [{ wch: 20 }, { wch: 15 }, { wch: 15 }];
                     var sheetName = activeDay === 'day14' ? 'י״ד' : activeDay === 'day15' ? 'ט״ו' : activeDay;
-                    XLSX.utils.book_append_sheet(wb, ws, 'סירות ' + sheetName);
+                    XLSX.utils.book_append_sheet(wb, ws, 'סיירות ' + sheetName);
                 });
                 
                 const fileName = day === 'all' 
@@ -17301,7 +17301,7 @@
                     }
                     
                     if (loaded === 0) {
-                        showNotification('לא נמצאו מתרימים בקובץ. אנא ודא שהקובץ מכיל שמות במעמודה הראשונה.');
+                        showNotification('לא נמצאו מתרימים בקובץ. אנא ודא שהקובץ מכיל שמות בעמודה הראשונה.');
                         return;
                     }
                     
