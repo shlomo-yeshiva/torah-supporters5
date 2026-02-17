@@ -3430,19 +3430,21 @@
             gap: 10px;
             padding: 10px;
             padding-bottom: 0;
-            animation: none;
             will-change: transform;
-            transform: translate3d(0, 0, 0);
             backface-visibility: hidden;
             perspective: 1000px;
+            transform: translateZ(0); /* שכבת GPU נפרדת – גלילה חלקה במסכים גדולים */
+        }
+        .live-donors-scroll[data-scroll-animation] {
+            animation: donorsScrollUp var(--scroll-duration, 90s) linear infinite;
+        }
+        @keyframes donorsScrollUp {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(0, -50%, 0); }
         }
         @keyframes scrollUp {
-            0% {
-                transform: translateY(0);
-            }
-            100% {
-                transform: translateY(-50%);
-            }
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
         }
 
         .live-donor-group-header {
@@ -6117,12 +6119,12 @@
                 <button class="nav-item" data-section="raffle">מערכת הגרלות</button>
                 <button class="nav-item" data-section="scouts">ניהול סיירות</button>
                 <button class="nav-item" data-section="toolkit">ארגז כלים לתתני״ק הצעיר</button>
+                <button class="nav-item" data-section="semifinal">חגיגת ניצחון</button>          
                 <button class="nav-item" data-section="finance">חישוב לכל השנה</button>
                 <button class="nav-item" data-section="loans">הלוואות</button>
                 <button class="nav-item" data-section="planning">תכנון קמפיין לשנים הבאות</button>
                 <button class="nav-item" data-section="groomGrant">מענק לחתנים</button>
                 <button class="nav-item" data-section="grants">קבלת מענקים למתרמים</button>
-                <button class="nav-item" data-section="semifinal">חגיגת ניצחון</button>          
                 <button class="nav-item" data-section="addresses">כתובות</button>
                 <button class="nav-item" data-section="instructions">אודות התוכנה</button>
                 </div>
@@ -13187,9 +13189,8 @@
             state.isInCooldown = false;
 
             if (key === 'donors') {
-                // איפוס הדגל שהגלילה רצה
                 donorsScrollIsRunning = false;
-                
+                if (typeof stopDonorsAutoScroll === 'function') stopDonorsAutoScroll();
                 const container = document.getElementById('liveDonorsScroll');
                 if (container) {
                     // השארת המיקום הנוכחי כדי לא ליצור קפיצה
@@ -13230,11 +13231,6 @@
                 return;
             }
 
-            // אם הגלילה כבר רצה - לא להפריע!
-            if (donorsScrollIsRunning && state.handle) {
-                return;
-            }
-
             if (state.handle) {
                 cancelAnimationFrame(state.handle);
                 state.handle = null;
@@ -13246,55 +13242,41 @@
                 return;
             }
 
-            const startOffset = Math.min(state.offset || 0, halfHeight);
-            let offset = startOffset;
             state.distance = halfHeight;
-            
-            // מסמן שהגלילה רצה (מאתחל זמן לגיבוי 10 דקות)
+            state.offset = 0;
             donorsScrollIsRunning = true;
             donorsScrollLastTime = performance.now();
             if (lastLiveViewUpdateAt === 0) lastLiveViewUpdateAt = Date.now();
 
-            let last = performance.now();
+            // גלילה ב-CSS animation – רצה על ה-compositor, ללא רעידות במסכים גדולים
+            const speedValue = liveViewSettings.donorsScrollSpeed || 50;
+            const speed = 5 + (speedValue - 10) * 65 / 90; // px/sec
+            const durationSec = halfHeight / speed;
+            const durationMs = Math.round(Math.max(20, durationSec * 1000));
+            container.style.setProperty('--scroll-duration', durationMs + 'ms');
+            container.removeAttribute('data-scroll-animation');
+            container.offsetHeight; // force reflow
+            container.setAttribute('data-scroll-animation', '1');
 
-            function step(timestamp) {
-                // בדיקה שהגלילה עדיין צריכה לרוץ
-                if (!donorsScrollIsRunning) {
-                    state.handle = null;
-                    return;
+            var onIteration = function() {
+                donorsScrollLastTime = performance.now();
+                if ((liveViewSettings.liveViewUpdateWhen || 'end') === 'end' && typeof onDonorsScrollCycleComplete === 'function') onDonorsScrollCycleComplete().catch(() => {});
+            };
+            container.removeEventListener('animationiteration', onIteration);
+            container.addEventListener('animationiteration', onIteration);
+            state.onIteration = onIteration;
+        }
+
+        function stopDonorsAutoScroll() {
+            const container = document.getElementById('liveDonorsScroll');
+            if (container) {
+                container.removeAttribute('data-scroll-animation');
+                container.style.animation = 'none';
+                if (autoScrollStates.donors && autoScrollStates.donors.onIteration) {
+                    container.removeEventListener('animationiteration', autoScrollStates.donors.onIteration);
                 }
-                
-                const delta = (timestamp - last) / 1000;
-                last = timestamp;
-                donorsScrollLastTime = timestamp;
-                
-                // שימוש בגובה שמור – קוראים scrollHeight רק במעבר מחזור (מונע רעידות מ-layout thrashing)
-                let h = halfHeight;
-                if (offset >= halfHeight - 5) {
-                    h = container.scrollHeight > 0 ? container.scrollHeight / 2 : halfHeight;
-                    h = (h && isFinite(h) && h >= 50) ? h : halfHeight;
-                }
-                
-                // מיפוי המהירות
-                const speedValue = liveViewSettings.donorsScrollSpeed || 50;
-                const speed = 5 + (speedValue - 10) * 65 / 90;
-                offset += speed * delta;
-                
-                // גלילה אינסופית
-                if (offset >= h) {
-                    offset -= h;
-                    state.cycleCompleteFired = false;
-                    if ((liveViewSettings.liveViewUpdateWhen || 'end') === 'end' && typeof onDonorsScrollCycleComplete === 'function') onDonorsScrollCycleComplete().catch(() => {});
-                }
-                if (offset < 10) state.cycleCompleteFired = false;
-                state.offset = offset;
-                // עיגול לפיקסלים שלמים – מונע רעידות מ-subpixel rendering
-                container.style.transform = `translate3d(0, ${Math.round(-offset)}px, 0)`;
-                state.handle = requestAnimationFrame(step);
             }
-
-            container.style.willChange = 'transform';
-            state.handle = requestAnimationFrame(step);
+            donorsScrollIsRunning = false;
         }
         
         /** עדכון תוך כדי גלילה – עם או בלי overlay לפי ההגדרה. */
@@ -13716,16 +13698,12 @@
                 if (typeof triggerLiveViewUpdateByTimer === 'function') triggerLiveViewUpdateByTimer();
             }
             
-            // בדיקת גלילת תורמים
-            if (donorsScrollIsRunning) {
-                // אם עברו יותר מ-2 שניות מהעדכון האחרון, משהו תקוע
-                if (now - donorsScrollLastTime > 2000) {
-                    console.log('⚠️ גלילת תורמים נתקעה - מפעיל מחדש');
-                    donorsScrollIsRunning = false;
-                    restartDonorsAutoScroll();
-                }
-            } else {
-                // אם הגלילה לא רצה אבל צריכה - מפעיל
+            // בדיקת גלילת תורמים (CSS animation – מרענן donorsScrollLastTime ב-animationiteration)
+            if (!donorsScrollIsRunning && liveViewSettings.enableAutoScroll) {
+                restartDonorsAutoScroll();
+            } else if (donorsScrollIsRunning && now - donorsScrollLastTime > 180000) {
+                // גלילה רצה אך לא קיבלנו iteration מ-3 דקות – כנראה תקוע
+                donorsScrollIsRunning = false;
                 restartDonorsAutoScroll();
             }
             
