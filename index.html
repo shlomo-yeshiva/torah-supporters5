@@ -3411,6 +3411,7 @@
             width: 100%;
             max-width: 100%;
             height: 100vh;
+            contain: paint;
             overflow: hidden;
             position: relative;
             background: none;
@@ -3424,6 +3425,7 @@
 
 
         .live-donors-scroll {
+            contain: paint;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
@@ -4193,6 +4195,17 @@
             overflow: hidden;
             overflow-x: hidden;
             height: 100%;
+            contain: paint;
+        }
+
+        .live-leaders-scroll-inner[data-leaders-scroll] {
+            animation: leadersScrollUp var(--leaders-scroll-duration, 60s) linear infinite;
+            will-change: transform;
+        }
+
+        @keyframes leadersScrollUp {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(0, calc(-1 * var(--leaders-scroll-distance, 500px)), 0); }
         }
 
         .live-leaders-scroll {
@@ -13222,14 +13235,10 @@
                     }
                 }
             } else if (key === 'leaders') {
-                // איפוס הדגל שהגלילה רצה
                 leadersScrollIsRunning = false;
-                
+                if (typeof stopLeadersAutoScroll === 'function') stopLeadersAutoScroll();
                 const wrapper = document.getElementById('leadersScrollWrapper');
-                if (wrapper) {
-                    // לא מאפסים את scrollTop - שומרים את המיקום
-                    wrapper.classList.remove('fade-bright');
-                }
+                if (wrapper) wrapper.classList.remove('fade-bright');
                 const primaryContent = document.querySelector('#leadersScrollPrimary .live-leaders-content');
                 const cloneContent = document.querySelector('#leadersScrollClone .live-leaders-content');
                 if (primaryContent) primaryContent.classList.remove('hidden');
@@ -13621,84 +13630,62 @@
                 return;
             }
 
-            // אם כבר רץ - לא להתחיל מחדש!
-            if (leadersScrollIsRunning && state.handle) {
-                return;
-            }
-
             if (state.handle) {
                 cancelAnimationFrame(state.handle);
                 state.handle = null;
             }
 
-            // יצירת קלון לגלילה אינסופית
             const primaryContent = primary.querySelector('.live-leaders-content');
             if (!primaryContent) {
                 clone.innerHTML = '';
                 clone.style.display = 'none';
                 leadersScrollIsRunning = false;
+                inner.removeAttribute('data-leaders-scroll');
                 return;
             }
             
-            // העתקת התוכן לקלון
             clone.innerHTML = primaryContent.outerHTML;
             clone.style.display = 'block';
 
             const contentHeight = primary.offsetHeight;
             if (!contentHeight || !isFinite(contentHeight) || contentHeight < 100) {
                 leadersScrollIsRunning = false;
+                inner.removeAttribute('data-leaders-scroll');
                 return;
             }
 
             wrapper.style.opacity = '1';
             wrapper.style.filter = 'brightness(1) saturate(1)';
             
-            // שומר את המיקום הנוכחי (מהטרנספורם הקודם אם יש)
-            let offset = (state.offset && state.offset > 0) ? state.offset % contentHeight : 0;
-            state.distance = contentHeight;
-            inner.style.transform = `translate3d(0, ${-offset}px, 0)`;
-            
-            // מסמן שהגלילה רצה
             leadersScrollIsRunning = true;
             leadersScrollLastTime = performance.now();
+            state.distance = contentHeight;
 
-            let last = performance.now();
+            var onIteration = function() { leadersScrollLastTime = performance.now(); };
+            inner.removeEventListener('animationiteration', onIteration);
+            inner.addEventListener('animationiteration', onIteration);
+            state.onLeadersIteration = onIteration;
 
-            function step(timestamp) {
-                // בדיקה שהגלילה עדיין צריכה לרוץ
-                if (!leadersScrollIsRunning) {
-                    state.handle = null;
-                    return;
+            const speed = 30;
+            const durationMs = Math.round((contentHeight / speed) * 1000);
+            inner.style.setProperty('--leaders-scroll-distance', contentHeight + 'px');
+            inner.style.setProperty('--leaders-scroll-duration', durationMs + 'ms');
+            inner.removeAttribute('data-leaders-scroll');
+            inner.offsetHeight;
+            inner.setAttribute('data-leaders-scroll', '1');
+        }
+
+        function stopLeadersAutoScroll() {
+            const inner = document.getElementById('leadersScrollInner');
+            const state = autoScrollStates.leaders;
+            if (inner) {
+                inner.removeAttribute('data-leaders-scroll');
+                inner.style.animation = 'none';
+                if (state && state.onLeadersIteration) {
+                    inner.removeEventListener('animationiteration', state.onLeadersIteration);
                 }
-                
-                const delta = (timestamp - last) / 1000;
-                last = timestamp;
-                leadersScrollLastTime = timestamp;
-                
-                // שימוש בגובה שמור – קוראים offsetHeight רק במעבר מחזור (מונע רעידות מ-layout thrashing)
-                let h = contentHeight;
-                if (offset >= contentHeight - 5) {
-                    const currentHeight = primary ? primary.offsetHeight : contentHeight;
-                    h = (currentHeight && isFinite(currentHeight) && currentHeight >= 50) ? currentHeight : contentHeight;
-                }
-                
-                // מהירות קבועה למובילים - 30 פיקסלים לשנייה
-                const speed = 30;
-                offset += speed * delta;
-                
-                // גלילה אינסופית חלקה – כמו במתרימים, בלי קפיצה
-                if (offset >= h) {
-                    offset -= h;
-                }
-                
-                state.offset = offset;
-                // עיגול לפיקסלים שלמים – מונע רעידות מ-subpixel rendering
-                inner.style.transform = `translate3d(0, ${Math.round(-offset)}px, 0)`;
-                state.handle = requestAnimationFrame(step);
             }
-
-            inner.style.willChange = 'transform';
-            state.handle = requestAnimationFrame(step);
+            leadersScrollIsRunning = false;
         }
         
         // ====== WATCHDOG - מוודא שהגלילות תמיד רצות + גיבוי עדכון כל 10 דקות ======
@@ -13726,14 +13713,11 @@
                 restartDonorsAutoScroll();
             }
             
-            // בדיקת גלילת מובילים
-            if (leadersScrollIsRunning) {
-                if (now - leadersScrollLastTime > 2000) {
-                    console.log('⚠️ גלילת מובילים נתקעה - מפעיל מחדש');
-                    leadersScrollIsRunning = false;
-                    restartLeadersAutoScroll({ immediate: true });
-                }
-            } else {
+            // בדיקת גלילת מובילים (CSS animation – מרענן leadersScrollLastTime ב-animationiteration)
+            if (!leadersScrollIsRunning && liveViewSettings.enableAutoScroll) {
+                restartLeadersAutoScroll({ immediate: true });
+            } else if (leadersScrollIsRunning && now - leadersScrollLastTime > 180000) {
+                leadersScrollIsRunning = false;
                 restartLeadersAutoScroll({ immediate: true });
             }
         }, 1000);
@@ -16803,14 +16787,11 @@
                 if (needsFullRender) {
                     container.innerHTML = html + html;
                     lastLiveViewStructure = structureSignature;
-                    if (state) {
-                        const halfHeight = container.scrollHeight / 2;
-                        state.offset = Math.min(savedOffset, halfHeight);
-                        state.distance = halfHeight;
-                        container.style.transform = `translate3d(0, ${-state.offset}px, 0)`;
-                    }
+                    container.removeAttribute('data-scroll-animation');
                     if (!wasScrolling && !donorsScrollIsRunning && liveViewSettings.enableAutoScroll) {
                         requestAnimationFrame(() => restartDonorsAutoScroll());
+                    } else if (donorsScrollIsRunning && liveViewSettings.enableAutoScroll) {
+                        requestAnimationFrame(() => { stopDonorsAutoScroll(); restartDonorsAutoScroll(); });
                     }
                 } else {
                     if (!donorsScrollIsRunning && liveViewSettings.enableAutoScroll) {
@@ -20763,7 +20744,7 @@
                 if (silent && !pullOnly) {
                     console.log('ℹ️ מדלג על משיכת מתרים מנדרים – הגליון והתוכנה מקור האמת');
                     const totalData = await fetchTotalFromMatchPlus();
-                    if (totalData && totalData.Donated > 0) {
+                    if (totalData) {
                         updateHomeStats();
                         updateLeadersList();
                         updateLiveTargets();
@@ -20774,18 +20755,14 @@
                 
                 if (!silent) showNedarimStatus('מעדכן סכום כולל...', 'loading');
                 const totalData = await fetchTotalFromMatchPlus();
-                if (totalData && totalData.Donated > 0) {
+                if (totalData) {
                     console.log(`✅ עדכנו סכום כולל מ-API: ${totalData.Donated.toLocaleString()} ש"ח, יעד: ${totalData.Goal.toLocaleString()} ש"ח`);
-                    // מעדכן את התצוגות - בלי להפריע לגלילה בתצוגת לייב
                     updateHomeStats();
                     updateLeadersList();
                     updateLiveTargets();
-                    // עדכון Live View גם אם הוא פעיל (עם debounce)
-                    if (typeof updateLiveView === 'function') {
-                        updateLiveView(false); // לא immediate כדי לא להפריע לגלילה
-                    }
+                    if (typeof updateLiveView === 'function') updateLiveView(false);
                 } else {
-                    console.log('ℹ️ ה-API מחזיר 0 או לא עובד - נשתמש בסכום מהתרימים אחרי הסנכרון');
+                    console.log('ℹ️ ה-API לא החזיר נתונים - נשתמש בסכום מהתרימים אחרי הסנכרון');
                 }
 
                 // משתמש ב-API של MatchPlus עם חיפושים מרובים כדי לקבל את כל המתרימים
@@ -21139,11 +21116,8 @@
                 // מעדכן את הסכום הכולל מ-API (ברקע)
                 fetchTotalFromMatchPlus().then(() => {
                     updateHomeStats();
-                    // בתצוגת לייב לא מעדכנים את הרשימות ישירות
-                    if (!isLiveViewActive()) {
-                        updateLeadersList();
-                        updateLiveTargets();
-                    }
+                    updateLeadersList();
+                    updateLiveTargets();
                 });
             }
             lastDataHash = currentHash;
@@ -21178,16 +21152,11 @@
                 console.log('📊 [אוטומטי] מעדכן סכום כולל מ-API...');
                 try {
                     const totalData = await fetchTotalFromMatchPlus();
-                    if (totalData && totalData.Donated > 0) {
+                    if (totalData) {
                         console.log('✅ [אוטומטי] הסכום עודכן:', totalData);
                         updateHomeStats();
-                        // בתצוגת לייב - לא מעדכנים רשימות (מפריע לגלילה)
-                        if (!isLiveViewActive()) {
-                            updateLeadersList();
-                            updateLiveTargets();
-                        }
-                    } else {
-                        console.log('ℹ️ [אוטומטי] ה-API מחזיר 0 - נשתמש בסכום מהתרימים');
+                        updateLeadersList();
+                        updateLiveTargets();
                     }
                 } catch (error) {
                     console.error('❌ [אוטומטי] שגיאה בעדכון סכום כולל:', error);
@@ -21248,17 +21217,11 @@
                     suppressNotifications = true;
                     
                     const totalData = await fetchTotalFromMatchPlus();
-                    if (totalData && totalData.Donated > 0) {
+                    if (totalData) {
                         console.log('✅ [אתחול] הסכום הכולל עודכן בהצלחה:', totalData);
-                        if (typeof updateHomeStats === 'function') {
-                            updateHomeStats();
-                            console.log('✅ [אתחול] תצוגת הבית עודכנה');
-                        }
-                    } else {
-                        console.log('ℹ️ [אתחול] ה-API מחזיר 0 - נשתמש בסכום מהתרימים');
-                        if (typeof updateHomeStats === 'function') {
-                            updateHomeStats();
-                        }
+                        if (typeof updateHomeStats === 'function') updateHomeStats();
+                        if (typeof updateLeadersList === 'function') updateLeadersList();
+                        if (typeof updateLiveTargets === 'function') updateLiveTargets();
                     }
                     
                     // סנכרון ראשוני: רק משיכה (ללא דחיפה!) – מונע שליחת סכומים שגויים לנדרים בטעינת דף
