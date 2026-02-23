@@ -13533,6 +13533,7 @@
             }
             if (displayMode !== 'none') stopDuringUpdateOverlay();
             isLiveViewUpdateDuringRunning = false;
+            // הגלילה לא נעצרה – ממשיכה רגיל
         }
 
         function triggerLiveViewUpdateDuring() {
@@ -13572,12 +13573,8 @@
             const showMode = liveViewSettings.liveViewUpdateShow || 'loading';
             const updateType = liveViewSettings.liveViewUpdateType || 'all';
 
-            if (showMode !== 'sidepanel') {
-                stopAutoScroll('donors');
-                stopAutoScroll('leaders');
-                donorsScrollIsRunning = false;
-                leadersScrollIsRunning = false;
-            }
+            // לא עוצרים את הגלילה – תמשיך רגיל גם בזמן העדכון וגם אחריו
+            // if (showMode !== 'sidepanel') { stopAutoScroll('donors'); stopAutoScroll('leaders'); ... }
 
             if (showMode === 'sidepanel') {
                 liveViewSidePanelUpdateInProgress = true;
@@ -13670,10 +13667,7 @@
             }
             if (showMode !== 'sidepanel') { stopSidePanelSmoothProgress(); liveViewSidePanelUpdateInProgress = false; }
             if (typeof hideLiveViewSyncProgress === 'function') hideLiveViewSyncProgress();
-            if (showMode !== 'sidepanel') {
-                if (typeof restartDonorsAutoScroll === 'function') restartDonorsAutoScroll();
-                if (typeof restartLeadersAutoScroll === 'function' && isLiveViewActive()) setTimeout(() => restartLeadersAutoScroll({ immediate: true }), 50);
-            }
+            // הגלילה לא נעצרה – ממשיכה רגיל (אין צורך ב-restart)
         }
         
         function triggerLiveViewUpdateByTimer() {
@@ -17252,14 +17246,11 @@
             }).join('');
 
             container.innerHTML = cardsHtml;
-            // לא מפעילים גלילה למובילים - עצירת גלילה והסרת קלון
-            if (typeof stopAutoScroll === 'function') {
-                stopAutoScroll('leaders');
-            }
-            const clone = document.getElementById('leadersScrollClone');
-            if (clone) {
-                clone.innerHTML = '';
-                clone.style.display = 'none';
+            // בתצוגת לייב – לא עוצרים גלילה (תמשיך רגיל גם בזמן העדכון)
+            if (!(typeof isLiveViewActive === 'function' && isLiveViewActive())) {
+                if (typeof stopAutoScroll === 'function') stopAutoScroll('leaders');
+                const clone = document.getElementById('leadersScrollClone');
+                if (clone) { clone.innerHTML = ''; clone.style.display = 'none'; }
             }
         }
 
