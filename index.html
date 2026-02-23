@@ -21973,7 +21973,7 @@
                 updateGroupsDisplay();
                 updateHomeStats();
                 if (typeof updateLiveView === 'function') updateLiveView(true);
-                updateLeadersList();
+                updateLeadersList(true);
                 updateLiveTargets();
                 const totalAmount = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
                 if (!silent) {
@@ -22349,7 +22349,7 @@
                 updateGroupsDisplay();
                 updateHomeStats();
                 updateLiveView(true);
-                updateLeadersList();
+                updateLeadersList(true);
                 updateLiveTargets();
                 
                 const totalAmount = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
