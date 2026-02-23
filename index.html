@@ -13006,18 +13006,12 @@
                         console.warn('⚠️ שגיאה בסנכרון לבסיס הנתונים:', err);
                     });
                     
-                    // עדכון ישיר לגליון: כל שינוי (שם, קבוצה, תרומה וכו') מעלה לגליון אחרי דיבאונס קצר
-                    if (typeof window._donorsGroupsToSheetDebounce === 'number') clearTimeout(window._donorsGroupsToSheetDebounce);
+                    // עדכון ישיר לגליון – מנגנון יחיד: כל saveData() מפעיל שמירה לגליון (דיבאונס 250ms, מונע כפילויות)
+                    if (window._donorsGroupsToSheetDebounce) clearTimeout(window._donorsGroupsToSheetDebounce);
                     window._donorsGroupsToSheetDebounce = setTimeout(function() {
                         window._donorsGroupsToSheetDebounce = null;
-                        if (typeof saveDonorsAndGroupsToSheets === 'function') {
-                            saveDonorsAndGroupsToSheets().then(function(r) {
-                                if (r && r.success && typeof lastSaveToSheetsTime !== 'undefined') lastSaveToSheetsTime = Date.now();
-                            });
-                        }
-                    }, 400);
-                    
-                    console.log('💾 נתונים נשמרו אוטומטית (מקומית + יעלה לגליון)');
+                        if (typeof saveDonorsAndGroupsToSheets === 'function') saveDonorsAndGroupsToSheets().then(function(r) { if (r && r.success && typeof lastSaveToSheetsTime !== 'undefined') lastSaveToSheetsTime = Date.now(); });
+                    }, 250);
                 } catch (e) {
                     console.error('שגיאה בשמירת נתונים:', e);
                 }
@@ -22499,8 +22493,9 @@
             }
         }
         
-        /** שמירה רק של מתרימים וקבוצות לגליון – payload קטן, מתאים לעדכון שם/פרטים בלי להיכשל (מגבלת 64KB). */
+        /** שמירה רק של מתרימים וקבוצות לגליון – מנגנון יחיד לעדכון ישיר. כל שינוי (שם, קבוצה, תרומה) עולה לגליון. */
         async function saveDonorsAndGroupsToSheets() {
+            if (window._donorsGroupsToSheetDebounce) { clearTimeout(window._donorsGroupsToSheetDebounce); window._donorsGroupsToSheetDebounce = null; }
             const urlInput = document.getElementById('googleSheetsWebAppUrl');
             const url = (urlInput ? urlInput.value.trim() : '') ||
                         (typeof googleSheetsWebAppUrl !== 'undefined' ? googleSheetsWebAppUrl : '') ||
