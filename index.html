@@ -17086,18 +17086,20 @@
                 `;
             }).join('');
             
-            if (sortedDonors.length === 0) {
-                // גם אם אין מובילים, נציג את הסיכום הכללי ואת כרטיסיות הקבוצות
-                const summaryHtml = `
-                    <div class="leader-target-card">
-                        <div class="leader-target-title">סה"כ נאסף</div>
-                        <div class="leader-target-progress-bar">
-                            <div class="${progressClass}" style="width: ${progressWidth}%;"></div>
-                            <div class="leader-target-progress-text">${summaryText}</div>
-                        </div>
+            // כרטיסית סיכום כללי – עצמאית, לא קשורה לאף קבוצה
+            const summaryCardHtml = `
+                <div class="leader-target-card leader-summary-card" data-summary="overall">
+                    <div class="leader-target-title">סה"כ נאסף</div>
+                    <div class="leader-target-meta">${totalDonorsCount} מתרימים</div>
+                    <div class="leader-target-progress-bar">
+                        <div class="${progressClass}" style="width: ${progressWidth}%;"></div>
+                        <div class="leader-target-progress-text">${summaryText}</div>
                     </div>
-                `;
-                leadersList.innerHTML = groupsCardsHtml + summaryHtml;
+                </div>
+            `;
+
+            if (sortedDonors.length === 0) {
+                leadersList.innerHTML = groupsCardsHtml + summaryCardHtml;
                 return;
             }
             
@@ -17122,21 +17124,10 @@
                 `;
             }).join('');
 
-            // הוספת כרטיסית סיכום כללי
-            const summaryHtml = `
-                <div class="leader-target-card leader-summary-card" data-summary="1">
-                    <div class="leader-target-title">סה"כ נאסף</div>
-                    <div class="leader-target-progress-bar">
-                        <div class="${progressClass}" style="width: ${progressWidth}%;"></div>
-                        <div class="leader-target-progress-text">${summaryText}</div>
-                    </div>
-                </div>
-            `;
-
             // עדכון חלקי בלבד – לעולם לא innerHTML (מונע קפיצות כשמשתנה סכום כולל או סדר מובילים)
             const existingLeaders = leadersList.querySelectorAll('.leader-item[data-donor-id]');
             const existingGroupCards = leadersList.querySelectorAll('.leader-target-card[data-group-id]');
-            const existingSummary = leadersList.querySelector('.leader-summary-card');
+            const existingSummary = leadersList.querySelector('[data-summary="overall"]');
             const canIncremental = existingLeaders.length > 0 || existingGroupCards.length > 0 || existingSummary;
             // תמיד עדכון חלקי כשיש מבנה קיים – מונע קפיצות בעמודת המובילים (innerHTML גורם לריצוד)
             const useIncremental = canIncremental && (existingGroupCards.length > 0 || existingSummary || existingLeaders.length > 0);
@@ -17207,20 +17198,24 @@
                         if (meta) meta.textContent = 'מספר מתרימים: ' + groupDonors.length;
                     }
                 });
+                // עדכון כרטיסית סיכום כללי במקום – בלי לבנות מחדש
                 if (existingSummary) {
                     const fill = existingSummary.querySelector('.leader-target-progress-fill');
                     const textEl = existingSummary.querySelector('.leader-target-progress-text');
-                    const meta = existingSummary.querySelector('.leader-target-meta');
+                    const metaEl = existingSummary.querySelector('.leader-target-meta');
                     if (fill) fill.style.width = progressWidth + '%';
+                    if (fill) fill.className = progressClass;
                     if (textEl) textEl.textContent = summaryText;
-                    if (meta) meta.remove();
+                    if (metaEl) metaEl.textContent = totalDonorsCount + ' מתרימים';
+                } else {
+                    leadersList.insertAdjacentHTML('beforeend', summaryCardHtml);
                 }
                 // סנכרון לקלון בלי innerHTML – רק עדכון טקסט/מבנה אלמנט-אלמנט (מונע קפיצות)
                 if (isLiveViewActive() && liveViewSettings.enableAutoScroll && leadersScrollIsRunning) {
                     syncLeadersCloneToPrimary(leadersList);
                 }
             } else {
-                leadersList.innerHTML = listHtml + groupsCardsHtml + summaryHtml;
+                leadersList.innerHTML = listHtml + groupsCardsHtml + summaryCardHtml;
             }
             
             if (isLiveViewActive() && liveViewSettings.enableAutoScroll) {
