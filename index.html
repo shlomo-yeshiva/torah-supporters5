@@ -15048,7 +15048,6 @@
                                 </div>
                                 <div class="group-donor-actions">
                                     <button class="group-donor-payment" onclick='addDonorPayment(${JSON.stringify(d.id)})'>הוסף תשלום</button>
-                                    <button class="group-donor-delete" onclick="removeDonor(${d.id})">מחק</button>
                                 </div>
                             </div>
                         `).join('') : '<div style="text-align: center; color: var(--muted); padding: 10px;">אין מתרימים</div>'}
@@ -15631,7 +15630,6 @@
                         </div>
                         <div class="donor-actions">
                             <button class="btn btn-secondary btn-small" onclick='addDonorPayment(${JSON.stringify(donor.id)})'>הוסף תשלום</button>
-                            <button class="btn btn-danger btn-small" onclick="deleteDonor(${donor.id})">מחק</button>
                         </div>
                         <div class="donor-history" id="donorHistory_${donor.id}">
                             ${historyHtml}
@@ -17090,7 +17088,7 @@
             const summaryCardHtml = `
                 <div class="leader-target-card leader-summary-card" data-summary="overall">
                     <div class="leader-target-title">סה"כ נאסף</div>
-                    <div class="leader-target-meta">${totalDonorsCount} מתרימים</div>
+                    <div class="leader-target-meta" style="color: white;">${totalDonorsCount} מתרימים</div>
                     <div class="leader-target-progress-bar">
                         <div class="${progressClass}" style="width: ${progressWidth}%;"></div>
                         <div class="leader-target-progress-text">${summaryText}</div>
@@ -17206,7 +17204,7 @@
                     if (fill) fill.style.width = progressWidth + '%';
                     if (fill) fill.className = progressClass;
                     if (textEl) textEl.textContent = summaryText;
-                    if (metaEl) metaEl.textContent = totalDonorsCount + ' מתרימים';
+                    if (metaEl) { metaEl.textContent = totalDonorsCount + ' מתרימים'; metaEl.style.color = 'white'; }
                 } else {
                     leadersList.insertAdjacentHTML('beforeend', summaryCardHtml);
                 }
