@@ -13522,6 +13522,7 @@
                     } catch (e) { console.warn('⚠️ [תצוגת לייב] רענון שמות קבוצות:', e); }
                 }
                 if (typeof syncAllDataToDatabase === 'function') await syncAllDataToDatabase();
+                updateHomeStats(); // קודם מקור אמת – כדי שתצוגת הלייב תציג את הסכום העדכני
                 if (typeof updateLiveView === 'function') updateLiveView(true, true); // forceFromScheduled – עדכון מתוזמן
                 if (typeof updateLeadersList === 'function') updateLeadersList(true);
                 if (typeof updateLiveTargets === 'function') updateLiveTargets(true);
@@ -13643,6 +13644,7 @@
                 }
                 if (showMode === 'sidepanel') updateLiveViewEndProgress(0, 'עדכון תצוגה');
                 if (typeof syncAllDataToDatabase === 'function') await syncAllDataToDatabase();
+                updateHomeStats(); // קודם מקור אמת – כדי שתצוגת הלייב תציג את הסכום העדכני
                 if (typeof updateLiveView === 'function') updateLiveView(true, true); // forceFromScheduled – עדכון מתוזמן (סיום גלילה)
                 if (typeof updateLeadersList === 'function') updateLeadersList(true);
                 if (typeof updateLiveTargets === 'function') updateLiveTargets(true);
@@ -16988,8 +16990,9 @@
                 .sort((a, b) => (b.amount || 0) - (a.amount || 0))
                 .slice(0, 5);
             
-            const totalCollected = (typeof getHomeDisplayTotal === 'function') ? getHomeDisplayTotal() : ((typeof getDisplayTotal === 'function') ? getDisplayTotal() : donors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0));
-            const goal = (NEDARIM_CONFIG.apiDataLoaded && 
+            // סכום אמיתי – מ-API (נדרים פלוס) כשזמין, אחרת מסכום המתרימים
+            const totalCollected = (typeof getDisplayTotal === 'function') ? getDisplayTotal() : donors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0);
+            const goal = (NEDARIM_CONFIG.apiDataLoaded &&
                          NEDARIM_CONFIG.goalFromAPI !== null &&
                          NEDARIM_CONFIG.goalFromAPI > 0)
                 ? NEDARIM_CONFIG.goalFromAPI
@@ -17172,7 +17175,8 @@
             if (isLiveViewActive() && liveViewSettings.enableAutoScroll) {
                 if (!leadersScrollIsRunning) {
                     setTimeout(() => restartLeadersAutoScroll({ immediate: true }), 100);
-                } else if (!useIncremental) {
+                } else {
+                    // סנכרון לקלון – כדי שהסכום המעודכן יוצג גם בגלילה
                     syncLeadersCloneToPrimary(leadersList);
                 }
             }
