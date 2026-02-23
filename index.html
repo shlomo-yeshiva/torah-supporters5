@@ -2612,6 +2612,25 @@
             transform: translateY(0);
         }
 
+        .btn-paste {
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 2px solid #7dd3fc;
+            border-radius: 12px;
+            padding: 16px 32px;
+            min-height: 52px;
+            min-width: 120px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(3, 105, 161, 0.15);
+            transition: all 0.25s ease;
+        }
+        .btn-paste:hover,
+        .btn-paste:focus {
+            background: #bae6fd;
+            border-color: #38bdf8;
+            box-shadow: 0 4px 12px rgba(3, 105, 161, 0.25);
+        }
+
         .btn-secondary {
             background: rgba(255, 255, 255, 0.9);
             color: var(--brown-dark);
@@ -4504,8 +4523,6 @@
             font-weight: 600;
             color: var(--brown-dark);
             margin-bottom: 2px;
-            word-break: keep-all;
-            overflow-wrap: normal;
         }
 
         .leader-amount {
@@ -4740,6 +4757,13 @@
             flex-direction: column;
         }
         .semifinal-video-overlay.show { display: flex !important; }
+        .semifinal-url-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .semifinal-url-row input { flex: 1; min-width: 0; }
+        .semifinal-url-row .btn-paste { flex-shrink: 0; white-space: nowrap; }
         .semifinal-video-header {
             display: flex;
             justify-content: space-between;
@@ -6159,11 +6183,11 @@
                 </button>
                 <div id="entrySheetUrlPanel" class="entry-sheet-url-panel hidden">
                     <label style="display: block; font-weight: 600; margin-bottom: 10px; font-size: 14px; color: var(--brown-dark);">קישור לשרת (אם החלפת גליון – הזן כאן את הקישור החדש):</label>
-                    <div style="display: flex; gap: 8px; margin-bottom: 12px; align-items: stretch;">
-                        <input type="url" id="entryCodeSheetUrlInput" class="app-lock-password-input" placeholder="https://script.google.com/macros/s/xxxx/exec" style="flex: 1; font-size: 14px; padding: 14px 18px;">
-                        <button type="button" class="btn" onclick="pasteIntoInput('entryCodeSheetUrlInput')" style="font-size: 14px; padding: 12px 20px; white-space: nowrap;" title="הדבק קישור מהלוח">📋 הדבק</button>
+                    <div style="margin-bottom: 12px;">
+                        <input type="url" id="entryCodeSheetUrlInput" class="app-lock-password-input" placeholder="https://script.google.com/macros/s/xxxx/exec" style="width: 100%; font-size: 14px; padding: 14px 18px; box-sizing: border-box;">
                     </div>
                     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <button type="button" class="btn btn-paste" onclick="pasteIntoInput('entryCodeSheetUrlInput')" title="הדבק קישור מהלוח">📋 הדבק</button>
                         <button type="button" class="btn" onclick="saveEntryCodeSheetUrl()" style="font-size: 14px; padding: 12px 24px;">שמור קישור</button>
                         <span id="entryCodeUrlSavedMsg" style="display: none; color: var(--success); font-size: 14px; font-weight: 600;">✓ נשמר</span>
                     </div>
@@ -6320,7 +6344,10 @@
                         <div class="semifinal-form" style="margin-top: 16px; padding: 16px; background: rgba(0,0,0,0.03); border-radius: 12px;">
                             <div class="address-form-row">
                                 <label for="semifinalVideoUrl">קישור לסרטון (Google Drive):</label>
-                                <input type="text" id="semifinalVideoUrl" placeholder="https://drive.google.com/..." onchange="saveSemifinalSettings()">
+                                <div class="semifinal-url-row">
+                                    <input type="text" id="semifinalVideoUrl" placeholder="https://drive.google.com/..." onchange="saveSemifinalSettings()">
+                                    <button type="button" class="btn btn-paste" onclick="pasteSemifinalVideoUrl()" title="הדבק קישור מהלוח">הדבק</button>
+                                </div>
                             </div>
                             <div class="address-form-row">
                                 <label for="semifinalDuration">משך הצגה (דקות):</label>
@@ -7395,9 +7422,11 @@
                             
                             <div class="sync-input-group" style="margin-bottom: 20px;">
                                 <label style="display: block; margin-bottom: 8px; font-weight: 500;">כתובת Web App של Google Apps Script:</label>
-                                <div style="display: flex; gap: 8px; align-items: stretch;">
-                                    <input type="text" id="googleSheetsWebAppUrl" placeholder="https://script.google.com/macros/s/xxxx/exec" style="flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" onchange="saveGoogleSheetsSettings(); applySheetSyncSettings();">
-                                    <button type="button" class="btn btn-secondary" onclick="pasteIntoInput('googleSheetsWebAppUrl'); saveGoogleSheetsSettings(); applySheetSyncSettings();" style="white-space: nowrap;" title="הדבק קישור מהלוח">📋 הדבק</button>
+                                <div style="margin-bottom: 10px;">
+                                    <input type="text" id="googleSheetsWebAppUrl" placeholder="https://script.google.com/macros/s/xxxx/exec" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; box-sizing: border-box;" onchange="saveGoogleSheetsSettings(); applySheetSyncSettings();">
+                                </div>
+                                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                                    <button type="button" class="btn btn-paste" onclick="pasteIntoInput('googleSheetsWebAppUrl'); saveGoogleSheetsSettings(); applySheetSyncSettings();" title="הדבק קישור מהלוח">📋 הדבק</button>
                                 </div>
                                 <small style="display: block; margin-top: 5px; color: var(--muted);">
                                     ה-URL שמתקבל אחרי פריסת הקוד ב-Google Apps Script.
@@ -9437,9 +9466,7 @@
             if (showCb) showCb.checked = false;
             if (error) error.textContent = '';
             if (urlInput && typeof localStorage !== 'undefined') {
-                var url = localStorage.getItem('googleSheetsWebAppUrl') || (typeof DEFAULT_GOOGLE_SHEETS_URL !== 'undefined' ? DEFAULT_GOOGLE_SHEETS_URL : '') || '';
-                urlInput.value = url;
-                if (!localStorage.getItem('googleSheetsWebAppUrl') && url) localStorage.setItem('googleSheetsWebAppUrl', url);
+                urlInput.value = localStorage.getItem('googleSheetsWebAppUrl') || '';
             }
             const urlBtnText = document.getElementById('entrySheetUrlBtnText');
             if (urlBtnText) urlBtnText.textContent = (urlInput && urlInput.value.trim()) ? 'קישור לשרת (הוגדר) – לחץ לעריכה' : 'הגדר קישור לשרת (גליון)';
@@ -11176,6 +11203,25 @@
         }
 
         // ——— חגיגת ניצחון: המרת קישור Google Drive ל-embed ———
+        function pasteSemifinalVideoUrl() {
+            const input = document.getElementById('semifinalVideoUrl');
+            if (!input) return;
+            if (navigator.clipboard && navigator.clipboard.readText) {
+                navigator.clipboard.readText().then(function (text) {
+                    if (text && typeof text === 'string') {
+                        input.value = text.trim();
+                        input.dispatchEvent(new Event('change', { bubbles: true }));
+                        if (typeof showNotification === 'function') showNotification('הקישור הודבק');
+                    } else {
+                        if (typeof showNotification === 'function') showNotification('אין טקסט להדבקה בלוח', 'error');
+                    }
+                }).catch(function () {
+                    if (typeof showNotification === 'function') showNotification('לא ניתן לגשת ללוח. נסה להדביק ידנית (Ctrl+V).', 'error');
+                });
+            } else {
+                if (typeof showNotification === 'function') showNotification('הדפדפן לא תומך בהדבקה מלוח. השתמש ב־Ctrl+V בשדה.', 'error');
+            }
+        }
         function getEmbedUrlFromDriveUrl(url) {
             if (!url || typeof url !== 'string') return '';
             const m = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
@@ -12960,9 +13006,12 @@
                         console.warn('⚠️ שגיאה בסנכרון לבסיס הנתונים:', err);
                     });
                     
-                    // ⚠️ שמירה לגליון לא מתבצעת כאן – רק בעדכון מתוזמן (סיום גלילה / כל X דקות) – מונע קפיצות בתצוגת לייב
-                    
-                    console.log('💾 נתונים נשמרו אוטומטית (מקומית)');
+                    // עדכון ישיר לגליון – מנגנון יחיד: כל saveData() מפעיל שמירה לגליון (דיבאונס 250ms, מונע כפילויות)
+                    if (window._donorsGroupsToSheetDebounce) clearTimeout(window._donorsGroupsToSheetDebounce);
+                    window._donorsGroupsToSheetDebounce = setTimeout(function() {
+                        window._donorsGroupsToSheetDebounce = null;
+                        if (typeof saveDonorsAndGroupsToSheets === 'function') saveDonorsAndGroupsToSheets().then(function(r) { if (r && r.success && typeof lastSaveToSheetsTime !== 'undefined') lastSaveToSheetsTime = Date.now(); });
+                    }, 250);
                 } catch (e) {
                     console.error('שגיאה בשמירת נתונים:', e);
                 }
@@ -13490,15 +13539,16 @@
             if (displayMode !== 'none') startDuringUpdateOverlay(displayMode);
             console.log('🔄 [תצוגת לייב] עדכון תוך כדי גלילה' + (displayMode !== 'none' ? ' (עם מסך ' + displayMode + ')' : '') + '...');
             try {
+                await checkTotalAmountFromAPI(true);
+                await syncWithNedarimPlus(true);
                 var url = (googleSheetsWebAppUrl || (typeof localStorage !== 'undefined' && localStorage.getItem('googleSheetsWebAppUrl')) || '').trim();
-                // פעולה ראשונה: בדיקת סכום כולל מ-API
-                await checkTotalAmountFromAPI(true, true);
-                if (url && typeof loadFromGoogleSheets === 'function') {
-                    var r = await loadFromGoogleSheets(true, true);
-                    if (r && r.success && typeof notifyDataChanged === 'function') notifyDataChanged(true);
+                if (url && googleSheetsSyncEnabled) {
+                    if (sheetSyncLoadEnabled && typeof loadFromGoogleSheets === 'function') {
+                        var r = await loadFromGoogleSheets(true);
+                        if (r && r.success && typeof notifyDataChanged === 'function') notifyDataChanged(true);
+                    }
+                    if (sheetSyncSaveEnabled && typeof saveToGoogleSheets === 'function') await saveToGoogleSheets();
                 }
-                await syncWithNedarimPlus(true, false, true);
-                if (url && typeof saveToGoogleSheets === 'function') await saveToGoogleSheets();
                 if (url && typeof fetchAppsScript === 'function') {
                     try {
                         var gr = await fetchAppsScript(url, { action: 'getAllNoDonors', _: Date.now() }, { retries: 1, timeout: 8000 });
@@ -13522,7 +13572,6 @@
                     } catch (e) { console.warn('⚠️ [תצוגת לייב] רענון שמות קבוצות:', e); }
                 }
                 if (typeof syncAllDataToDatabase === 'function') await syncAllDataToDatabase();
-                updateHomeStats(); // קודם מקור אמת – כדי שתצוגת הלייב תציג את הסכום העדכני
                 if (typeof updateLiveView === 'function') updateLiveView(true, true); // forceFromScheduled – עדכון מתוזמן
                 if (typeof updateLeadersList === 'function') updateLeadersList(true);
                 if (typeof updateLiveTargets === 'function') updateLiveTargets(true);
@@ -13533,7 +13582,6 @@
             }
             if (displayMode !== 'none') stopDuringUpdateOverlay();
             isLiveViewUpdateDuringRunning = false;
-            // הגלילה לא נעצרה – ממשיכה רגיל
         }
 
         function triggerLiveViewUpdateDuring() {
@@ -13566,15 +13614,19 @@
             if (!liveViewSettings.enableAutoScroll) return;
             if ((liveViewSettings.liveViewUpdateWhen || 'end') === 'during' || (liveViewSettings.liveViewUpdateWhen || 'end') === 'custom') return;
             if (!donorsScrollIsRunning) return;
-            console.log('🔄 [תצוגת לייב] סיום מחזור גלילה – מציג overlay ומריץ עדכון (בדיקת סכום→טעינה→סנכרון→שמירה)...');
+            console.log('🔄 [תצוגת לייב] סיום מחזור גלילה – מציג overlay ומריץ עדכון...');
             lastLiveViewUpdateAt = Date.now();
             const overlay = document.getElementById('liveViewUpdateOverlay');
             const sidePanel = document.getElementById('liveViewUpdateSidePanel');
             const showMode = liveViewSettings.liveViewUpdateShow || 'loading';
             const updateType = liveViewSettings.liveViewUpdateType || 'all';
 
-            // לא עוצרים את הגלילה – תמשיך רגיל גם בזמן העדכון וגם אחריו
-            // if (showMode !== 'sidepanel') { stopAutoScroll('donors'); stopAutoScroll('leaders'); ... }
+            if (showMode !== 'sidepanel') {
+                stopAutoScroll('donors');
+                stopAutoScroll('leaders');
+                donorsScrollIsRunning = false;
+                leadersScrollIsRunning = false;
+            }
 
             if (showMode === 'sidepanel') {
                 liveViewSidePanelUpdateInProgress = true;
@@ -13595,31 +13647,29 @@
             }
 
             try {
-                var url = (googleSheetsWebAppUrl || (typeof localStorage !== 'undefined' && localStorage.getItem('googleSheetsWebAppUrl')) || (typeof DEFAULT_GOOGLE_SHEETS_URL !== 'undefined' ? DEFAULT_GOOGLE_SHEETS_URL : '') || '').trim();
-                // פעולה ראשונה: בדיקת סכום כולל מ-API
-                if (showMode === 'sidepanel') updateLiveViewEndProgress(0, 'בדיקת סכום כולל');
-                await checkTotalAmountFromAPI(true, true);
-                if (updateType === 'all' && url) {
-                    if (showMode === 'sidepanel') updateLiveViewEndProgress(0, 'טעינה מהגליון');
-                    if (typeof loadFromGoogleSheets === 'function') {
-                        var r = await loadFromGoogleSheets(true, true);
-                        if (r && r.success && typeof notifyDataChanged === 'function') notifyDataChanged();
-                    }
-                }
+                if (showMode === 'sidepanel') updateLiveViewEndProgress(0, 'בדיקת סכום');
+                await checkTotalAmountFromAPI(true);
                 if (showMode === 'sidepanel') updateLiveViewEndProgress(0, 'סנכרון תרומות');
-                await syncWithNedarimPlus(true, false, true);
-                if (updateType === 'all' && url) {
-                    if (showMode === 'sidepanel') updateLiveViewEndProgress(0, 'שמירה לגליון');
-                    if (typeof saveToGoogleSheets === 'function') await saveToGoogleSheets();
-                }
-                if (updateType === 'loadSheet' && typeof loadFromGoogleSheets === 'function') {
+                await syncWithNedarimPlus(true);
+                if (showMode === 'sidepanel') updateLiveViewEndProgress(0, 'טעינת נתונים');
+                if (updateType === 'all') {
+                    if (autoSyncNedarimEnabled && typeof performAutoRefresh === 'function') await performAutoRefresh();
+                    var url = (googleSheetsWebAppUrl || (typeof localStorage !== 'undefined' && localStorage.getItem('googleSheetsWebAppUrl')) || '').trim();
+                    if (url && googleSheetsSyncEnabled) {
+                        if (sheetSyncLoadEnabled && typeof loadFromGoogleSheets === 'function') {
+                            var r = await loadFromGoogleSheets(true);
+                            if (r && r.success && typeof notifyDataChanged === 'function') notifyDataChanged();
+                        }
+                        if (sheetSyncSaveEnabled && typeof saveToGoogleSheets === 'function') await saveToGoogleSheets();
+                    }
+                } else if (updateType === 'loadSheet' && typeof loadFromGoogleSheets === 'function') {
                     var r = await loadFromGoogleSheets(true);
                     if (r && r.success && typeof notifyDataChanged === 'function') notifyDataChanged();
                 } else if (updateType === 'loadMatrim' && typeof loadMatrimFromNedarim === 'function') {
                     await loadMatrimFromNedarim(true);
                 }
                 if (showMode === 'sidepanel') updateLiveViewEndProgress(0, 'מרענן שמות קבוצות');
-                var sheetUrl = (url || googleSheetsWebAppUrl || (typeof localStorage !== 'undefined' && localStorage.getItem('googleSheetsWebAppUrl')) || (typeof DEFAULT_GOOGLE_SHEETS_URL !== 'undefined' ? DEFAULT_GOOGLE_SHEETS_URL : '') || '').toString().trim();
+                var sheetUrl = (googleSheetsWebAppUrl || (typeof localStorage !== 'undefined' && localStorage.getItem('googleSheetsWebAppUrl')) || '').toString().trim();
                 if (sheetUrl && typeof fetchAppsScript === 'function') {
                     try {
                         var groupsResult = await fetchAppsScript(sheetUrl, { action: 'getAllNoDonors', _: Date.now() }, { retries: 1, timeout: 8000 });
@@ -13641,7 +13691,6 @@
                 }
                 if (showMode === 'sidepanel') updateLiveViewEndProgress(0, 'עדכון תצוגה');
                 if (typeof syncAllDataToDatabase === 'function') await syncAllDataToDatabase();
-                updateHomeStats(); // קודם מקור אמת – כדי שתצוגת הלייב תציג את הסכום העדכני
                 if (typeof updateLiveView === 'function') updateLiveView(true, true); // forceFromScheduled – עדכון מתוזמן (סיום גלילה)
                 if (typeof updateLeadersList === 'function') updateLeadersList(true);
                 if (typeof updateLiveTargets === 'function') updateLiveTargets(true);
@@ -13667,7 +13716,10 @@
             }
             if (showMode !== 'sidepanel') { stopSidePanelSmoothProgress(); liveViewSidePanelUpdateInProgress = false; }
             if (typeof hideLiveViewSyncProgress === 'function') hideLiveViewSyncProgress();
-            // הגלילה לא נעצרה – ממשיכה רגיל (אין צורך ב-restart)
+            if (showMode !== 'sidepanel') {
+                if (typeof restartDonorsAutoScroll === 'function') restartDonorsAutoScroll();
+                if (typeof restartLeadersAutoScroll === 'function' && isLiveViewActive()) setTimeout(() => restartLeadersAutoScroll({ immediate: true }), 50);
+            }
         }
         
         function triggerLiveViewUpdateByTimer() {
@@ -14023,7 +14075,7 @@
                             </div>
                         </div>
                         <div class="donor-actions">
-                            <button class="btn btn-primary btn-small" onclick="addDonorPayment(${donor.id})">הוסף תשלום</button>
+                            <button class="btn btn-primary btn-small" onclick='addDonorPayment(${JSON.stringify(donor.id)})'>הוסף תשלום</button>
                         </div>
                     </div>
                 `;
@@ -14393,7 +14445,6 @@
                         }
                         if (typeof updateLiveView === 'function') updateLiveView(true, true);
                     })().catch(function() {});
-                    updateHomeStats(); // קודם עדכון דף הבית – כדי שהתצוגה תהיה מעודכנת
                     updateLiveView(true, true); // forceFromScheduled – עדכון ראשוני בכניסה (בינתיים עם הנתונים הקיימים)
                     updateLeadersList(true);
                     updateLiveTargets(true);
@@ -14626,21 +14677,14 @@
             };
             step();
         }
-        // סכום לתצוגה – מקור יחיד לאמת: דף הבית ותצוגת לייב תמיד מציגים את אותו ערך
-        // כשה-API נטען – משתמשים בו (מקור האמת מנדרים פלוס/גליון). אחרת – סכום מקומי.
-        // כששניהם קיימים – לוקחים את הגבוה יותר (מבטיח שהמסך לא יציג פחות מהמציאות)
+        // סכום לתצוגה: כשסכום נדרים פלוס (API) גבוה מהמקומי – משתמשים ב-API (מציג את הסכום האמיתי, לא רק מה שנוסף ידנית)
         function getDisplayTotal() {
-            const localSum = (donors || []).reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
-            const apiVal = (typeof NEDARIM_CONFIG !== 'undefined' && NEDARIM_CONFIG.apiDataLoaded && 
-                NEDARIM_CONFIG.totalDonatedFromAPI != null) ? Number(NEDARIM_CONFIG.totalDonatedFromAPI) : null;
-            if (apiVal != null) {
-                return Math.max(apiVal, localSum);
+            const localSum = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
+            if (NEDARIM_CONFIG.apiDataLoaded && NEDARIM_CONFIG.totalDonatedFromAPI != null && 
+                NEDARIM_CONFIG.totalDonatedFromAPI > localSum) {
+                return NEDARIM_CONFIG.totalDonatedFromAPI;
             }
             return localSum;
-        }
-        /** מחזיר את הסכום שמוצג בדף הבית – מקור אמת יחיד לתצוגת הלייב (משתמש ב-getDisplayTotal) */
-        function getHomeDisplayTotal() {
-            return (typeof getDisplayTotal === 'function') ? getDisplayTotal() : 0;
         }
         function updateHomeStats() {
             // יעד המצינג – מ-API אם נטען וערכו סביר, אחרת מהיעד המקומי
@@ -15003,7 +15047,7 @@
                                     <span class="group-donor-amount">₪${d.amount.toLocaleString()}</span>
                                 </div>
                                 <div class="group-donor-actions">
-                                    <button class="group-donor-payment" onclick="addDonorPayment(${d.id})">הוסף תשלום</button>
+                                    <button class="group-donor-payment" onclick='addDonorPayment(${JSON.stringify(d.id)})'>הוסף תשלום</button>
                                     <button class="group-donor-delete" onclick="removeDonor(${d.id})">מחק</button>
                                 </div>
                             </div>
@@ -15403,13 +15447,19 @@
             updateLeadersList();
             updateLiveTargets();
             
-            // שמירה מיידית לגליון (לא ממתינה ל-debounce)
-            const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
-            if (url) {
-                saveToGoogleSheets().then(() => {
-                    console.log('✅ שם תצוגה עודכן גם בגליון');
+            // שמירה מיידית לגליון (payload קטן – מתרימים וקבוצות בלבד) כדי שהשם לא יקפוץ בחזרה
+            if (typeof saveDonorsAndGroupsToSheets === 'function') {
+                saveDonorsAndGroupsToSheets().then((r) => {
+                    if (r && r.success) {
+                        if (typeof lastSaveToSheetsTime !== 'undefined') lastSaveToSheetsTime = Date.now();
+                        console.log('✅ שם תצוגה עודכן גם בגליון');
+                    } else {
+                        console.warn('⚠️ שגיאה בשמירת שם לגליון:', r && r.error);
+                        showNotification('השם נשמר בתוכנה אך שמירה לגליון נכשלה. נסה שמור לגליון ידנית.', 'warning');
+                    }
                 }).catch(err => {
                     console.warn('⚠️ שגיאה בשמירת שם לגליון:', err);
+                    showNotification('השם נשמר בתוכנה אך שמירה לגליון נכשלה.', 'warning');
                 });
             }
             
@@ -15494,7 +15544,7 @@
                             <div class="donor-item-compact-main">
                                 <span class="donor-item-compact-name">${escapeHtml(displayName)}</span>
                                 <span class="donor-item-compact-amount">₪${(donor.amount || 0).toLocaleString()}</span>
-                                <button class="btn btn-primary btn-small donor-item-compact-btn" onclick="addDonorPayment(${donor.id})">הוסף תשלום</button>
+                                <button class="btn btn-primary btn-small donor-item-compact-btn" onclick='addDonorPayment(${JSON.stringify(donor.id)})'>הוסף תשלום</button>
                             </div>
                             <div class="donor-item-compact-details">${details}</div>
                         </div>
@@ -15580,7 +15630,7 @@
                         </div>
                         </div>
                         <div class="donor-actions">
-                            <button class="btn btn-secondary btn-small" onclick="addDonorPayment(${donor.id})">הוסף תשלום</button>
+                            <button class="btn btn-secondary btn-small" onclick='addDonorPayment(${JSON.stringify(donor.id)})'>הוסף תשלום</button>
                             <button class="btn btn-danger btn-small" onclick="deleteDonor(${donor.id})">מחק</button>
                         </div>
                         <div class="donor-history" id="donorHistory_${donor.id}">
@@ -16287,8 +16337,8 @@
                             if (totalData && totalData.Donated > 0) {
                                 console.log(`✅ סכום כולל עודכן: ${totalData.Donated.toLocaleString()} ש"ח`);
                                 updateHomeStats();
-                                updateLeadersList(true);  // forceFromScheduled – כדי שהסיכום בתצוגת לייב יתעדכן
-                                updateLiveTargets(true);
+                                updateLeadersList();
+                                updateLiveTargets();
                                 // עדכון מיידי של Live View
                                 if (typeof updateLiveView === 'function') {
                                     updateLiveView(true); // immediate = true
@@ -16326,14 +16376,21 @@
                 updateLiveView(true); // immediate = true
             }
             
-            // שמירה לגליון - חשוב! כדי שהשינויים (כולל מספר מתרים) יישמרו בגליון
+            // שמירה לגליון מיד – רק מתרימים וקבוצות (payload קטן) כדי שהשם והשינויים ייכתבו לגליון ולא יקפצו בחזרה
             isUpdatingDonorForNedarim = true;
             try {
-                await saveToGoogleSheets();
-                console.log(`✅ נשמרו השינויים לגליון (כולל מספר מתרים: ${donor.nedarimMatrimId || 'ללא'})`);
+                const sheetResult = typeof saveDonorsAndGroupsToSheets === 'function' ? await saveDonorsAndGroupsToSheets() : await saveToGoogleSheets();
+                if (sheetResult && sheetResult.success) {
+                    if (typeof lastSaveToSheetsTime !== 'undefined') lastSaveToSheetsTime = Date.now();
+                    console.log(`✅ נשמרו השינויים לגליון (כולל שם תצוגה ומספר מתרים: ${donor.nedarimMatrimId || 'ללא'})`);
+                } else {
+                    const errMsg = (sheetResult && sheetResult.error) ? sheetResult.error : 'שמירה נכשלה';
+                    console.warn('⚠️ שגיאה בשמירה לגליון:', errMsg);
+                    showNotification('העדכון נשמר בתוכנה אך שמירה לגליון נכשלה. נסה שוב או שמור לגליון ידנית.', 'warning');
+                }
             } catch (error) {
                 console.warn('⚠️ שגיאה בשמירה לגליון:', error);
-                // לא נציג שגיאה למשתמש כי העדכון כבר נשמר מקומית
+                showNotification('העדכון נשמר בתוכנה אך שמירה לגליון נכשלה. נסה שוב או שמור לגליון ידנית.', 'warning');
             } finally {
                 isUpdatingDonorForNedarim = false;
             }
@@ -16350,8 +16407,8 @@
             updateGroupsDisplay();
             updateHomeStats();
             if (typeof updateLiveView === 'function') updateLiveView(true);
-            if (typeof updateLeadersList === 'function') updateLeadersList(true);  // forceFromScheduled – סיכום לייב
-            if (typeof updateLiveTargets === 'function') updateLiveTargets(true);
+            if (typeof updateLeadersList === 'function') updateLeadersList();
+            if (typeof updateLiveTargets === 'function') updateLiveTargets();
             
             // מסיר את הסימון רק אחרי 2 דקות – מונע שטעינה מהגליון תדרוס את הסכום שעודכן
             setTimeout(() => {
@@ -16985,9 +17042,8 @@
                 .sort((a, b) => (b.amount || 0) - (a.amount || 0))
                 .slice(0, 5);
             
-            // סכום אמיתי – מ-API (נדרים פלוס) כשזמין, אחרת מסכום המתרימים
             const totalCollected = (typeof getDisplayTotal === 'function') ? getDisplayTotal() : donors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0);
-            const goal = (NEDARIM_CONFIG.apiDataLoaded &&
+            const goal = (NEDARIM_CONFIG.apiDataLoaded && 
                          NEDARIM_CONFIG.goalFromAPI !== null &&
                          NEDARIM_CONFIG.goalFromAPI > 0)
                 ? NEDARIM_CONFIG.goalFromAPI
@@ -17170,8 +17226,7 @@
             if (isLiveViewActive() && liveViewSettings.enableAutoScroll) {
                 if (!leadersScrollIsRunning) {
                     setTimeout(() => restartLeadersAutoScroll({ immediate: true }), 100);
-                } else {
-                    // סנכרון לקלון – כדי שהסכום המעודכן יוצג גם בגלילה
+                } else if (!useIncremental) {
                     syncLeadersCloneToPrimary(leadersList);
                 }
             }
@@ -17198,7 +17253,7 @@
                 const text = overallContainer.querySelector('.leaders-overall-progress-text');
                 const note = overallContainer.querySelector('.leaders-overall-progress-note');
 
-                const totalCollected = (typeof getHomeDisplayTotal === 'function') ? getHomeDisplayTotal() : ((typeof getDisplayTotal === 'function') ? getDisplayTotal() : donors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0));
+                const totalCollected = (typeof getDisplayTotal === 'function') ? getDisplayTotal() : donors.reduce((sum, donor) => sum + Math.max(0, donor.amount || 0), 0);
                 const goal = (NEDARIM_CONFIG.apiDataLoaded &&
                              NEDARIM_CONFIG.goalFromAPI !== null &&
                              NEDARIM_CONFIG.goalFromAPI > 0)
@@ -17246,11 +17301,14 @@
             }).join('');
 
             container.innerHTML = cardsHtml;
-            // בתצוגת לייב – לא עוצרים גלילה (תמשיך רגיל גם בזמן העדכון)
-            if (!(typeof isLiveViewActive === 'function' && isLiveViewActive())) {
-                if (typeof stopAutoScroll === 'function') stopAutoScroll('leaders');
-                const clone = document.getElementById('leadersScrollClone');
-                if (clone) { clone.innerHTML = ''; clone.style.display = 'none'; }
+            // לא מפעילים גלילה למובילים - עצירת גלילה והסרת קלון
+            if (typeof stopAutoScroll === 'function') {
+                stopAutoScroll('leaders');
+            }
+            const clone = document.getElementById('leadersScrollClone');
+            if (clone) {
+                clone.innerHTML = '';
+                clone.style.display = 'none';
             }
         }
 
@@ -17918,9 +17976,6 @@
             if (typeof isLiveViewScheduledUpdatesOnly === 'function' && isLiveViewScheduledUpdatesOnly()) return;
             if (isLiveViewActive()) {
                 updateHomeStats();
-                // חשוב: לעדכן גם את תצוגת הלייב באותו סכום שמוצג בדף הבית
-                if (typeof updateLeadersList === 'function') updateLeadersList(true);
-                if (typeof updateLiveTargets === 'function') updateLiveTargets(true);
                 if (now - lastAutoUpdateTime > 60000) lastAutoUpdateTime = now;
             } else {
                 // לא בתצוגת לייב - עדכון רגיל
@@ -18578,8 +18633,8 @@
             updateGroupsDisplay();
             updateHomeStats();
             if (typeof updateLiveView === 'function') updateLiveView(true);
-            if (typeof updateLeadersList === 'function') updateLeadersList(true);  // forceFromScheduled – סיכום לייב
-            if (typeof updateLiveTargets === 'function') updateLiveTargets(true);
+            if (typeof updateLeadersList === 'function') updateLeadersList();
+            if (typeof updateLiveTargets === 'function') updateLiveTargets();
             if (!silent) {
                 const message = actualDelta > 0
                     ? `תשלום של ${Math.abs(actualDelta).toLocaleString()} ₪ נוסף ל-${donorDisplayName} (${paymentDate.toLocaleDateString('he-IL')})`
@@ -18733,8 +18788,8 @@
             updateGroupsDisplay();
             updateHomeStats();
             if (typeof updateLiveView === 'function') updateLiveView(true);
-            if (typeof updateLeadersList === 'function') updateLeadersList(true);  // forceFromScheduled – סיכום לייב
-            if (typeof updateLiveTargets === 'function') updateLiveTargets(true);
+            if (typeof updateLeadersList === 'function') updateLeadersList();
+            if (typeof updateLiveTargets === 'function') updateLiveTargets();
             showNotification(`הסכום של ${donor.name} עודכן ל-${donor.amount.toLocaleString()} ₪`);
         }
 
@@ -19481,13 +19536,11 @@
                 console.error('❌ שגיאה במשיכת סכום כולל דרך Google Sheets:', translateFetchError(error));
             }
             
-            // אם נכשל – משתמשים בסכום מחושב מהמתרימים (כולל עדכונים אחרי סנכרון)
+            // אם נכשל, ננסה לחשב מהמתרימים
+            console.log('ℹ️ מחשב סכום כולל מהמתרימים...');
             const totalFromDonors = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
             if (totalFromDonors > 0) {
-                console.log(`ℹ️ שאיבת סכום כולל נכשלה – משתמש בסכום מהתרימים: ${totalFromDonors.toLocaleString()} ש"ח`);
-                NEDARIM_CONFIG.totalDonatedFromAPI = totalFromDonors;
-                NEDARIM_CONFIG.apiDataLoaded = true;
-                return { Goal: NEDARIM_CONFIG.goalFromAPI || 0, Donated: totalFromDonors };
+                console.log(`📊 סכום מהתרימים: ${totalFromDonors.toLocaleString()} ש"ח`);
             }
             
             return null;
@@ -20874,8 +20927,8 @@
                     const totalData = await fetchTotalFromMatchPlus();
                     if (totalData) {
                         updateHomeStats();
-                        updateLeadersList(true);   // forceFromScheduled – סיכום לייב
-                        updateLiveTargets(true);
+                        updateLeadersList();
+                        updateLiveTargets();
                         if (typeof updateLiveView === 'function') updateLiveView(false);
                     }
                 } else {
@@ -20886,8 +20939,8 @@
                 if (totalData) {
                     console.log(`✅ עדכנו סכום כולל מ-API: ${totalData.Donated.toLocaleString()} ש"ח, יעד: ${totalData.Goal.toLocaleString()} ש"ח`);
                     updateHomeStats();
-                    updateLeadersList(true);   // forceFromScheduled – סיכום לייב
-                    updateLiveTargets(true);
+                    updateLeadersList();
+                    updateLiveTargets();
                     if (typeof updateLiveView === 'function') updateLiveView(false);
                 } else {
                     console.log('ℹ️ ה-API לא החזיר נתונים - נשתמש בסכום מהתרימים אחרי הסנכרון');
@@ -21244,8 +21297,8 @@
                 // מעדכן את הסכום הכולל מ-API (ברקע)
                 fetchTotalFromMatchPlus().then(() => {
                     updateHomeStats();
-                    updateLeadersList(true);   // forceFromScheduled – סיכום לייב
-                    updateLiveTargets(true);
+                    updateLeadersList();
+                    updateLiveTargets();
                 });
             }
             lastDataHash = currentHash;
@@ -21265,32 +21318,26 @@
             }
 
             // סנכרון אוטומטי מלא (דחיפה + משיכה) – אותה עמותה, תרומות מסליקה באשראי יסתנכרנו
-            // בתצוגת לייב – מדלגים. העדכון רץ רק בעדכון המתוזמן (כל X דקות)
             nedarimSyncTimer = setInterval(() => {
-                if (typeof isLiveViewActive === 'function' && isLiveViewActive()) return;
                 console.log('🔄 [אוטומטי] מסנכרן עם נדרים פלוס (סנכרון מלא)...');
                 runSequentialOp(() => syncWithNedarimPlus(true), 'סנכרון אוטומטי'); // silent – סנכרון מלא
             }, NEDARIM_CONFIG.autoSyncInterval);
 
             // מפעיל בדיקת שינויים בנתונים מקומיים כל 10 שניות
-            // בתצוגת לייב – מדלגים (העדכון המתוזמן מטפל)
             dataCheckTimer = setInterval(() => {
-                if (typeof isLiveViewActive === 'function' && isLiveViewActive()) return;
                 checkForLocalDataChanges();
             }, NEDARIM_CONFIG.dataCheckInterval);
 
             // מפעיל עדכון של הסכום הכולל מ-API כל 60 שניות (לא 30 - מונע הפרעות)
-            // בתצוגת לייב – מדלגים (העדכון המתוזמן מטפל)
             totalCheckTimer = setInterval(async () => {
-                if (typeof isLiveViewActive === 'function' && isLiveViewActive()) return;
                 console.log('📊 [אוטומטי] מעדכן סכום כולל מ-API...');
                 try {
                     const totalData = await fetchTotalFromMatchPlus();
                     if (totalData) {
                         console.log('✅ [אוטומטי] הסכום עודכן:', totalData);
                         updateHomeStats();
-                        updateLeadersList(true);   // forceFromScheduled – סיכום לייב
-                        updateLiveTargets(true);
+                        updateLeadersList();
+                        updateLiveTargets();
                     }
                 } catch (error) {
                     console.error('❌ [אוטומטי] שגיאה בעדכון סכום כולל:', error);
@@ -21354,8 +21401,8 @@
                     if (totalData) {
                         console.log('✅ [אתחול] הסכום הכולל עודכן בהצלחה:', totalData);
                         if (typeof updateHomeStats === 'function') updateHomeStats();
-                        if (typeof updateLeadersList === 'function') updateLeadersList(true);   // forceFromScheduled
-                        if (typeof updateLiveTargets === 'function') updateLiveTargets(true);
+                        if (typeof updateLeadersList === 'function') updateLeadersList();
+                        if (typeof updateLiveTargets === 'function') updateLiveTargets();
                     }
                     
                     // סנכרון ראשוני: רק משיכה (ללא דחיפה!) – מונע שליחת סכומים שגויים לנדרים בטעינת דף
@@ -21380,7 +21427,7 @@
         });
 
         // פונקציה לבדיקת הסכום הכולל מ-API
-        async function checkTotalAmountFromAPI(silent = false, fromScheduledUpdate = false) {
+        async function checkTotalAmountFromAPI(silent = false) {
             const btn = document.getElementById('checkTotalBtn');
             if (btn && !silent) {
                 btn.disabled = true;
@@ -21422,54 +21469,47 @@
                     console.log('📊 [מקומי] סכום שצריך להיות (מנדרים פלוס):', totalData.Donated.toLocaleString(), 'ש"ח');
                     console.log('📊 [מקומי] ההפרש:', (totalData.Donated - totalFromDonors).toLocaleString(), 'ש"ח');
                     console.log('📊 [API - חדש] יעד:', totalData.Goal.toLocaleString(), 'ש"ח');
-                    // יש לנו סכום חדש מ-API – להציג בכל התצוגות (כולל לייב), כדי שדף הבית ותצוגת הלייב יציגו אותו סכום
-                    const forceDisplay = true;
+                    // מיד מרעננים את כל התצוגות – getDisplayTotal ישתמש ב-API כשהמקומי נמוך משמעותית
                     updateHomeStats();
-                    updateLeadersList(forceDisplay);
-                    updateLiveTargets(forceDisplay);
-                    if (typeof updateLiveView === 'function') updateLiveView(true, forceDisplay);
+                    updateLeadersList();
+                    updateLiveTargets();
+                    if (typeof updateLiveView === 'function') updateLiveView();
                     const diff = totalData.Donated - totalFromDonors;
                     if (Math.abs(diff) > 0) {
-                        // בתצוגת לייב – לא מריצים סנכרון נוסף (מניעת עומס). העדכון המתוזמן כבר עשה sync.
-                        const inLiveView = typeof isLiveViewActive === 'function' && isLiveViewActive();
-                        if (!inLiveView) {
-                            if (!isAutoCall) {
-                                showNedarimStatus('מסנכרן סכומים מנדרים פלוס לתוכנה...', 'loading');
-                            }
-                            // סנכרון משיכה: משיכת רשימת מתרימים מנדרים ועדכון הסכום של כל מתרים בתוכנה
-                            // forceSync=true: בדיקה ידנית – לא לדלג בגלל cooldown
-                            await syncWithNedarimPlus(true, true, true);
-                            // אימות: אחרי הסנכרון בודקים אם הסכום המקומי באמת תואם לנדרים
-                            const totalAfterSync = donors.reduce((s, d) => s + (d.amount || 0), 0);
-                            const nowMatch = Math.abs(totalAfterSync - totalData.Donated) <= 1;
-                            updateHomeStats();
-                            updateLeadersList(forceDisplay);
-                            updateLiveTargets(forceDisplay);
-                            if (typeof updateLiveView === 'function') updateLiveView(true, forceDisplay);
-                            if (!isAutoCall) {
-                                if (nowMatch) {
-                                    showNedarimStatus('התוכנה מסונכרנת עם נדרים פלוס', 'success');
-                                    showNotification(`✅ סונכרן עם נדרים פלוס: הסכום תואם ${totalData.Donated.toLocaleString()} ש"ח`, 'success');
-                                } else {
-                                    showNedarimStatus(`הסכומים לא תואמים: בתוכנה ${totalAfterSync.toLocaleString()} ש"ח | בנדרים ${totalData.Donated.toLocaleString()} ש"ח`, 'warning');
-                                    showNotification(`⚠️ אחרי סנכרון עדיין יש הבדל: בתוכנה ${totalAfterSync.toLocaleString()} ש"ח, בנדרים פלוס ${totalData.Donated.toLocaleString()} ש"ח. ייתכן שמתרים לא מקושרים.`, 'warning');
-                                }
-                            } else if (nowMatch) {
-                                showNotification(`✅ סונכרן עם נדרים פלוס: ${totalData.Donated.toLocaleString()} ש"ח`, 'success');
-                            }
+                        if (!isAutoCall) {
+                            showNedarimStatus('מסנכרן סכומים מנדרים פלוס לתוכנה...', 'loading');
                         }
-                        // בתצוגת לייב – הסכום מ-API כבר עודכן למעלה (שורות 21407–21411), אין סנכרון נוסף
+                        // סנכרון משיכה: משיכת רשימת מתרימים מנדרים ועדכון הסכום של כל מתרים בתוכנה
+                        // forceSync=true: בדיקה ידנית – לא לדלג בגלל cooldown
+                        await syncWithNedarimPlus(true, true, true);
+                        // אימות: אחרי הסנכרון בודקים אם הסכום המקומי באמת תואם לנדרים
+                        const totalAfterSync = donors.reduce((s, d) => s + (d.amount || 0), 0);
+                        const nowMatch = Math.abs(totalAfterSync - totalData.Donated) <= 1;
+                        updateHomeStats();
+                        updateLeadersList();
+                        updateLiveTargets();
+                        if (typeof updateLiveView === 'function') updateLiveView();
+                        if (!isAutoCall) {
+                            if (nowMatch) {
+                                showNedarimStatus('התוכנה מסונכרנת עם נדרים פלוס', 'success');
+                                showNotification(`✅ סונכרן עם נדרים פלוס: הסכום תואם ${totalData.Donated.toLocaleString()} ש"ח`, 'success');
+                            } else {
+                                showNedarimStatus(`הסכומים לא תואמים: בתוכנה ${totalAfterSync.toLocaleString()} ש"ח | בנדרים ${totalData.Donated.toLocaleString()} ש"ח`, 'warning');
+                                showNotification(`⚠️ אחרי סנכרון עדיין יש הבדל: בתוכנה ${totalAfterSync.toLocaleString()} ש"ח, בנדרים פלוס ${totalData.Donated.toLocaleString()} ש"ח. ייתכן שמתרים לא מקושרים.`, 'warning');
+                            }
+                        } else if (nowMatch) {
+                            showNotification(`✅ סונכרן עם נדרים פלוס: ${totalData.Donated.toLocaleString()} ש"ח`, 'success');
+                        }
                     } else {
                         showNotification(`✅ הסכום כבר תואם: ${totalData.Donated.toLocaleString()} ש"ח`, 'success');
                     }
                 } else {
                     NEDARIM_CONFIG.totalDonatedFromAPI = totalFromDonors;
                     NEDARIM_CONFIG.apiDataLoaded = true;
-                    const forceDisplay = true;
                     updateHomeStats();
-                    updateLeadersList(forceDisplay);
-                    updateLiveTargets(forceDisplay);
-                    if (typeof updateLiveView === 'function') updateLiveView(true, forceDisplay);
+                    updateLeadersList();
+                    updateLiveTargets();
+                    if (typeof updateLiveView === 'function') updateLiveView();
                     console.log('ℹ️ [בדיקה] משתמש בסכום מהתרימים:', totalFromDonors.toLocaleString(), 'ש"ח');
                     showNotification(`✅ הסכום המוצג: ${totalFromDonors.toLocaleString()} ש"ח (מהרשימה המקומית)`);
                 }
@@ -21712,18 +21752,17 @@
         // טעינת הגדרות Google Sheets
         function loadGoogleSheetsSettings() {
             try {
-                var savedUrl = localStorage.getItem('googleSheetsWebAppUrl');
-                if (!savedUrl && DEFAULT_GOOGLE_SHEETS_URL) {
-                    localStorage.setItem('googleSheetsWebAppUrl', DEFAULT_GOOGLE_SHEETS_URL);
-                    savedUrl = DEFAULT_GOOGLE_SHEETS_URL;
-                }
-                googleSheetsWebAppUrl = (savedUrl || DEFAULT_GOOGLE_SHEETS_URL || '').trim();
+                const savedUrl = localStorage.getItem('googleSheetsWebAppUrl');
+                googleSheetsWebAppUrl = savedUrl || DEFAULT_GOOGLE_SHEETS_URL || '';
                 var savedSync = localStorage.getItem('googleSheetsSyncEnabled');
-                googleSheetsSyncEnabled = savedSync === 'true' || (savedSync === null && googleSheetsWebAppUrl.length > 0);
+                googleSheetsSyncEnabled = savedSync === 'true' || (savedSync === null && (googleSheetsWebAppUrl || '').trim().length > 0);
                 sheetSyncIntervalMinutes = Math.max(1, parseInt(localStorage.getItem('sheetSyncIntervalMinutes')) || 5);
                 sheetSyncLoadEnabled = localStorage.getItem('sheetSyncLoadEnabled') !== 'false';
                 sheetSyncSaveEnabled = localStorage.getItem('sheetSyncSaveEnabled') !== 'false';
                 sheetSyncSaveOnChange = localStorage.getItem('sheetSyncSaveOnChange') !== 'false';
+                if (DEFAULT_GOOGLE_SHEETS_URL && !savedUrl) {
+                    localStorage.setItem('googleSheetsWebAppUrl', DEFAULT_GOOGLE_SHEETS_URL);
+                }
                 const urlInput = document.getElementById('googleSheetsWebAppUrl');
                 const autoSyncCheckbox = document.getElementById('autoGoogleSheetsSyncCheckbox');
                 const intervalInput = document.getElementById('sheetSyncIntervalInput');
@@ -21934,8 +21973,8 @@
                 updateGroupsDisplay();
                 updateHomeStats();
                 if (typeof updateLiveView === 'function') updateLiveView(true);
-                updateLeadersList(true);   // forceFromScheduled – סיכום לייב יתעדכן עם סכום מהגליון/API
-                updateLiveTargets(true);
+                updateLeadersList();
+                updateLiveTargets();
                 const totalAmount = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
                 if (!silent) {
                     showNotification(`✅ נטען מנדרים פלוס: ${donors.length} מתרימים, ${loadedGroups} קבוצות | ${totalAmount.toLocaleString()} ש"ח`, 'success');
@@ -21951,7 +21990,7 @@
 
         // טעינת נתונים מ-Google Sheets (מלא – כולל מתרימים מהגליון. לסנכרון אוטומטי משתמשים ב-loadFromNedarimAndSheetGroups)
         // silent: true = ללא הודעות (לסנכרון אוטומטי בתצוגת לייב)
-        async function loadFromGoogleSheets(silent = false, forceLoadWhenScheduled = false) {
+        async function loadFromGoogleSheets(silent = false) {
             const loadSeq = ++_loadFromSheetsSeq;
             const loadStartTime = Date.now();
             const urlInput = document.getElementById('googleSheetsWebAppUrl');
@@ -21972,9 +22011,9 @@
                 return { success: false };
             }
             
-            // לא לטעון מהגליון אם עכשיו סיימנו שמירה – מונע דריסת תרומות ושינויים מקומיים (מעקף בעדכון מתוזמן)
+            // לא לטעון מהגליון אם עכשיו סיימנו שמירה – מונע דריסת תרומות ושינויים מקומיים
             const SKIP_LOAD_AFTER_SAVE_MS = 25000;
-            if (!forceLoadWhenScheduled && lastSaveToSheetsTime && (Date.now() - lastSaveToSheetsTime) < SKIP_LOAD_AFTER_SAVE_MS) {
+            if (lastSaveToSheetsTime && (Date.now() - lastSaveToSheetsTime) < SKIP_LOAD_AFTER_SAVE_MS) {
                 if (!silent) console.log('📥 [Google Sheets] דילוג על טעינה – שמירה לאחרונה, לא לדרוס שינויים מקומיים');
                 return { success: true, skipped: true };
             }
@@ -22310,8 +22349,8 @@
                 updateGroupsDisplay();
                 updateHomeStats();
                 updateLiveView(true);
-                updateLeadersList(true);   // forceFromScheduled – סיכום לייב עם סכום מהגליון
-                updateLiveTargets(true);
+                updateLeadersList();
+                updateLiveTargets();
                 
                 const totalAmount = donors.reduce((sum, d) => sum + (d.amount || 0), 0);
                 
@@ -22451,6 +22490,34 @@
                 clearInterval(liveViewSyncIntervalId);
                 liveViewSyncIntervalId = null;
                 console.log('🛑 [סנכרון] סנכרון תקופתי הופסק');
+            }
+        }
+        
+        /** שמירה רק של מתרימים וקבוצות לגליון – מנגנון יחיד לעדכון ישיר. כל שינוי (שם, קבוצה, תרומה) עולה לגליון. */
+        async function saveDonorsAndGroupsToSheets() {
+            if (window._donorsGroupsToSheetDebounce) { clearTimeout(window._donorsGroupsToSheetDebounce); window._donorsGroupsToSheetDebounce = null; }
+            const urlInput = document.getElementById('googleSheetsWebAppUrl');
+            const url = (urlInput ? urlInput.value.trim() : '') ||
+                        (typeof googleSheetsWebAppUrl !== 'undefined' ? googleSheetsWebAppUrl : '') ||
+                        (typeof localStorage !== 'undefined' ? localStorage.getItem('googleSheetsWebAppUrl') : '') ||
+                        (typeof DEFAULT_GOOGLE_SHEETS_URL !== 'undefined' ? DEFAULT_GOOGLE_SHEETS_URL : '') || '';
+            if (!url || !url.trim()) return { success: false, error: 'אין URL' };
+            const bodyStr = JSON.stringify({ action: 'saveDonors', donors: donors, groups: groups });
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    redirect: 'follow',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: bodyStr
+                });
+                const result = await response.json();
+                if (result && result.success) {
+                    if (typeof lastSaveToSheetsTime !== 'undefined') lastSaveToSheetsTime = Date.now();
+                    return { success: true };
+                }
+                return { success: false, error: (result && result.error) || 'שגיאה מהשרת' };
+            } catch (err) {
+                return { success: false, error: err && err.message ? err.message : String(err) };
             }
         }
         
