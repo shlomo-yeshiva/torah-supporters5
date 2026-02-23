@@ -4757,6 +4757,13 @@
             flex-direction: column;
         }
         .semifinal-video-overlay.show { display: flex !important; }
+        .semifinal-url-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .semifinal-url-row input { flex: 1; min-width: 0; }
+        .semifinal-url-row .btn-paste { flex-shrink: 0; white-space: nowrap; }
         .semifinal-video-header {
             display: flex;
             justify-content: space-between;
@@ -6337,7 +6344,10 @@
                         <div class="semifinal-form" style="margin-top: 16px; padding: 16px; background: rgba(0,0,0,0.03); border-radius: 12px;">
                             <div class="address-form-row">
                                 <label for="semifinalVideoUrl">קישור לסרטון (Google Drive):</label>
-                                <input type="text" id="semifinalVideoUrl" placeholder="https://drive.google.com/..." onchange="saveSemifinalSettings()">
+                                <div class="semifinal-url-row">
+                                    <input type="text" id="semifinalVideoUrl" placeholder="https://drive.google.com/..." onchange="saveSemifinalSettings()">
+                                    <button type="button" class="btn btn-paste" onclick="pasteSemifinalVideoUrl()" title="הדבק קישור מהלוח">הדבק</button>
+                                </div>
                             </div>
                             <div class="address-form-row">
                                 <label for="semifinalDuration">משך הצגה (דקות):</label>
@@ -11193,6 +11203,25 @@
         }
 
         // ——— חגיגת ניצחון: המרת קישור Google Drive ל-embed ———
+        function pasteSemifinalVideoUrl() {
+            const input = document.getElementById('semifinalVideoUrl');
+            if (!input) return;
+            if (navigator.clipboard && navigator.clipboard.readText) {
+                navigator.clipboard.readText().then(function (text) {
+                    if (text && typeof text === 'string') {
+                        input.value = text.trim();
+                        input.dispatchEvent(new Event('change', { bubbles: true }));
+                        if (typeof showNotification === 'function') showNotification('הקישור הודבק');
+                    } else {
+                        if (typeof showNotification === 'function') showNotification('אין טקסט להדבקה בלוח', 'error');
+                    }
+                }).catch(function () {
+                    if (typeof showNotification === 'function') showNotification('לא ניתן לגשת ללוח. נסה להדביק ידנית (Ctrl+V).', 'error');
+                });
+            } else {
+                if (typeof showNotification === 'function') showNotification('הדפדפן לא תומך בהדבקה מלוח. השתמש ב־Ctrl+V בשדה.', 'error');
+            }
+        }
         function getEmbedUrlFromDriveUrl(url) {
             if (!url || typeof url !== 'string') return '';
             const m = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
