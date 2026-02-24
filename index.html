@@ -13708,12 +13708,15 @@
             runLiveViewUpdateDuring().catch(function() {});
         }
 
-        /** אחרי סיום גלילה מלאה – מציג overlay או כרטיסיה בצד, מריץ עדכון. במצב sidepanel הגלילה ממשיכה ברקע */
+        /** אחרי סיום גלילה מלאה – מציג overlay או כרטיסיה בצד, מריץ עדכון. הגלילה ממשיכה תמיד ברקע */
+        var _cycleUpdateRunning = false;
         async function onDonorsScrollCycleComplete() {
             if (typeof isLiveViewActive !== 'function' || !isLiveViewActive()) return;
             if (!liveViewSettings.enableAutoScroll) return;
             if ((liveViewSettings.liveViewUpdateWhen || 'end') === 'during' || (liveViewSettings.liveViewUpdateWhen || 'end') === 'custom') return;
             if (!donorsScrollIsRunning) return;
+            if (_cycleUpdateRunning) return; // מניעת עדכונים מקבילים
+            _cycleUpdateRunning = true;
             console.log('🔄 [תצוגת לייב] סיום מחזור גלילה – מציג overlay ומריץ עדכון...');
             lastLiveViewUpdateAt = Date.now();
             const overlay = document.getElementById('liveViewUpdateOverlay');
@@ -13721,12 +13724,8 @@
             const showMode = liveViewSettings.liveViewUpdateShow || 'loading';
             const updateType = liveViewSettings.liveViewUpdateType || 'all';
 
-            if (showMode !== 'sidepanel') {
-                stopAutoScroll('donors');
-                stopAutoScroll('leaders');
-                donorsScrollIsRunning = false;
-                leadersScrollIsRunning = false;
-            }
+            // הגלילה ממשיכה תמיד מתחת ל-overlay – ללא עצירה וקפיצה להתחלה
+            // (במצב sidepanel הגלילה לא נעצרת ממילא; במצב overlay מוסיפים את הoverlay מעל)
 
             if (showMode === 'sidepanel') {
                 liveViewSidePanelUpdateInProgress = true;
@@ -13819,6 +13818,7 @@
                     _sidepanelSafetyTimer = null;
                 }
                 if (showMode === 'sidepanel') updateLiveViewEndProgress(0, 'שגיאה');
+                _cycleUpdateRunning = false;
             }
 
             if (overlay) overlay.classList.remove('show');
@@ -13836,14 +13836,21 @@
             if (showMode !== 'sidepanel') { stopSidePanelSmoothProgress(); liveViewSidePanelUpdateInProgress = false; }
             if (typeof hideLiveViewSyncProgress === 'function') hideLiveViewSyncProgress();
             if (showMode !== 'sidepanel') {
-                if (typeof restartDonorsAutoScroll === 'function') restartDonorsAutoScroll();
-                if (typeof restartLeadersAutoScroll === 'function' && isLiveViewActive()) setTimeout(() => restartLeadersAutoScroll({ immediate: true }), 50);
+                // מפעיל גלילה רק אם נעצרה (לדוגמה: needsFullRender בנה מחדש את המיכל)
+                if (!donorsScrollIsRunning && liveViewSettings.enableAutoScroll) {
+                    if (typeof restartDonorsAutoScroll === 'function') restartDonorsAutoScroll();
+                }
+                if (!leadersScrollIsRunning && liveViewSettings.enableAutoScroll) {
+                    if (typeof restartLeadersAutoScroll === 'function' && isLiveViewActive()) setTimeout(() => restartLeadersAutoScroll({ immediate: true }), 50);
+                }
             }
+            _cycleUpdateRunning = false;
         }
         
         function triggerLiveViewUpdateByTimer() {
             if (typeof isLiveViewActive !== 'function' || !isLiveViewActive() || !liveViewSettings.enableAutoScroll) return;
             if (!donorsScrollIsRunning) return;
+            if (_cycleUpdateRunning) return;
             var nowMs = Date.now();
             var intervalMin = (liveViewSettings.liveViewSidepanelIntervalMinutes || 10);
             if (lastLiveViewUpdateAt > 0 && (nowMs - lastLiveViewUpdateAt) < intervalMin * 60 * 1000) return;
