@@ -621,10 +621,15 @@
                 </div>
                 <div class="liveview-setting-group">
                     <h4>סדר קבוצות</h4>
-                    <div class="liveview-setting-row"><label>מיין קבוצות:</label><select id="lvGroupsSortBy"><option value="name">שם (א-ב)</option><option value="collected">סכום (גבוה לנמוך)</option><option value="percentage">אחוז יעד</option><option value="custom">סדר מותאם אישית</option></select></div>
+                    <div class="liveview-setting-row"><label>מיין קבוצות:</label><select id="lvGroupsSortBy"><option value="name">שם (א-ב)</option><option value="collected">סכום (גבוה לנמוך)</option><option value="percentage">אחוז יעד</option><option value="custom" selected>סדר מותאם אישית</option></select></div>
                     <div class="liveview-setting-row" id="lvGroupsCustomOrderRow" style="display: none; flex-direction: column; align-items: stretch;">
                         <label>סדר הצגה (שורה אחת לכל קבוצה, מלמעלה למטה):</label>
-                        <textarea id="lvGroupsCustomOrder" rows="4" placeholder="שיעור א&#10;שיעור ב&#10;שיעור ג" style="width: 100%; padding: 8px; border-radius: 8px; font-size: 14px; margin-top: 4px;"></textarea>
+                        <textarea id="lvGroupsCustomOrder" rows="6" placeholder="שיעור א&#10;שיעור ב&#10;שיעור ג&#10;קיבוץ א&#10;קיבוץ ב&#10;קיבוץ גבוה" style="width: 100%; padding: 8px; border-radius: 8px; font-size: 14px; margin-top: 4px;">שיעור א
+שיעור ב
+שיעור ג
+קיבוץ א
+קיבוץ ב
+קיבוץ גבוה</textarea>
                     </div>
                 </div>
                 <div class="liveview-setting-group">
@@ -712,8 +717,8 @@
             enableAutoScroll: true,
             donorsScrollSpeed: 50,
             donorsScrollSpeedFast: 0,
-            groupsSortBy: 'name',
-            groupsCustomOrder: '',
+            groupsSortBy: 'custom',
+            groupsCustomOrder: 'שיעור א\nשיעור ב\nשיעור ג\nקיבוץ א\nקיבוץ ב\nקיבוץ גבוה',
             donorsSortBy: 'name',
             donorsFilter: 'with-amount',
             leadersColumnScroll: 'groups',
