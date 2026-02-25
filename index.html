@@ -7149,6 +7149,13 @@
                                     </label>
                                 </div>
                                 <div class="liveview-setting-row">
+                                    <label>הסתר את 5 כרטיסיות המובילים (דירוג 1–5):</label>
+                                    <label class="switch">
+                                        <input type="checkbox" id="liveviewHideLeaderCards" onchange="updateLiveViewSettings()">
+                                        <span class="switch-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="liveview-setting-row">
                                     <label>הצג רשימת מתרימים:</label>
                                     <label class="switch">
                                         <input type="checkbox" id="liveviewShowDonors" checked onchange="updateLiveViewSettings()">
@@ -11733,6 +11740,7 @@
             showDonors: true,
             showSummary: true,
             hideLeadersColumn: false,
+            hideLeaderCards: false,
             showTotalBanner: false,
             donorsScrollSpeed: 50,
             enableAnimations: true,
@@ -12008,6 +12016,8 @@
             if (enableTransitions) enableTransitions.checked = liveViewSettings.enableTransitions !== false;
             const hideLeadersColumn = document.getElementById('liveviewHideLeadersColumn');
             if (hideLeadersColumn) hideLeadersColumn.checked = liveViewSettings.hideLeadersColumn === true;
+            const hideLeaderCardsEl = document.getElementById('liveviewHideLeaderCards');
+            if (hideLeaderCardsEl) hideLeaderCardsEl.checked = liveViewSettings.hideLeaderCards === true;
             const showTotalBannerEl = document.getElementById('liveviewShowTotalBanner');
             if (showTotalBannerEl) showTotalBannerEl.checked = liveViewSettings.showTotalBanner === true;
             if (groupsSortBy) groupsSortBy.value = liveViewSettings.groupsSortBy || 'name';
@@ -12229,6 +12239,7 @@
                 showDonors: showDonors ? showDonors.checked : liveViewSettings.showDonors,
                 showSummary: showSummary ? showSummary.checked : liveViewSettings.showSummary,
                 hideLeadersColumn: document.getElementById('liveviewHideLeadersColumn') ? document.getElementById('liveviewHideLeadersColumn').checked : liveViewSettings.hideLeadersColumn,
+                hideLeaderCards: document.getElementById('liveviewHideLeaderCards') ? document.getElementById('liveviewHideLeaderCards').checked : liveViewSettings.hideLeaderCards,
                 showTotalBanner: document.getElementById('liveviewShowTotalBanner') ? document.getElementById('liveviewShowTotalBanner').checked : liveViewSettings.showTotalBanner,
                 donorsScrollSpeed: donorsScrollSpeed ? parseInt(donorsScrollSpeed.value) : liveViewSettings.donorsScrollSpeed,
                 enableAnimations: enableAnimations ? enableAnimations.checked : liveViewSettings.enableAnimations,
@@ -12327,6 +12338,7 @@
                 showDonors: true,
                 showSummary: true,
                 hideLeadersColumn: false,
+                hideLeaderCards: false,
                 showTotalBanner: false,
                 donorsScrollSpeed: 50,
                 enableAnimations: true,
@@ -12437,6 +12449,7 @@
                 .leaders-title {
                     font-size: ${liveViewSettings.titleSize}px !important;
                     color: ${liveViewSettings.leadersTitleColor} !important;
+                    display: ${liveViewSettings.hideLeaderCards ? 'none' : 'block'} !important;
                 }
                 .live-donor-name {
                     font-size: ${liveViewSettings.donorNameSize}px !important;
@@ -17133,7 +17146,8 @@
                 return;
             }
             
-            const listHtml = sortedDonors.map((donor, index) => {
+            // כשמופעלת "הסתר 5 כרטיסיות המובילים" – לא מציגים את כרטיסיות הדירוג 1–5
+            const listHtml = (typeof liveViewSettings !== 'undefined' && liveViewSettings.hideLeaderCards) ? '' : sortedDonors.map((donor, index) => {
                 const rank = index + 1;
                 let rankClass = '';
                 if (rank === 1) rankClass = 'rank-1';
