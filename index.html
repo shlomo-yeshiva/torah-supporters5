@@ -13596,11 +13596,8 @@
             if (displayMode !== 'none') startDuringUpdateOverlay(displayMode);
             console.log('🔄 [תצוגת לייב] עדכון תוך כדי גלילה' + (displayMode !== 'none' ? ' (עם מסך ' + displayMode + ')' : '') + '...');
             try {
-                // טעינה מהגליון קודם (בסיס), אחר כך סנכרון נדרים מנצח – מונע הבהוב של נתונים ישנים
+                // 🛡️ לא טוענים מהגליון בעדכון מתוזמן – הגליון עלול להיות ישן ולדרוס סכומים נכונים מ-API, לגרום לקפיצות בעמודת המובילים
                 var url = (googleSheetsWebAppUrl || (typeof localStorage !== 'undefined' && localStorage.getItem('googleSheetsWebAppUrl')) || '').trim();
-                if (url && googleSheetsSyncEnabled && sheetSyncLoadEnabled && typeof loadFromGoogleSheets === 'function') {
-                    await loadFromGoogleSheets(true);
-                }
                 await checkTotalAmountFromAPI(true);
                 await syncWithNedarimPlus(true);
                 if (url && googleSheetsSyncEnabled) {
@@ -13711,17 +13708,12 @@
             }
 
             try {
-                // טעינה מהגליון קודם (בסיס), אחר כך סנכרון נדרים מנצח – מונע הבהוב של נתונים ישנים
+                // 🛡️ בעדכון מתוזמן (updateType='all') – לא טוענים מהגליון: הגליון עלול להיות ישן ולדרוס סכומים מ-API, לגרום לקפיצות בעמודת המובילים
                 if (showMode === 'sidepanel') updateLiveViewEndProgress(0, 'טעינת נתונים');
                 var url = (googleSheetsWebAppUrl || (typeof localStorage !== 'undefined' && localStorage.getItem('googleSheetsWebAppUrl')) || '').trim();
                 if (updateType === 'all') {
                     if (autoSyncNedarimEnabled && typeof performAutoRefresh === 'function') await performAutoRefresh();
-                    if (url && googleSheetsSyncEnabled) {
-                        if (sheetSyncLoadEnabled && typeof loadFromGoogleSheets === 'function') {
-                            var r = await loadFromGoogleSheets(true);
-                            if (r && r.success && typeof notifyDataChanged === 'function') notifyDataChanged();
-                        }
-                    }
+                    // דילוג על loadFromGoogleSheets – נתונים טריים רק מ-API (performAutoRefresh + syncWithNedarimPlus)
                 } else if (updateType === 'loadSheet' && typeof loadFromGoogleSheets === 'function') {
                     var r = await loadFromGoogleSheets(true);
                     if (r && r.success && typeof notifyDataChanged === 'function') notifyDataChanged();
@@ -22466,11 +22458,10 @@
                 if (!forceLoadWhenVisible && typeof isLiveViewActive === 'function' && isLiveViewActive()) return;
                 try {
                     const inLiveView = typeof isLiveViewActive === 'function' && isLiveViewActive();
-                    // 🛡️ מניעת הבהוב: תצוגת לייב + עדכון מקומי לאחרונה – לא לטעון (מונע דריסה)
-                    const recentLocalSync = (typeof _lastLocalSyncFromOtherTab !== 'undefined' && _lastLocalSyncFromOtherTab > 0 && (Date.now() - _lastLocalSyncFromOtherTab) < 180000);
-                    if (inLiveView && recentLocalSync && sheetSyncLoadEnabled) {
-                        console.log('⏭️ [סנכרון] דילוג – תצוגת לייב + עדכון מקומי לאחרונה (מונע הבהובים)');
-                        return; // לא מעדכן תצוגת לייב – רק בעדכון מתוזמן
+                    // 🛡️ בתצוגת לייב – לא לטעון מהגליון (מונע קפיצות בעמודת המובילים; הנתונים הטריים מגיעים מעדכון מתוזמן)
+                    if (inLiveView && sheetSyncLoadEnabled) {
+                        console.log('⏭️ [סנכרון] דילוג – בתצוגת לייב לא טוענים מהגליון (מונע קפיצות)');
+                        return;
                     }
                     if (sheetSyncLoadEnabled) {
                         if (isUpdatingDonorForNedarim) {
