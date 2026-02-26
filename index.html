@@ -8181,6 +8181,9 @@
         const recentlyUpdatedDonors = new Map(); // Map<donorId, timestamp>
         const recentlyUpdatedGroups = new Map(); // Map<groupId, timestamp> – מונע דריסת שם קבוצה מטעינה מהגליון
         const PROTECTION_WINDOW_MS = 300000; // 5 דקות הגנה – מונע דריסת שמות/סכומים שעודכנו לאחרונה
+        // מתרימים שנמחקו במפורש – לא להחזיר אותם מטעינה מהגליון או מנדרים פלוס (מונע "קפיצה חזרה")
+        let deletedDonorIds = new Set();      // Set<string> – מזהה מקומי
+        let deletedDonorMatrimIds = new Set(); // Set<string> – מספר מתרים (nedarimMatrimId)
         let lastSaveToSheetsTime = 0; // אחרי שמירה – לא לטעון מהגליון 15 שניות (מונע דריסה)
         // דגל: במהלך עדכון לנדרים/גליון – לא לטעון מהגליון כדי לא לדרוס נתונים
         let isUpdatingDonorForNedarim = false;
@@ -12818,6 +12821,15 @@
                     ]);
                     
                     if (savedDonors) donors = savedDonors;
+                    // טעינת רשימת מתרימים שנמחקו במפורש (מונע החזרה מטעינה מהגליון/נדרים)
+                    try {
+                        const savedDeleted = localStorage.getItem('deletedDonors');
+                        if (savedDeleted) {
+                            const parsed = JSON.parse(savedDeleted);
+                            if (parsed.ids && Array.isArray(parsed.ids)) deletedDonorIds = new Set(parsed.ids);
+                            if (parsed.matrimIds && Array.isArray(parsed.matrimIds)) deletedDonorMatrimIds = new Set(parsed.matrimIds);
+                        }
+                    } catch (e) { console.warn('שגיאה בטעינת deletedDonors:', e); }
                     // תמיד טוענים מהגליון כשיש URL – הגליון הוא מקור האמת
                     const hasSheetsUrlForLoad = ((typeof googleSheetsWebAppUrl !== 'undefined' && googleSheetsWebAppUrl) || (typeof localStorage !== 'undefined' && localStorage.getItem('googleSheetsWebAppUrl')) || (typeof DEFAULT_GOOGLE_SHEETS_URL !== 'undefined' ? DEFAULT_GOOGLE_SHEETS_URL : '') || '').toString().trim();
                     let sheetLoadedOk = false;
@@ -15967,6 +15979,19 @@
                     return String(d.id) !== String(idToDelete);
                 });
                 
+                // שמירה ברשימת המחוקים – מונע החזרה מטעינה מהגליון/נדרים פלוס
+                deletedDonorIds.add(String(donorToDelete.id));
+                if (donorToDelete.nedarimMatrimId) {
+                    const matrimStr = String(donorToDelete.nedarimMatrimId).trim();
+                    if (/^\d+$/.test(matrimStr)) deletedDonorMatrimIds.add(matrimStr);
+                }
+                try {
+                    localStorage.setItem('deletedDonors', JSON.stringify({
+                        ids: [...deletedDonorIds],
+                        matrimIds: [...deletedDonorMatrimIds]
+                    }));
+                } catch (e) { console.warn('שגיאה בשמירת deletedDonors:', e); }
+                
                 saveData();
                 updateDonorsList();
                 updateGroupsDisplay();
@@ -16065,6 +16090,14 @@
                     }
                     if (savedGroups) {
                         try { groups = JSON.parse(savedGroups); } catch (_) {}
+                    }
+                    const savedDeleted = localStorage.getItem('deletedDonors');
+                    if (savedDeleted) {
+                        try {
+                            const parsed = JSON.parse(savedDeleted);
+                            if (parsed.ids && Array.isArray(parsed.ids)) deletedDonorIds = new Set(parsed.ids);
+                            if (parsed.matrimIds && Array.isArray(parsed.matrimIds)) deletedDonorMatrimIds = new Set(parsed.matrimIds);
+                        } catch (_) {}
                     }
                     ensureDonorsNormalized();
                     // בתצוגת לייב: לא לרענן את התצוגה – מונע קפיצות. העדכון יתבצע רק בעדכון מתוזמן (סיום גלילה / כל X דקות)
@@ -21060,6 +21093,11 @@
                     }
 
                     // מתרים לא קיים – מוסיפים (לקבוצה "נדרים פלוס" אם קיימת, אחרת לקבוצה הראשונה)
+                    // 🛡️ לא מוסיפים מתרימים שנמחקו במפורש – מונע "קפיצה חזרה"
+                    if (deletedDonorMatrimIds && deletedDonorMatrimIds.has(matrimIdStr)) {
+                        console.log(`⏭️ דילוג על "${matrimName}" (מס' ${matrimIdStr}) – נמחק במפורש`);
+                        return;
+                    }
                     if (!groupForNewDonors) {
                         console.warn('⚠️ אין קבוצות – מדלג על הוספת מתרים חדש');
                         return;
@@ -22205,7 +22243,10 @@
                     });
                     
                     // הוספת מתרימים חדשים מהגליון שלא קיימים מקומית (רק אם יש להם מספר מתרים תקין)
+                    // 🛡️ לא מוסיפים מתרימים שנמחקו במפורש – מונע "קפיצה חזרה"
                     donorsFromSheetByMatrimId.forEach((sheetDonor, matrimIdStr) => {
+                        if (deletedDonorMatrimIds && deletedDonorMatrimIds.has(matrimIdStr)) return;
+                        if (deletedDonorIds && sheetDonor.id && deletedDonorIds.has(String(sheetDonor.id))) return;
                         if (!existingMatrimIds.has(matrimIdStr)) {
                             // מתרים חדש מהגליון עם מספר מתרים תקין
                             updatedDonors.push(sheetDonor);
@@ -22215,6 +22256,11 @@
                     
                     // גם מתרים מהגליון לפי ID (אם אין להם מספר מתרים תקין)
                     donorsFromSheetById.forEach((sheetDonor, id) => {
+                        if (deletedDonorIds && deletedDonorIds.has(String(id))) return;
+                        if (deletedDonorMatrimIds && sheetDonor.nedarimMatrimId) {
+                            const m = String(sheetDonor.nedarimMatrimId).trim();
+                            if (/^\d+$/.test(m) && deletedDonorMatrimIds.has(m)) return;
+                        }
                         if (!existingIds.has(id)) {
                             const hasMatrimId = sheetDonor.nedarimMatrimId && /^\d+$/.test(String(sheetDonor.nedarimMatrimId).trim());
                             if (!hasMatrimId) {
