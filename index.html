@@ -16281,7 +16281,7 @@
                     <small style="color: #007bff; display: block; margin-top: 8px;">הזן את מספר המתרים מנדרים פלוס (רק ספרות)</small>
                     <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
                         <button class="btn btn-secondary" onclick="document.getElementById('editMatrimIdDialog').remove()">ביטול</button>
-                        <button class="btn btn-primary" onclick="confirmEditDonorMatrimId(${JSON.stringify(String(donorId))})">שמור</button>
+                        <button class="btn btn-primary" onclick='confirmEditDonorMatrimId(${JSON.stringify(String(donorId))})'>שמור</button>
                     </div>
                 </div>
             `;
@@ -16304,9 +16304,10 @@
             }
         }
 
-        function confirmEditDonorMatrimId(donorId) {
+        async function confirmEditDonorMatrimId(donorId) {
             const input = document.getElementById('editMatrimIdQuickInput');
             const dialog = document.getElementById('editMatrimIdDialog');
+            const saveBtn = dialog ? dialog.querySelector('button.btn-primary') : null;
             if (!input || !dialog) return;
 
             const newVal = input.value.trim();
@@ -16326,6 +16327,36 @@
             donor.updatedAt = new Date().toISOString();
             if (donor.fromNedarimPlus === undefined && validMatrimId) donor.fromNedarimPlus = true;
 
+            // אם יש מספר מתרים תקין – מושך את השם מנדרים פלוס ומחליף
+            let nameUpdatedFromNedarim = false;
+            if (validMatrimId && typeof fetchMatrimFromMatchPlusWithSearch === 'function') {
+                if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '⏳ טוען...'; }
+                try {
+                    let matrimList = await fetchMatrimFromMatchPlusWithSearch(validMatrimId);
+                    if (!matrimList || matrimList.length === 0) {
+                        matrimList = typeof fetchMatrimFromMatchPlus === 'function' ? await fetchMatrimFromMatchPlus() : [];
+                    }
+                    const matrim = matrimList && matrimList.find(m => {
+                        const id = m.Id ?? m.MatrimId ?? m.id ?? m.MatrimNumber;
+                        return id != null && String(id).trim() === validMatrimId;
+                    });
+                    if (matrim) {
+                        const npName = (matrim.Name || matrim.name || '').trim();
+                        if (npName) {
+                            donor.originalName = npName;
+                            donor.name = npName;
+                            donor.displayName = ''; // מציג את השם מנדרים
+                            nameUpdatedFromNedarim = true;
+                            console.log(`✅ שם המתרים עודכן לשם מנדרים פלוס: "${npName}"`);
+                        }
+                    }
+                } catch (e) {
+                    console.warn('לא ניתן לטעון שם מנדרים פלוס:', e);
+                } finally {
+                    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'שמור'; }
+                }
+            }
+
             saveData();
             updateDonorsList();
             updateGroupsDisplay();
@@ -16333,13 +16364,16 @@
             if (typeof updateLeadersList === 'function') updateLeadersList();
             if (typeof updateLiveTargets === 'function') updateLiveTargets();
 
+            const msg = nameUpdatedFromNedarim
+                ? `מספר מתרים והשם עודכנו – השם הוחלף לשם מנדרים פלוס`
+                : `מספר מתרים עודכן: ${oldVal || 'ללא'} → ${validMatrimId || 'ללא'}`;
             const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
             if (url && typeof saveToGoogleSheets === 'function') {
                 saveToGoogleSheets().then(() => {
-                    showNotification(`מספר מתרים עודכן: ${oldVal || 'ללא'} → ${validMatrimId || 'ללא'}`);
+                    showNotification(msg);
                 }).catch(e => console.warn('שמירה לגליון:', e));
             } else {
-                showNotification(`מספר מתרים עודכן: ${oldVal || 'ללא'} → ${validMatrimId || 'ללא'}`);
+                showNotification(msg);
             }
             dialog.remove();
         }
