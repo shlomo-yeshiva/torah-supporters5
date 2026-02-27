@@ -6157,6 +6157,18 @@
             cursor: not-allowed;
         }
 
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+        }
+        .btn-warning:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         .btn-primary {
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             color: white;
@@ -7461,6 +7473,9 @@
                                 </button>
                                 <button class="btn btn-primary" onclick="runSequentialOp(()=>loadMatrimFromNedarim(), 'טען מתרימים מנדרים פלוס')" id="nedarimLoadMatrimBtn">
                                     📥 טען מתרימים מנדרים פלוס
+                                </button>
+                                <button class="btn btn-warning" onclick="runSequentialOp(()=>syncDonorsAndDeleteMissing(), 'סינכרון מתרימים')" id="syncDonorsDeleteMissingBtn" title="מוחק מתרימים שמופיעים בתוכנה אך לא בנדרים פלוס – מהגליון והתוכנה">
+                                    🧹 סינכרון מתרימים (מחק שלא בנדרים)
                                 </button>
                             </div>
                         </div>
@@ -20003,6 +20018,113 @@
                 setTimeout(() => {
                     statusDiv.classList.remove('show');
                 }, 5000);
+            }
+        }
+
+        /**
+         * סינכרון מתרימים – מוחק מתרימים שמופיעים בתוכנה אך לא בנדרים פלוס.
+         * התוכנה משקפת רק נתונים מנדרים פלוס – מתרימים שלא קיימים שם יימחקו מהגליון והתוכנה.
+         */
+        async function syncDonorsAndDeleteMissing() {
+            const btn = document.getElementById('syncDonorsDeleteMissingBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = '⏳ בודק...';
+            }
+            showNedarimStatus('מושך רשימת מתרימים מנדרים פלוס...', 'loading');
+
+            try {
+                const matrimList = await fetchMatrimFromMatchPlus();
+                if (!matrimList || matrimList.length === 0) {
+                    showNedarimStatus('לא נמצאו מתרימים בנדרים פלוס. לא ניתן להמשיך.', 'error');
+                    if (btn) { btn.disabled = false; btn.textContent = '🧹 סינכרון מתרימים (מחק שלא בנדרים)'; }
+                    return;
+                }
+
+                // בניית קבוצת מזההי מתרים תקניים מנדרים פלוס
+                const npMatrimIds = new Set();
+                for (const m of matrimList) {
+                    const id = m.Id ?? m.MatrimId ?? m.id ?? m.MatrimNumber;
+                    if (id != null && id !== '') {
+                        const idStr = String(id).trim();
+                        if (/^\d+$/.test(idStr)) npMatrimIds.add(idStr);
+                    }
+                }
+                console.log(`✅ [סינכרון מתרימים] ${npMatrimIds.size} מזההי מתרים תקניים בנדרים פלוס`);
+
+                // מציאת מתרימים מקומיים שלא קיימים בנדרים פלוס
+                const toDelete = [];
+                for (const donor of donors) {
+                    let matrimId = null;
+                    if (donor.nedarimMatrimId != null) {
+                        const raw = String(donor.nedarimMatrimId).trim();
+                        if (/^\d+$/.test(raw)) matrimId = raw;
+                    }
+                    if (!matrimId && typeof donor.id === 'string' && donor.id.startsWith('nedarim_')) {
+                        const match = donor.id.match(/^nedarim_(\d+)$/);
+                        if (match) matrimId = match[1];
+                    }
+                    if (matrimId && !npMatrimIds.has(matrimId)) {
+                        toDelete.push({ donor, id: donor.id });
+                    }
+                }
+
+                if (toDelete.length === 0) {
+                    showNedarimStatus('✅ כל המתרימים בתוכנה קיימים בנדרים פלוס. אין מה למחוק.', 'success');
+                    showNotification('✅ כל המתרימים תואמים לנדרים פלוס');
+                    if (btn) { btn.disabled = false; btn.textContent = '🧹 סינכרון מתרימים (מחק שלא בנדרים)'; }
+                    return;
+                }
+
+                const namesList = toDelete.map(t => (t.donor.displayName || t.donor.name || 'ללא שם')).join(', ');
+                const confirmMsg = `נמצאו ${toDelete.length} מתרימים שמופיעים בתוכנה אך לא בנדרים פלוס.\n\n` +
+                    `הם יימחקו לצמיתות מהתוכנה ומהגליון.\n\n` +
+                    `דוגמאות: ${namesList.substring(0, 80)}${namesList.length > 80 ? '...' : ''}\n\n` +
+                    `האם להמשיך?`;
+                if (!confirm(confirmMsg)) {
+                    showNedarimStatus('בוטל על ידי המשתמש', 'info');
+                    if (btn) { btn.disabled = false; btn.textContent = '🧹 סינכרון מתרימים (מחק שלא בנדרים)'; }
+                    return;
+                }
+
+                showNedarimStatus(`מוחק ${toDelete.length} מתרימים מהתוכנה והגליון...`, 'loading');
+                const idsToDelete = new Set(toDelete.map(t => String(t.id)));
+
+                donors = donors.filter(d => {
+                    const sid = String(d.id);
+                    return !idsToDelete.has(sid);
+                });
+
+                saveData();
+                updateDonorsList();
+                updateGroupsDisplay();
+                updateHomeStats();
+                if (typeof updateLiveView === 'function') updateLiveView(true);
+                if (typeof updateLeadersList === 'function') updateLeadersList();
+                if (typeof updateLiveTargets === 'function') updateLiveTargets();
+
+                const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
+                if (url && typeof saveToGoogleSheets === 'function') {
+                    await saveToGoogleSheets();
+                    console.log('💾 נשמר לגליון – מתרימים שנמחקו הוסרו מהגליון');
+                }
+                if (typeof syncAllDataToDatabase === 'function') await syncAllDataToDatabase();
+
+                const msg = `✅ נמחקו ${toDelete.length} מתרימים שלא בנדרים פלוס – מהתוכנה והגליון`;
+                showNedarimStatus(msg, 'success');
+                showNotification(msg, 'success');
+                console.log(msg);
+
+            } catch (error) {
+                const friendly = error && error.message ? error.message : String(error);
+                console.error('❌ שגיאה בסינכרון מתרימים:', error);
+                showNedarimStatus('❌ שגיאה: ' + friendly, 'error');
+                showNotification('❌ שגיאה בסינכרון מתרימים: ' + friendly, 'error');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = '🧹 סינכרון מתרימים (מחק שלא בנדרים)';
+                }
             }
         }
 
