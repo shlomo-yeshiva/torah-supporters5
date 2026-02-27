@@ -14269,6 +14269,7 @@
                             </div>
                         </div>
                         <div class="donor-actions">
+                            <button class="btn btn-small btn-secondary" onclick='editDonorMatrimId(${JSON.stringify(String(donor.id))})' title="ערוך מספר מתרים (נדרים פלוס)">ערוך מספר מתרים</button>
                             <button class="btn btn-primary btn-small" onclick='addDonorPayment(${JSON.stringify(donor.id)})'>הוסף תשלום</button>
                             <button class="btn btn-danger btn-small" onclick='deleteDonor(${JSON.stringify(String(donor.id))})'>מחק</button>
                             <button class="btn btn-danger btn-small" onclick='deleteDonor(${JSON.stringify(String(donor.id))}, true)' title="מחיקה לצמיתות מהמערכת המקומית">מחק לצמיתות</button>
@@ -15243,6 +15244,7 @@
                                     <span class="group-donor-amount">₪${d.amount.toLocaleString()}</span>
                                 </div>
                                 <div class="group-donor-actions">
+                                    <button class="btn btn-small btn-secondary" onclick='editDonorMatrimId(${JSON.stringify(String(d.id))})' title="ערוך מספר מתרים">ערוך מספר מתרים</button>
                                     <button class="group-donor-payment" onclick='addDonorPayment(${JSON.stringify(d.id)})'>הוסף תשלום</button>
                                     <button class="btn btn-danger btn-small" onclick='deleteDonor(${JSON.stringify(String(d.id))})'>מחק</button>
                                     <button class="btn btn-danger btn-small" onclick='deleteDonor(${JSON.stringify(String(d.id))}, true)' title="מחיקה לצמיתות מהמערכת המקומית">מחק לצמיתות</button>
@@ -15827,6 +15829,7 @@
                         </div>
                         </div>
                         <div class="donor-actions">
+                            <button class="btn btn-small btn-secondary" onclick='editDonorMatrimId(${JSON.stringify(String(donor.id))})' title="ערוך מספר מתרים (נדרים פלוס)">ערוך מספר מתרים</button>
                             <button class="btn btn-secondary btn-small" onclick='addDonorPayment(${JSON.stringify(donor.id)})'>הוסף תשלום</button>
                             <button class="btn btn-danger btn-small" onclick='deleteDonor(${JSON.stringify(String(donor.id))})'>מחק</button>
                             <button class="btn btn-danger btn-small" onclick='deleteDonor(${JSON.stringify(String(donor.id))}, true)' title="מחיקה לצמיתות מהמערכת המקומית">מחק לצמיתות</button>
@@ -16254,6 +16257,91 @@
             } else {
                 toggleDonorEditor(donorId, true);
             }
+        }
+
+        /** עריכת מספר מתרים בלבד – דיאלוג מהיר */
+        function editDonorMatrimId(donorId) {
+            const donor = findDonorById(donorId);
+            if (!donor) {
+                showNotification('המתרים לא נמצא', 'error');
+                return;
+            }
+            const donorName = donor.displayName || donor.name || 'המתרים';
+            const currentVal = donor.nedarimMatrimId ? String(donor.nedarimMatrimId).trim() : '';
+
+            const dialog = document.createElement('div');
+            dialog.id = 'editMatrimIdDialog';
+            dialog.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;';
+            dialog.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 16px; max-width: 420px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+                    <h3 style="margin: 0 0 20px 0; color: var(--brown-dark);">ערוך מספר מתרים</h3>
+                    <p style="margin: 0 0 12px 0; color: var(--muted); font-size: 14px;">${escapeHtml(donorName)}</p>
+                    <label for="editMatrimIdQuickInput" style="display: block; font-weight: 600; margin-bottom: 8px; color: #007bff;">🔗 מספר מתרים (נדרים פלוס)</label>
+                    <input type="text" id="editMatrimIdQuickInput" value="${escapeHtml(currentVal)}" placeholder="רק ספרות" pattern="[0-9]*" style="font-family: monospace; font-size: 18px; padding: 12px; width: 100%; border: 2px solid #007bff; border-radius: 8px; box-sizing: border-box;">
+                    <small style="color: #007bff; display: block; margin-top: 8px;">הזן את מספר המתרים מנדרים פלוס (רק ספרות)</small>
+                    <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                        <button class="btn btn-secondary" onclick="document.getElementById('editMatrimIdDialog').remove()">ביטול</button>
+                        <button class="btn btn-primary" onclick="confirmEditDonorMatrimId(${JSON.stringify(String(donorId))})">שמור</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(dialog);
+            dialog.addEventListener('click', (e) => {
+                if (e.target === dialog) dialog.remove();
+            });
+            const input = document.getElementById('editMatrimIdQuickInput');
+            if (input) {
+                setTimeout(() => input.focus(), 50);
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        confirmEditDonorMatrimId(String(donorId));
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        dialog.remove();
+                    }
+                });
+            }
+        }
+
+        function confirmEditDonorMatrimId(donorId) {
+            const input = document.getElementById('editMatrimIdQuickInput');
+            const dialog = document.getElementById('editMatrimIdDialog');
+            if (!input || !dialog) return;
+
+            const newVal = input.value.trim();
+            let validMatrimId = null;
+            if (newVal && /^\d+$/.test(newVal)) {
+                validMatrimId = newVal;
+            }
+
+            const donor = findDonorById(donorId);
+            if (!donor) {
+                dialog.remove();
+                return;
+            }
+
+            const oldVal = donor.nedarimMatrimId ? String(donor.nedarimMatrimId).trim() : '';
+            donor.nedarimMatrimId = validMatrimId || null;
+            donor.updatedAt = new Date().toISOString();
+            if (donor.fromNedarimPlus === undefined && validMatrimId) donor.fromNedarimPlus = true;
+
+            saveData();
+            updateDonorsList();
+            updateGroupsDisplay();
+            if (typeof updateLiveView === 'function') updateLiveView(true);
+            if (typeof updateLeadersList === 'function') updateLeadersList();
+            if (typeof updateLiveTargets === 'function') updateLiveTargets();
+
+            const url = googleSheetsWebAppUrl || localStorage.getItem('googleSheetsWebAppUrl') || DEFAULT_GOOGLE_SHEETS_URL || '';
+            if (url && typeof saveToGoogleSheets === 'function') {
+                saveToGoogleSheets().then(() => {
+                    showNotification(`מספר מתרים עודכן: ${oldVal || 'ללא'} → ${validMatrimId || 'ללא'}`);
+                }).catch(e => console.warn('שמירה לגליון:', e));
+            } else {
+                showNotification(`מספר מתרים עודכן: ${oldVal || 'ללא'} → ${validMatrimId || 'ללא'}`);
+            }
+            dialog.remove();
         }
 
         const syncChannel = new BroadcastChannel('matching_sync');
